@@ -117,10 +117,13 @@ c $B77A Game Entry Point
 b $B77D
 
 t $C2B6
+@ $C2B6 label=PressStartPrompt
 B $C2B6,$03 PRINT AT (#PEEK(#PC+$01), #PEEK(#PC+$02)).
   $C2B9,$10 "#STR(#PC,$04,$10)".
+@ $C2C9 label=ControlsHeading
 B $C2C9,$03 PRINT AT (#PEEK(#PC+$01), #PEEK(#PC+$02)).
   $C2CC,$09 "#STR(#PC,$04,$09)".
+@ $C3EF label=ControlsText
 B $C3EF,$03 PRINT AT (#PEEK(#PC+$01), #PEEK(#PC+$02)).
 
 b $C602
@@ -132,13 +135,195 @@ L $C9B4,$08,$60
 
 b $F700
 
-b $FE00
+b $FE00 Workspace and scratch variables from Mem-locations.pdf
 
-g $FE42
+g $FE00 SP1
+@ $FE00 label=SP1
+W $FE00,$02
+
+g $FE02 LINCD
+@ $FE02 label=LINCD
+W $FE02,$02
+
+g $FE04 LNCNT
+@ $FE04 label=LNCNT
+W $FE04,$02
+
+g $FE06 SPPL
+@ $FE06 label=SPPL
+W $FE06,$02
+
+g $FE08 X1
+@ $FE08 label=X1
+W $FE08,$02
+
+g $FE0A X2
+@ $FE0A label=X2
+W $FE0A,$02
+
+g $FE0C XD
+@ $FE0C label=XD
+W $FE0C,$02
+
+g $FE0E Y1
+@ $FE0E label=Y1
+W $FE0E,$02
+
+g $FE10 Y2
+@ $FE10 label=Y2
+W $FE10,$02
+
+g $FE12 YD
+@ $FE12 label=YD
+W $FE12,$02
+
+g $FE14 DRTP1
+@ $FE14 label=DRTP1
+W $FE14,$02
+
+g $FE16 DRTP2
+@ $FE16 label=DRTP2
+W $FE16,$02
+
+g $FE18 SPPL1
+@ $FE18 label=SPPL1
+W $FE18,$02
+
+g $FE1A SPPL2
+@ $FE1A label=SPPL2
+W $FE1A,$02
+
+g $FE1C MAX1
+@ $FE1C label=MAX1
+W $FE1C,$02
+
+g $FE1E MIN1
+@ $FE1E label=MIN1
+W $FE1E,$02
+
+g $FE20 MAX2
+@ $FE20 label=MAX2
+W $FE20,$02
+
+g $FE22 MIN2
+@ $FE22 label=MIN2
+W $FE22,$02
+
+g $FE24 LIM1
+@ $FE24 label=LIM1
+W $FE24,$02
+
+g $FE26 LIM2
+@ $FE26 label=LIM2
+W $FE26,$02
+
+g $FE28 LIM3
+@ $FE28 label=LIM3
+W $FE28,$02
+
+g $FE2A LIM4
+@ $FE2A label=LIM4
+W $FE2A,$02
+
+g $FE2C HLCNT
+@ $FE2C label=HLCNT
+W $FE2C,$02
+
+g $FE2E SHCNT
+@ $FE2E label=SHCNT
+W $FE2E,$02
+
+g $FE30 LIM
+@ $FE30 label=LIM
+W $FE30,$02
+
+g $FE32 XLOC
+@ $FE32 label=XLOC
+W $FE32,$02
+
+g $FE34 YLOC
+@ $FE34 label=YLOC
+W $FE34,$02
+
+g $FE36 ZLOC
+@ $FE36 label=ZLOC
+W $FE36,$02
+
+g $FE38 XPERS
+@ $FE38 label=XPERS
+W $FE38,$02
+
+g $FE3A YPERS
+@ $FE3A label=YPERS
+W $FE3A,$02
+
+g $FE3C XMAX
+@ $FE3C label=XMAX
+W $FE3C,$02
+
+g $FE3E XMIN
+@ $FE3E label=XMIN
+W $FE3E,$02
+
+g $FE40 DYCNT
+@ $FE40 label=DYCNT
+W $FE40,$02
+
+g $FE42 XTAB
+@ $FE42 label=XTAB
 W $FE42,$02
 
-g $FE46
+g $FE44 YTAB
+@ $FE44 label=YTAB
+W $FE44,$02
+
+g $FE46 ZTAB
+@ $FE46 label=ZTAB
 W $FE46,$02
+
+g $FE48 MMAT
+@ $FE48 label=MMAT
+W $FE48,$02
+
+g $FE4A XDIS
+@ $FE4A label=XDIS
+W $FE4A,$02
+
+g $FE4C ZDIS
+@ $FE4C label=ZDIS
+W $FE4C,$02
+
+g $FE4E MUCNT
+@ $FE4E label=MUCNT
+W $FE4E,$02
+
+g $FE50 EXBLP
+@ $FE50 label=EXBLP
+W $FE50,$02
+
+g $FE52 EXSCN
+@ $FE52 label=EXSCN
+W $FE52,$02
+
+g $FE54 TRIGA
+@ $FE54 label=TRIGA
+W $FE54,$02
+
+g $FE56 KMOV
+@ $FE56 label=KMOV
+W $FE56,$02
+
+g $FE58 SIGHT
+@ $FE58 label=SIGHT
+W $FE58,$02
+
+g $FE5A SP2
+@ $FE5A label=SP2
+W $FE5A,$02
+
+g $FE5C TURN
+@ $FE5C label=TURN
+W $FE5C,$02
 
 g $FE5E
 

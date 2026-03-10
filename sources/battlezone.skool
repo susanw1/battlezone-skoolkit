@@ -8182,10 +8182,12 @@ b$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $C2B5 DEFB $00
 
 ; Message at C2B6
+@label=PressStartPrompt
 t$C2B6 DEFB $16,$05,$08                                                                                                                  ; PRINT AT
                                                                                                                                          ; (#PEEK(#PC+$01),
                                                                                                                                          ; #PEEK(#PC+$02)).
  $C2B9 DEFM "PRESS[S[TO[START"                                                                                                           ; "#STR(#PC,$04,$10)".
+@label=ControlsHeading
  $C2C9 DEFB $16,$00,$00                                                                                                                  ; PRINT AT
                                                                                                                                          ; (#PEEK(#PC+$01),
                                                                                                                                          ; #PEEK(#PC+$02)).
@@ -8195,6 +8197,7 @@ t$C2B6 DEFB $16,$05,$08                                                         
  $C357 DEFM "V",$06,"  = REVERSE",$0D,$0D,$0D,"RIGHT TRACK:",$0D,$0D,"6-9 & Y-P",$06,"  = FORWARD",$0D,"J-",$14,$01,"ENTER",$14,$00," &"
  $C398 DEFM " B-",$14,$01,"SPC",$14,$00,$06,"  = REVERSE",$16,$12,$0F,"0  = FIRE",$16,$14,$04,"H = HOLD    S = START",$0D,"     ",$14
  $C3D9 DEFM $01,"CAPS",$14,$00," H = ABORT GAME"
+@label=ControlsText
  $C3EF DEFB $16,$00,$00                                                                                                                  ; PRINT AT
                                                                                                                                          ; (#PEEK(#PC+$01),
                                                                                                                                          ; #PEEK(#PC+$02)).
@@ -10008,26 +10011,147 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FDF0 DEFB $7F,$DB,$FE,$1F,$00,$A9,$E6,$20
  $FDF8 DEFB $28,$F3,$79,$2F,$4F,$E6,$07,$F6
 
-; Data block at FE00
-b$FE00 DEFB $08,$00,$00,$37,$C9,$00,$00,$00
- $FE08 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE10 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE18 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE20 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE28 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE30 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE38 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE40 DEFB $00,$00
+; Workspace and scratch variables from Mem-locations.pdf
+@label=SP1
+g$FE00 DEFW $0008    ; Stack pointer scratch slot 1.
 
-; Game status buffer entry at FE42
+@label=LINCD
+g$FE02 DEFW $3700
+
+@label=LNCNT
+g$FE04 DEFW $00C9
+
+@label=SPPL
+g$FE06 DEFW $0000
+
+@label=X1
+g$FE08 DEFW $0000
+
+@label=X2
+g$FE0A DEFW $0000
+
+@label=XD
+g$FE0C DEFW $0000
+
+@label=Y1
+g$FE0E DEFW $0000
+
+@label=Y2
+g$FE10 DEFW $0000
+
+@label=YD
+g$FE12 DEFW $0000
+
+@label=DRTP1
+g$FE14 DEFW $0000
+
+@label=DRTP2
+g$FE16 DEFW $0000
+
+@label=SPPL1
+g$FE18 DEFW $0000
+
+@label=SPPL2
+g$FE1A DEFW $0000
+
+@label=MAX1
+g$FE1C DEFW $0000
+
+@label=MIN1
+g$FE1E DEFW $0000
+
+@label=MAX2
+g$FE20 DEFW $0000
+
+@label=MIN2
+g$FE22 DEFW $0000
+
+@label=LIM1
+g$FE24 DEFW $0000
+
+@label=LIM2
+g$FE26 DEFW $0000
+
+@label=LIM3
+g$FE28 DEFW $0000
+
+@label=LIM4
+g$FE2A DEFW $0000
+
+@label=HLCNT
+g$FE2C DEFW $0000
+
+@label=SHCNT
+g$FE2E DEFW $0000
+
+@label=LIM
+g$FE30 DEFW $0000
+
+@label=XLOC
+g$FE32 DEFW $0000
+
+@label=YLOC
+g$FE34 DEFW $0000
+
+@label=ZLOC
+g$FE36 DEFW $0000
+
+@label=XPERS
+g$FE38 DEFW $0000
+
+@label=YPERS
+g$FE3A DEFW $0000
+
+@label=XMAX
+g$FE3C DEFW $0000
+
+@label=XMIN
+g$FE3E DEFW $0000
+
+@label=DYCNT
+g$FE40 DEFW $0000
+
+@label=XTAB
 g$FE42 DEFW $0000
- $FE44 DEFB $00,$00
 
-; Game status buffer entry at FE46
+@label=YTAB
+g$FE44 DEFW $0000
+
+@label=ZTAB
 g$FE46 DEFW $0000
- $FE48 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE50 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE58 DEFB $00,$00,$00,$00,$00,$00
+
+@label=MMAT
+g$FE48 DEFW $0000
+
+@label=XDIS
+g$FE4A DEFW $0000
+
+@label=ZDIS
+g$FE4C DEFW $0000
+
+@label=MUCNT
+g$FE4E DEFW $0000
+
+@label=EXBLP
+g$FE50 DEFW $0000
+
+@label=EXSCN
+g$FE52 DEFW $0000
+
+@label=TRIGA
+g$FE54 DEFW $0000
+
+@label=KMOV
+g$FE56 DEFW $0000
+
+@label=SIGHT
+g$FE58 DEFW $0000
+
+@label=SP2
+g$FE5A DEFW $0000    ; Stack pointer scratch slot 2.
+
+@label=TURN
+g$FE5C DEFW $0000
 
 ; Game status buffer entry at FE5E
 g$FE5E DEFB $00,$00
