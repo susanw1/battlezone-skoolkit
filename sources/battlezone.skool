@@ -3548,8 +3548,9 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; MHLC
 ;
 ; Probable main-hill limit calculation from the notebook's SCREEN page. This
-; routine appears to derive clipped hill bounds from the current edge limits
-; and store them in the FE24/FE26 workspace pair.
+; routine appears to derive clipped hill bounds from the current object edge
+; limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
+; FE24/FE26 workspace pair.
 @label=MHLC
 *$8D68 DEFB $2A,$1C,$FE,$11,$80,$00,$19,$7D
  $8D70 DEFB $E6,$F8,$1F,$1F,$1F,$47,$7C,$A7
@@ -3574,7 +3575,9 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; SHLC
 ;
 ; Probable secondary-hill limit calculation from the notebook's SCREEN page.
-; It consumes the FE24/FE26 pair produced by #R$8D68 and derives FE28/FE2A.
+; It consumes the primary limits from #R$8D68 and derives a second pair of
+; hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
+; hill infill pass for the object interior.
 @label=SHLC
 *$8E08 DEFB $ED,$4B,$24,$FE,$ED,$5B,$26,$FE
  $8E10 DEFB $7B,$A7,$C2,$21,$8E,$3E,$1F,$90
@@ -3586,7 +3589,8 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ;
 ; Probable main-hill plotting stage from the notebook's SCREEN page. This
 ; routine appears to use the hill pointer at FE2C together with the main-hill
-; limits derived by #R$8D68.
+; limits derived by #R$8D68 to draw the regular hill backdrop outside object
+; occlusion bounds.
 @label=MHLPT
 *$8E38 DEFB $ED,$73,$00,$FE,$ED,$7B,$2C,$FE
  $8E40 DEFB $ED,$4B,$24,$FE,$33,$2E,$40,$CB
@@ -3627,7 +3631,8 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; SHLPT
 ;
 ; Probable secondary-hill plotting stage from the notebook's SCREEN page. It
-; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08.
+; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
+; matching the recollected infill pass inside the object limits.
 @label=SHLPT
 *$8F53 DEFB $CD,$61,$8F,$ED,$4B
  $8F58 DEFB $28,$FE,$ED,$43,$30,$FE,$C3,$69
@@ -5809,10 +5814,10 @@ c$977E LD HL,($FE70) ;
  $A564 LD A,H        ;
  $A565 AND A         ;
  $A566 JP P,$A576    ;
- $A569 LD HL,$E740   ;
- $A56C SET 7,(HL)    ;
+ $A569 LD HL,$E740   ; Probable left-edge hill-stop hack in the off-screen
+ $A56C SET 7,(HL)    ; playfield buffer.
  $A56E JP $A576      ;
-*$A571 LD HL,$E75F   ;
+*$A571 LD HL,$E75F   ; Probable matching right-edge hill-stop hack.
  $A574 SET 7,(HL)    ;
 *$A576 LD HL,($DE9C) ;
  $A579 LD DE,($DE9A) ;
@@ -5853,9 +5858,9 @@ c$977E LD HL,($FE70) ;
  $A5BD LD A,($FE6C)  ;
  $A5C0 AND A         ;
  $A5C1 CALL NZ,$AA5D ;
- $A5C4 LD HL,$E740   ;
+ $A5C4 LD HL,$E740   ; Clear the temporary edge-stop hack bit.
  $A5C7 RES 7,(HL)    ;
- $A5C9 LD HL,$E75F   ;
+ $A5C9 LD HL,$E75F   ; Clear the matching right-edge stop bit.
  $A5CC RES 7,(HL)    ;
  $A5CE CALL $8C3C    ;
  $A5D1 LD HL,$84D0   ;
