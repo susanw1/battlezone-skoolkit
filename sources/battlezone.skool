@@ -3441,7 +3441,7 @@ c$88EA LD ($FE00),SP ;
  $8C3A NOP           ;
  $8C3B NOP           ;
 
-; Routine at 8C3C
+; SDRAW
 ;
 ; Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
 ;
@@ -3452,6 +3452,7 @@ c$88EA LD ($FE00),SP ;
 ; { #SIM(start=$8C3C,stop=$8C84)#SCR$02(test) }
 ; UDGTABLE#
 ; #POPS
+@label=SDRAW
 c$8C3C LD HL,$DFA0   ;
  $8C3F LD DE,$40A0   ;
  $8C42 LD A,$08      ;
@@ -3544,6 +3545,12 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $8D50 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8D58 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8D60 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; MHLC
+;
+; Probable main-hill limit calculation from the notebook's SCREEN page. This
+; routine appears to derive clipped hill bounds from the current edge limits
+; and store them in the FE24/FE26 workspace pair.
+@label=MHLC
 *$8D68 DEFB $2A,$1C,$FE,$11,$80,$00,$19,$7D
  $8D70 DEFB $E6,$F8,$1F,$1F,$1F,$47,$7C,$A7
  $8D78 DEFB $CA,$82,$8D,$06,$20,$F2,$82,$8D
@@ -3564,12 +3571,23 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $8DF0 DEFB $F3,$8D,$14,$7B,$90,$3D,$F2,$FA
  $8DF8 DEFB $8D,$97,$5F,$04,$78,$42,$57,$ED
  $8E00 DEFB $43,$24,$FE,$ED,$53,$26,$FE,$C9
+; SHLC
+;
+; Probable secondary-hill limit calculation from the notebook's SCREEN page.
+; It consumes the FE24/FE26 pair produced by #R$8D68 and derives FE28/FE2A.
+@label=SHLC
 *$8E08 DEFB $ED,$4B,$24,$FE,$ED,$5B,$26,$FE
  $8E10 DEFB $7B,$A7,$C2,$21,$8E,$3E,$1F,$90
  $8E18 DEFB $91,$3C,$41,$4F,$1E,$00,$C3,$2F
  $8E20 DEFB $8E,$7A,$91,$60,$41,$4F,$7A,$83
  $8E28 DEFB $57,$3E,$1F,$92,$94,$3C,$5F,$ED
  $8E30 DEFB $53,$28,$FE,$ED,$43,$2A,$FE,$C9
+; MHLPT
+;
+; Probable main-hill plotting stage from the notebook's SCREEN page. This
+; routine appears to use the hill pointer at FE2C together with the main-hill
+; limits derived by #R$8D68.
+@label=MHLPT
 *$8E38 DEFB $ED,$73,$00,$FE,$ED,$7B,$2C,$FE
  $8E40 DEFB $ED,$4B,$24,$FE,$33,$2E,$40,$CB
  $8E48 DEFB $AD,$26,$E7,$0D,$FA,$7D,$8E,$D1
@@ -3605,7 +3623,13 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $8F38 DEFB $10,$FC,$ED,$4B,$26,$FE,$21,$A0
  $8F40 DEFB $E8,$58,$41,$16,$00,$19,$05,$04
  $8F48 DEFB $28,$04,$77,$23,$10,$FC,$ED,$7B
- $8F50 DEFB $00,$FE,$C9,$CD,$61,$8F,$ED,$4B
+ $8F50 DEFB $00,$FE,$C9
+; SHLPT
+;
+; Probable secondary-hill plotting stage from the notebook's SCREEN page. It
+; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08.
+@label=SHLPT
+*$8F53 DEFB $CD,$61,$8F,$ED,$4B
  $8F58 DEFB $28,$FE,$ED,$43,$30,$FE,$C3,$69
  $8F60 DEFB $8F,$ED,$4B,$2A,$FE,$ED,$43,$30
  $8F68 DEFB $FE,$78,$ED,$73,$00,$FE,$07,$07
@@ -4226,9 +4250,13 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9779 LD A,$10      ;
  $977B LD ($FE6A),A  ;
 
-; Routine at 977E
+; Main Game Loop
 ;
 ; Used by the routines at #R$94EC and #R$B55D.
+; This matches Susan Witts' recollection of a long shallow-call loop: entity
+; updates and drawing, then hills/status/radar/screen work, then input
+; handling, ending with a jump back to the top at #R$A931.
+@label=MainGameLoop
 c$977E LD HL,($FE70) ;
  $9781 LD A,$18      ;
  $9783 OUT ($FE),A   ;
@@ -5807,6 +5835,15 @@ c$977E LD HL,($FE70) ;
  $A5A7 CALL $805C    ;
  $A5AA LD A,$18      ;
  $A5AC OUT ($FE),A   ;
+; SCREEN phase
+;
+; Probable late-frame overlay/hill/status pipeline from the notebook's
+; "SCREEN" page. Current best read:
+; - #R$8D68: MHLC
+; - #R$8E08: SHLC
+; - #R$8E38: probable MHLPT
+; - #R$8F53: probable SHLPT
+; - #R$8C3C: SDRAW / present-and-clear
 *$A5AE CALL $8D68    ;
  $A5B1 CALL $8E08    ;
  $A5B4 CALL $8E38    ;

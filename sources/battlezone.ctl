@@ -18,10 +18,23 @@ c $8660
 
 c $88EA
 
-c $8C3C
+c $8C3C SDRAW
+@ $8C3C label=SDRAW
 N $8C3C #PUSHS #UDGTABLE { #SIM(start=$8C3C,stop=$8C84)#SCR$02(test) } UDGTABLE# #POPS
 
 b $8CA0
+
+c $8D68 MHLC
+@ $8D68 label=MHLC
+
+c $8E08 SHLC
+@ $8E08 label=SHLC
+
+c $8E38 MHLPT
+@ $8E38 label=MHLPT
+
+c $8F53 SHLPT
+@ $8F53 label=SHLPT
 
 ; MESPR / MESER / SCOPR / NUMBA notebook names from Red-book-scan2.
 c $9452 MESPR
@@ -45,7 +58,8 @@ c $94EC
 R $94EC HL Packed BCD value to display
 @ $94EC label=NUMBA
 
-c $977E
+c $977E Main Game Loop
+@ $977E label=MainGameLoop
 
 c $AD0C
   $AD0C,$01 Disable interrupts.
