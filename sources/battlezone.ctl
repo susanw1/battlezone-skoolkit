@@ -212,6 +212,27 @@ b $DE90 XPERS output buffer
 b $DEC8 YPERS table
 @ $DEC8 label=YPERS_Table
 
+b $D6B8 probable TKEXV line-data family
+@ $D6B8 label=Probable_TKEXV_LineData
+
+b $D7CC probable SAEXV line-data family
+@ $D7CC label=Probable_SAEXV_LineData
+
+b $D8B0 probable MSEXV line-data family
+@ $D8B0 label=Probable_MSEXV_LineData
+
+b $D95C probable EXBLT line-data family
+@ $D95C label=Probable_EXBLT_LineData
+
+b $D392 probable CRAVU line-data family A
+@ $D392 label=Probable_CRAVU_A_LineData
+
+b $D3DC probable CRAVU line-data family B
+@ $D3DC label=Probable_CRAVU_B_LineData
+
+b $D43E probable CRAVU line-data family C
+@ $D43E label=Probable_CRAVU_C_LineData
+
 b $F700
 
 b $FE00 Workspace and scratch variables from Mem-locations.pdf
