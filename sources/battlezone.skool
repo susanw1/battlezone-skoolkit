@@ -4011,7 +4011,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9569 NOP           ;
 ; This entry point is used by the routines at #R$AD3E and #R$B2F5.
 *$956A LD HL,$0000   ;
- $956D LD ($FE6A),HL ;
+ $956D LD ($FE6A),HL ; Clear probable EXST1 / EXST2 state bytes.
  $9570 LD ($FE6C),HL ;
  $9573 LD ($FE76),HL ;
  $9576 LD ($FE78),HL ;
@@ -4020,7 +4020,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $957F LD ($FE68),HL ;
  $9582 LD ($FE54),HL ;
  $9585 LD ($FE50),HL ;
- $9588 LD ($FE6E),HL ;
+ $9588 LD ($FE6E),HL ; Clear probable PRSTA / render-state byte.
  $958B LD HL,$0003   ;
  $958E LD ($FEE4),HL ;
  $9591 LD HL,$4000   ;
@@ -4253,7 +4253,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9774 LD A,$FF      ;
  $9776 LD ($FE88),A  ;
  $9779 LD A,$10      ;
- $977B LD ($FE6A),A  ;
+ $977B LD ($FE6A),A  ; Enable the missile/existence bit in probable EXST1.
 
 ; Main Game Loop
 ;
@@ -4271,17 +4271,17 @@ c$977E LD HL,($FE70) ;
  $978C SBC HL,DE     ;
  $978E JP C,$97A4    ;
  $9791 LD A,($FE6E)  ;
- $9794 AND $F0       ;
+ $9794 AND $F0       ; Any visible major entity still active this frame?
  $9796 JP NZ,$97A4   ;
  $9799 LD A,($FE6A)  ;
- $979C AND $10       ;
+ $979C AND $10       ; Suppress fresh saucer work while the missile bit is active.
  $979E JP NZ,$97A4   ;
  $97A1 JP $972E      ;
 *$97A4 LD A,($FE6E)  ;
- $97A7 AND $F0       ;
+ $97A7 AND $F0       ; High nibble of probable PRSTA mirrors visible major entities.
  $97A9 JP NZ,$97D6   ;
  $97AC LD A,($FE6A)  ;
- $97AF AND $30       ;
+ $97AF AND $30       ; Saucer or missile already active in probable EXST1?
  $97B1 JP NZ,$97D6   ;
  $97B4 LD HL,($FE60) ;
  $97B7 LD D,$80      ;
@@ -4290,10 +4290,10 @@ c$977E LD HL,($FE70) ;
  $97BD LD A,R        ;
  $97BF LD ($FE8F),A  ;
  $97C2 LD A,($FE6A)  ;
- $97C5 OR $20        ;
+ $97C5 OR $20        ; Set the probable saucer-exists bit.
  $97C7 LD ($FE6A),A  ;
  $97CA LD A,($FE6C)  ;
- $97CD AND $DF       ;
+ $97CD AND $DF       ; Clear the matching deferred-effect bit.
  $97CF LD ($FE6C),A  ;
  $97D2 SUB A         ;
  $97D3 LD ($FE92),A  ;
@@ -4363,9 +4363,9 @@ c$977E LD HL,($FE70) ;
  $9869 LD ($FEB0),HL ;
  $986C CALL $A0B0    ;
 *$986F LD A,($FE6A)  ;
- $9872 BIT 2,A       ;
+ $9872 BIT 2,A       ; Hostile-bullet active?
  $9874 JP NZ,$98C6   ;
- $9877 AND $C0       ;
+ $9877 AND $C0       ; Need an active tank or supertank before firing.
  $9879 JP Z,$98C6    ;
  $987C LD A,($FE66)  ;
  $987F AND A         ;
@@ -4390,14 +4390,14 @@ c$977E LD HL,($FE70) ;
  $98AC LD ($FEB6),HL ;
  $98AF CALL $A0B0    ;
  $98B2 LD A,($FE6A)  ;
- $98B5 OR $04        ;
+ $98B5 OR $04        ; Set the hostile-bullet active bit in probable EXST1.
  $98B7 LD ($FE6A),A  ;
  $98BA LD HL,($DCDC) ;
  $98BD LD ($DD22),HL ;
  $98C0 LD HL,($DD8C) ;
  $98C3 LD ($DDD2),HL ;
 *$98C6 LD A,($FE6A)  ;
- $98C9 AND $C0       ;
+ $98C9 AND $C0       ; Tank / supertank bits.
  $98CB JP Z,$9D0D    ;
  $98CE LD HL,($FE5E) ;
  $98D1 LD A,H        ;
@@ -4736,7 +4736,7 @@ c$977E LD HL,($FE70) ;
  $9BD8 AND A         ;
  $9BD9 LD A,($FE6E)  ;
  $9BDC JP Z,$9BF6    ;
- $9BDF AND $7F       ;
+ $9BDF AND $7F       ; Clear the tank-visible bit.
  $9BE1 LD ($FE6E),A  ;
  $9BE4 LD A,$0C      ;
  $9BE6 CALL $9538    ;
@@ -4750,7 +4750,7 @@ c$977E LD HL,($FE70) ;
  $9BFC EX DE,HL      ;
  $9BFD LD HL,($FE3E) ;
  $9C00 LD ($FE1E),HL ;
- $9C03 OR $80        ;
+ $9C03 OR $80        ; Set the tank-visible bit.
  $9C05 LD ($FE6E),A  ;
  $9C08 LD A,H        ;
  $9C09 AND A         ;
@@ -4804,7 +4804,7 @@ c$977E LD HL,($FE70) ;
  $9C84 AND A         ;
  $9C85 LD A,($FE6E)  ;
  $9C88 JP Z,$9CA2    ;
- $9C8B AND $3F       ;
+ $9C8B AND $3F       ; Clear the supertank-visible bit.
  $9C8D LD ($FE6E),A  ;
  $9C90 LD A,$08      ;
  $9C92 CALL $9538    ;
@@ -4818,7 +4818,7 @@ c$977E LD HL,($FE70) ;
  $9CA8 EX DE,HL      ;
  $9CA9 LD HL,($FE3E) ;
  $9CAC LD ($FE1E),HL ;
- $9CAF OR $40        ;
+ $9CAF OR $40        ; Set the supertank-visible bit.
  $9CB1 LD ($FE6E),A  ;
  $9CB4 LD A,H        ;
  $9CB5 AND A         ;
@@ -4858,7 +4858,7 @@ c$977E LD HL,($FE70) ;
 *$9D0D SUB A         ;
  $9D0E OUT ($FE),A   ;
  $9D10 LD A,($FE6A)  ;
- $9D13 AND $20       ;
+ $9D13 AND $20       ; Saucer active?
  $9D15 JP Z,$9E3D    ;
  $9D18 LD A,($FE92)  ;
  $9D1B INC A         ;
@@ -4979,7 +4979,7 @@ c$977E LD HL,($FE70) ;
  $9DF7 AND A         ;
  $9DF8 LD A,($FE6E)  ;
  $9DFB JP Z,$9E1A    ;
- $9DFE AND $DF       ;
+ $9DFE AND $DF       ; Clear the saucer-visible bit.
  $9E00 LD ($FE6E),A  ;
  $9E03 AND $C0       ;
  $9E05 JP NZ,$9E12   ;
@@ -4990,7 +4990,7 @@ c$977E LD HL,($FE70) ;
 *$9E12 LD A,$02      ;
  $9E14 CALL $9538    ;
  $9E17 JP $A122      ;
-*$9E1A OR $20        ;
+*$9E1A OR $20        ; Set the saucer-visible bit.
  $9E1C LD ($FE6E),A  ;
  $9E1F LD HL,($FE3C) ;
  $9E22 LD ($FE1C),HL ;
@@ -5005,7 +5005,7 @@ c$977E LD HL,($FE70) ;
 *$9E3D LD A,$18      ;
  $9E3F OUT ($FE),A   ;
  $9E41 LD A,($FE6A)  ;
- $9E44 AND $10       ;
+ $9E44 AND $10       ; Missile active?
  $9E46 JP Z,$A122    ;
  $9E49 LD A,($FE84)  ;
  $9E4C LD C,A        ;
@@ -5225,7 +5225,7 @@ c$977E LD HL,($FE70) ;
  $A045 AND A         ;
  $A046 JP Z,$A05F    ;
  $A049 SUB A         ;
- $A04A LD ($FE6E),A  ;
+ $A04A LD ($FE6E),A  ; Clear probable PRSTA when the missile/crash object is not drawable.
  $A04D LD A,$03      ;
  $A04F CALL $9538    ;
  $A052 LD HL,$84D0   ;
@@ -5239,7 +5239,7 @@ c$977E LD HL,($FE70) ;
  $A066 LD HL,($FE3E) ;
  $A069 LD ($FE1E),HL ;
  $A06C LD A,$10      ;
- $A06E LD ($FE6E),A  ;
+ $A06E LD ($FE6E),A  ; Set the missile-visible bit in probable PRSTA.
  $A071 LD A,H        ;
  $A072 AND A         ;
  $A073 JP P,$A080    ;
@@ -5365,7 +5365,7 @@ c$977E LD HL,($FE70) ;
 *$A122 LD A,$18      ;
  $A124 OUT ($FE),A   ;
  $A126 LD A,($FE6A)  ;
- $A129 AND $0C       ;
+ $A129 AND $0C       ; Active player-bullet / hostile-bullet bits.
  $A12B JP Z,$A37B    ;
  $A12E AND $08       ;
  $A130 JP Z,$A234    ;
@@ -5429,12 +5429,12 @@ c$977E LD HL,($FE70) ;
  $A1BF AND A         ;
  $A1C0 LD A,($FE6E)  ;
  $A1C3 JP Z,$A1D3    ;
- $A1C6 AND $F7       ;
+ $A1C6 AND $F7       ; Clear the player-bullet visible bit.
  $A1C8 LD ($FE6E),A  ;
  $A1CB LD A,$01      ;
  $A1CD CALL $9538    ;
  $A1D0 JP $A234      ;
-*$A1D3 OR $08        ;
+*$A1D3 OR $08        ; Set the player-bullet visible bit.
  $A1D5 LD ($FE6E),A  ;
  $A1D8 SUB A         ;
  $A1D9 OUT ($FE),A   ;
@@ -5454,25 +5454,26 @@ c$977E LD HL,($FE70) ;
  $A1FA LD HL,($FEAE) ;
  $A1FD LD A,($FE6A)  ;
  $A200 LD C,A        ;
- $A201 BIT 5,A       ;
+ $A201 BIT 5,A       ; Test active saucer bit for player-bullet hit.
  $A203 JP Z,$A20F    ;
  $A206 LD A,($FE91)  ;
  $A209 SUB H         ;
  $A20A SUB $07       ;
  $A20C JP C,$A934    ;
-*$A20F BIT 4,C       ;
+*$A20F BIT 4,C       ; Test active missile bit for player-bullet hit.
  $A211 JP Z,$A21D    ;
  $A214 LD A,($FE81)  ;
  $A217 SUB H         ;
  $A218 SUB $07       ;
  $A21A JP C,$AA0B    ;
-*$A21D AND $C0       ;
+*$A21D AND $C0       ; Test active tank / supertank bits for player-bullet hit.
  $A21F JP Z,$A22B    ;
  $A222 LD A,($FE61)  ;
  $A225 SUB H         ;
  $A226 SUB $07       ;
  $A228 JP C,$A9AC    ;
-*$A22B LD HL,$D488   ; Unresolved LINCDS family.
+*$A22B LD HL,$D488   ; Unresolved fallback LINCDS family, likely the no-hit /
+                     ; no-draw obstacle case.
  $A22E LD ($FE02),HL ;
  $A231 CALL $805C    ;
 *$A234 LD A,$18      ;
@@ -5546,12 +5547,12 @@ c$977E LD HL,($FE70) ;
  $A2D9 AND A         ;
  $A2DA LD A,($FE6E)  ;
  $A2DD JP Z,$A2ED    ;
- $A2E0 AND $FB       ;
+ $A2E0 AND $FB       ; Clear the hostile-bullet visible bit.
  $A2E2 LD ($FE6E),A  ;
  $A2E5 LD A,$01      ;
  $A2E7 CALL $9538    ;
  $A2EA JP $A37B      ;
-*$A2ED OR $04        ;
+*$A2ED OR $04        ; Set the hostile-bullet visible bit.
  $A2EF LD ($FE6E),A  ;
  $A2F2 BIT 1,A       ;
  $A2F4 JP Z,$A33E    ;
@@ -5604,7 +5605,7 @@ c$977E LD HL,($FE70) ;
  $A367 OR $04        ;
  $A369 LD ($FE6C),A  ;
  $A36C JP $A37B      ;
-*$A36F LD HL,$D488   ; Unresolved LINCDS family.
+*$A36F LD HL,$D488   ; Same unresolved fallback LINCDS family.
  $A372 SUB A         ;
  $A373 OUT ($FE),A   ;
  $A375 LD ($FE02),HL ;
@@ -5628,7 +5629,7 @@ c$977E LD HL,($FE70) ;
  $A3A2 LD DE,($FE9A) ;
  $A3A6 LD ($FEEA),HL ;
  $A3A9 LD B,D        ;
- $A3AA LD C,$02      ;
+ $A3AA LD C,$02      ; Cube-family low-bit selector.
  $A3AC LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family.
 *$A3AF LD A,($FE9F)  ;
  $A3B2 CP B          ;
@@ -5641,7 +5642,7 @@ c$977E LD HL,($FE70) ;
  $A3C3 LD ($FEE8),HL ;
  $A3C6 LD DE,($FE9E) ;
  $A3CA LD B,D        ;
- $A3CB LD C,$02      ;
+ $A3CB LD C,$02      ; Cube-family low-bit selector.
  $A3CD LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family.
 *$A3D0 LD A,($FEA3)  ;
  $A3D3 CP B          ;
@@ -5653,7 +5654,7 @@ c$977E LD HL,($FE70) ;
  $A3E1 LD HL,($FEA0) ;
  $A3E4 LD ($FEE8),HL ;
  $A3E7 LD DE,($FEA2) ;
- $A3EB LD C,$03      ;
+ $A3EB LD C,$03      ; Pyramid-family low-bit selector.
  $A3ED LD B,D        ;
  $A3EE LD HL,$D554   ; Probable OB3VU / pyramid line-data family.
 *$A3F1 LD A,($FEA7)  ;
@@ -5666,7 +5667,7 @@ c$977E LD HL,($FE70) ;
  $A402 LD HL,($FEA4) ;
  $A405 LD ($FEE8),HL ;
  $A408 LD DE,($FEA6) ;
- $A40C LD C,$01      ;
+ $A40C LD C,$01      ; Low-block-family low-bit selector.
  $A40E LD HL,$D5F6   ; Probable OB4VU / low-block line-data family.
 *$A411 LD ($FE02),HL ;
  $A414 LD HL,$84D0   ;
@@ -5681,7 +5682,7 @@ c$977E LD HL,($FE70) ;
  $A42A LD ($FE4A),HL ;
  $A42D LD ($FE4C),DE ;
  $A431 LD A,($FE6A)  ;
- $A434 AND $FC       ;
+ $A434 AND $FC       ; Replace the current obstacle/object low-bit selector.
  $A436 OR C          ;
  $A437 LD ($FE6A),A  ;
  $A43A LD DE,$0000   ;
@@ -5744,7 +5745,7 @@ c$977E LD HL,($FE70) ;
  $A4C3 AND A         ;
  $A4C4 LD A,($FE6E)  ;
  $A4C7 JP Z,$A4E1    ;
- $A4CA AND $FC       ;
+ $A4CA AND $FC       ; Clear the obstacle/object low-bit selector in PRSTA.
  $A4CC LD ($FE6E),A  ;
  $A4CF LD HL,$84D0   ;
  $A4D2 LD ($FE20),HL ;
@@ -5756,7 +5757,7 @@ c$977E LD HL,($FE70) ;
 *$A4E1 AND $FC       ;
  $A4E3 LD C,A        ;
  $A4E4 LD A,($FE6A)  ;
- $A4E7 AND $03       ;
+ $A4E7 AND $03       ; Copy the active obstacle/object low-bit selector into PRSTA.
  $A4E9 OR C          ;
  $A4EA LD ($FE6E),A  ;
  $A4ED LD HL,($FE3C) ;
@@ -6228,14 +6229,14 @@ c$977E LD HL,($FE70) ;
 ;   #R$D7CC and companion geometry families at #R$DA1E/#R$DB12/#R$DC06
 ; - current best notebook match: `SAEXV`
 *$A934 LD A,($FE6A)  ;
- $A937 AND $D7       ;
+ $A937 AND $D7       ; Clear the active saucer and player-bullet bits.
  $A939 LD ($FE6A),A  ;
  $A93C LD B,$05      ;
  $A93E CALL $94AC    ;
  $A941 LD A,$18      ;
  $A943 OUT ($FE),A   ;
  $A945 LD A,($FE6C)  ;
- $A948 OR $20        ;
+ $A948 OR $20        ; Queue the matching deferred saucer/effect bit.
  $A94A LD ($FE6C),A  ;
  $A94D LD HL,($FE8E) ;
  $A950 LD ($FECC),HL ;
@@ -6285,10 +6286,10 @@ c$977E LD HL,($FE70) ;
  $A9BE LD A,$18      ;
  $A9C0 OUT ($FE),A   ;
  $A9C2 LD A,($FE6A)  ;
- $A9C5 AND $37       ;
+ $A9C5 AND $37       ; Clear the active tank/supertank and player-bullet bits.
  $A9C7 LD ($FE6A),A  ;
  $A9CA LD A,($FE6C)  ;
- $A9CD OR $80        ;
+ $A9CD OR $80        ; Queue the matching deferred tank/supertank effect bit.
  $A9CF LD ($FE6C),A  ;
  $A9D2 LD HL,($FE5E) ;
  $A9D5 LD ($FECC),HL ;
@@ -6310,12 +6311,12 @@ c$977E LD HL,($FE70) ;
  $AA05 LD ($FED4),HL ;
  $AA08 JP $A97A      ;
 *$AA0B LD A,($FE6A)  ;
- $AA0E AND $E7       ;
+ $AA0E AND $E7       ; Clear the active missile and player-bullet bits.
  $AA10 LD ($FE6A),A  ;
  $AA13 LD A,$18      ;
  $AA15 OUT ($FE),A   ;
  $AA17 LD A,($FE6C)  ;
- $AA1A OR $10        ;
+ $AA1A OR $10        ; Queue the matching deferred missile/effect bit.
  $AA1C LD ($FE6C),A  ;
  $AA1F LD B,$02      ;
  $AA21 CALL $94AC    ;
@@ -6557,8 +6558,8 @@ c$977E LD HL,($FE70) ;
  $AC11 RET           ;
 *$AC12 LD C,A        ;
  $AC13 LD A,($FE6A)  ;
- $AC16 OR C          ;
- $AC17 LD ($FE6A),A  ;
+ $AC16 OR C          ; Restore the deferred major-entity bit to probable EXST1
+ $AC17 LD ($FE6A),A  ; before jumping into the reinitialisation path at #R$9644.
  $AC1A SUB A         ;
  $AC1B LD ($FE6C),A  ;
  $AC1E POP HL        ;
@@ -10353,20 +10354,46 @@ g$FE5A DEFW $0000    ; Stack pointer scratch slot 2.
 @label=TURN
 g$FE5C DEFW $0000
 
-; Game status buffer entry at FE5E
-g$FE5E DEFB $00,$00
+; Current entity/effect X position used by several transient setup paths.
+@label=EntityXPos
+g$FE5E DEFW $0000
 
-; Game status buffer entry at FE60
+; Current entity/effect Z position used by several transient setup paths.
+@label=EntityZPos
 g$FE60 DEFW $0000
 
-; Game status buffer entry at FE62
+; Current entity/effect heading/orientation and nearby transient state.
+@label=EntityHeadingOrOrient
 g$FE62 DEFB $00,$00,$00,$00,$00,$00
 
-; Game status buffer entry at FE68
-g$FE68 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; Mixed transient state:
+; - FE68: movement/effect delay counter
+; - FE6A: probable EXST1 active-entity state byte
+; - FE6C: probable EXST2 deferred explosion/respawn state byte
+; - FE6E: probable PRSTA current render/visibility state byte
+; Current best FE6A/FE6C/FE6E bit model:
+; - bit 7: probable tank
+; - bit 6: probable supertank
+; - bit 5: probable saucer
+; - bit 4: probable missile
+; - bit 3: probable player bullet
+; - bit 2: probable hostile bullet
+; - bits 1-0: probable obstacle/object selector
+; Current best FE6E read: high nibble mirrors the visible/drawable subset of
+; FE6A's major-entity bits, while the low bits are reused for obstacle/object
+; view state.
+@label=EntityMoveDelay
+g$FE68 DEFB $00,$00
+@label=Probable_EXST1
+ $FE6A DEFB $00,$00
+@label=Probable_EXST2
+ $FE6C DEFB $00,$00
+@label=Probable_PRSTA
+ $FE6E DEFB $00,$00
  $FE70 DEFB $00,$00,$00,$00,$00,$00
 
-; Game status buffer entry at FE76
+; Packed-BCD score and nearby effect/state workspace.
+@label=ScoreBCD
 g$FE76 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE7E DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE86 DEFB $00,$00,$00,$00,$00,$00,$00,$00

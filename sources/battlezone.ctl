@@ -426,15 +426,36 @@ g $FE5C TURN
 W $FE5C,$02
 
 g $FE5E
+@ $FE5E label=EntityXPos
+W $FE5E,$02
 
 g $FE60
+@ $FE60 label=EntityZPos
 W $FE60,$02
 
 g $FE62
+@ $FE62 label=EntityHeadingOrOrient
+W $FE62,$02
 
 g $FE68
+@ $FE68 label=EntityMoveDelay
+B $FE68,$01
+
+g $FE6A probable EXST1 / active-entity state byte
+@ $FE6A label=Probable_EXST1
+B $FE6A,$01
+
+g $FE6C probable EXST2 / deferred explosion-respawn state byte
+@ $FE6C label=Probable_EXST2
+B $FE6C,$01
+
+g $FE6E probable PRSTA / current render-visibility state byte
+@ $FE6E label=Probable_PRSTA
+B $FE6E,$01
 
 g $FE76
+@ $FE76 label=ScoreBCD
+W $FE76,$02
 
 g $FEE4 Lives
 @ $FEE4 label=Lives
