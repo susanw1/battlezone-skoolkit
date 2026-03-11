@@ -173,6 +173,45 @@ t $CD80 Number Glyphs
   $CD80,$08 #UDG(#PC)
 L $CD80,$08,$0C
 
+b $D9D0 XTAB table from Red-book-scan2 pages 23-25
+@ $D9D0 label=XTAB_Table
+
+b $DAC4 ZTAB table from Red-book-scan2 pages 23-25
+@ $DAC4 label=ZTAB_Table
+
+b $DBB8 YLOC table from Red-book-scan2 pages 23-25
+@ $DBB8 label=YLOC_Table
+
+b $DD20 HBLXLC table
+@ $DD20 label=HBLXLC_Table
+
+b $DD28 OBXLC table
+@ $DD28 label=OBXLC_Table
+
+b $DD36 EXXLC table
+@ $DD36 label=EXXLC_Table
+
+b $DD6E EXBXL table
+@ $DD6E label=EXBXL_Table
+
+b $DDD0 HBLZLC table
+@ $DDD0 label=HBLZLC_Table
+
+b $DDD8 OBZLC table
+@ $DDD8 label=OBZLC_Table
+
+b $DDE6 EXZLC table
+@ $DDE6 label=EXZLC_Table
+
+b $DE1E EXBZL table
+@ $DE1E label=EXBZL_Table
+
+b $DE90 XPERS output buffer
+@ $DE90 label=XPERS_Buffer
+
+b $DEC8 YPERS table
+@ $DEC8 label=YPERS_Table
+
 b $F700
 
 b $FE00 Workspace and scratch variables from Mem-locations.pdf

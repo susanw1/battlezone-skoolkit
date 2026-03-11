@@ -5400,13 +5400,13 @@ c$977E LD HL,($FE70) ;
  $A176 ADD HL,DE     ;
  $A177 LD ($FEAE),HL ;
  $A17A LD ($FE4C),HL ;
- $A17D LD HL,$D9D0   ;
+ $A17D LD HL,$D9D0   ; XTAB
  $A180 LD ($FE42),HL ;
- $A183 LD HL,$DAC4   ;
+ $A183 LD HL,$DAC4   ; ZTAB
  $A186 LD ($FE46),HL ;
- $A189 LD HL,$DD20   ;
+ $A189 LD HL,$DD20   ; HBLXLC
  $A18C LD ($FE32),HL ;
- $A18F LD HL,$DDD0   ;
+ $A18F LD HL,$DDD0   ; HBLZLC
  $A192 LD ($FE36),HL ;
  $A195 LD HL,($FEB0) ;
  $A198 SRL H         ;
@@ -5417,11 +5417,11 @@ c$977E LD HL,($FE70) ;
  $A1A1 CALL $88EA    ;
  $A1A4 LD A,$18      ;
  $A1A6 OUT ($FE),A   ;
- $A1A8 LD HL,$DE98   ;
+ $A1A8 LD HL,$DE98   ; XPERS+$06
  $A1AB LD ($FE38),HL ;
- $A1AE LD HL,$DED0   ;
+ $A1AE LD HL,$DED0   ; YPERS+$08
  $A1B1 LD ($FE3A),HL ;
- $A1B4 LD HL,$DBB8   ;
+ $A1B4 LD HL,$DBB8   ; YLOC
  $A1B7 LD ($FE34),HL ;
  $A1BA SUB A         ;
  $A1BB CALL $8660    ;
@@ -5472,7 +5472,7 @@ c$977E LD HL,($FE70) ;
  $A225 SUB H         ;
  $A226 SUB $07       ;
  $A228 JP C,$A9AC    ;
-*$A22B LD HL,$D488   ;
+*$A22B LD HL,$D488   ; Unresolved LINCDS family.
  $A22E LD ($FE02),HL ;
  $A231 CALL $805C    ;
 *$A234 LD A,$18      ;
@@ -5509,13 +5509,13 @@ c$977E LD HL,($FE70) ;
  $A27C ADD HL,DE     ;
  $A27D LD ($FEB6),HL ;
  $A280 LD ($FE4C),HL ;
- $A283 LD HL,$D9D0   ;
+ $A283 LD HL,$D9D0   ; XTAB
  $A286 LD ($FE42),HL ;
- $A289 LD HL,$DAC4   ;
+ $A289 LD HL,$DAC4   ; ZTAB
  $A28C LD ($FE46),HL ;
- $A28F LD HL,$DD28   ;
+ $A28F LD HL,$DD28   ; OBXLC
  $A292 LD ($FE32),HL ;
- $A295 LD HL,$DDD8   ;
+ $A295 LD HL,$DDD8   ; OBZLC
  $A298 LD ($FE36),HL ;
  $A29B LD HL,($FEB8) ;
  $A29E SRL H         ;
@@ -5534,11 +5534,11 @@ c$977E LD HL,($FE70) ;
  $A2BB ADD A,$03     ;
  $A2BD SUB $05       ;
  $A2BF JP C,$ADD4    ;
-*$A2C2 LD HL,$DE98   ;
+*$A2C2 LD HL,$DE98   ; XPERS+$06
  $A2C5 LD ($FE38),HL ;
- $A2C8 LD HL,$DED0   ;
+ $A2C8 LD HL,$DED0   ; YPERS+$08
  $A2CB LD ($FE3A),HL ;
- $A2CE LD HL,$DBB8   ;
+ $A2CE LD HL,$DBB8   ; YLOC
  $A2D1 LD ($FE34),HL ;
  $A2D4 SUB A         ;
  $A2D5 CALL $8660    ;
@@ -5604,7 +5604,7 @@ c$977E LD HL,($FE70) ;
  $A367 OR $04        ;
  $A369 LD ($FE6C),A  ;
  $A36C JP $A37B      ;
-*$A36F LD HL,$D488   ;
+*$A36F LD HL,$D488   ; Unresolved LINCDS family.
  $A372 SUB A         ;
  $A373 OUT ($FE),A   ;
  $A375 LD ($FE02),HL ;
@@ -5614,7 +5614,7 @@ c$977E LD HL,($FE70) ;
  $A37F LD B,$7C      ;
  $A381 LD H,$A0      ;
  $A383 LD ($FEEA),HL ;
- $A386 LD HL,$D554   ;
+ $A386 LD HL,$D554   ; Probable OB3VU / pyramid line-data family.
  $A389 LD C,$00      ;
  $A38B LD A,($FE9B)  ;
  $A38E CP B          ;
@@ -5629,7 +5629,7 @@ c$977E LD HL,($FE70) ;
  $A3A6 LD ($FEEA),HL ;
  $A3A9 LD B,D        ;
  $A3AA LD C,$02      ;
- $A3AC LD HL,$D4A2   ;
+ $A3AC LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family.
 *$A3AF LD A,($FE9F)  ;
  $A3B2 CP B          ;
  $A3B3 JP NC,$A3D0   ;
@@ -5642,7 +5642,7 @@ c$977E LD HL,($FE70) ;
  $A3C6 LD DE,($FE9E) ;
  $A3CA LD B,D        ;
  $A3CB LD C,$02      ;
- $A3CD LD HL,$D4A2   ;
+ $A3CD LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family.
 *$A3D0 LD A,($FEA3)  ;
  $A3D3 CP B          ;
  $A3D4 JP NC,$A3F1   ;
@@ -5655,7 +5655,7 @@ c$977E LD HL,($FE70) ;
  $A3E7 LD DE,($FEA2) ;
  $A3EB LD C,$03      ;
  $A3ED LD B,D        ;
- $A3EE LD HL,$D554   ;
+ $A3EE LD HL,$D554   ; Probable OB3VU / pyramid line-data family.
 *$A3F1 LD A,($FEA7)  ;
  $A3F4 CP B          ;
  $A3F5 JP NC,$A411   ;
@@ -5667,7 +5667,7 @@ c$977E LD HL,($FE70) ;
  $A405 LD ($FEE8),HL ;
  $A408 LD DE,($FEA6) ;
  $A40C LD C,$01      ;
- $A40E LD HL,$D5F6   ;
+ $A40E LD HL,$D5F6   ; Probable OB4VU / low-block line-data family.
 *$A411 LD ($FE02),HL ;
  $A414 LD HL,$84D0   ;
  $A417 LD ($FE20),HL ;
@@ -5719,24 +5719,24 @@ c$977E LD HL,($FE70) ;
  $A481 AND $01       ;
  $A483 LD H,A        ;
  $A484 LD ($FEA8),HL ;
- $A487 LD HL,$D9D8   ;
+ $A487 LD HL,$D9D8   ; XTAB+$08
  $A48A LD ($FE42),HL ;
- $A48D LD HL,$DACC   ;
+ $A48D LD HL,$DACC   ; ZTAB+$08
  $A490 LD ($FE46),HL ;
- $A493 LD HL,$DD36   ;
+ $A493 LD HL,$DD36   ; EXXLC
  $A496 LD ($FE32),HL ;
- $A499 LD HL,$DDE6   ;
+ $A499 LD HL,$DDE6   ; EXZLC
  $A49C LD ($FE36),HL ;
  $A49F LD HL,($FEA8) ;
  $A4A2 SRL H         ;
  $A4A4 RR L          ;
  $A4A6 LD A,$07      ;
  $A4A8 CALL $88EA    ;
- $A4AB LD HL,$DBC0   ;
+ $A4AB LD HL,$DBC0   ; YLOC+$08
  $A4AE LD ($FE34),HL ;
- $A4B1 LD HL,$DE9E   ;
+ $A4B1 LD HL,$DE9E   ; XPERS+$0C
  $A4B4 LD ($FE38),HL ;
- $A4B7 LD HL,$DED6   ;
+ $A4B7 LD HL,$DED6   ; YPERS+$0E
  $A4BA LD ($FE3A),HL ;
  $A4BD LD A,$03      ;
  $A4BF CALL $8660    ;
@@ -5775,7 +5775,7 @@ c$977E LD HL,($FE70) ;
  $A50E ADD HL,DE     ;
  $A50F LD ($DECE),HL ;
  $A512 LD DE,($DE96) ;
- $A516 LD HL,($DE92) ;
+ $A516 LD HL,($DE92) ; XPERS
  $A519 SBC HL,DE     ;
  $A51B SRL H         ;
  $A51D RR L          ;
@@ -5823,7 +5823,7 @@ c$977E LD HL,($FE70) ;
  $A579 LD DE,($DE9A) ;
  $A57D SBC HL,DE     ;
  $A57F JP P,$A596    ;
- $A582 LD HL,($DE98) ;
+ $A582 LD HL,($DE98) ; XPERS+$06
  $A585 SBC HL,DE     ;
  $A587 JP P,$A590    ;
  $A58A LD HL,$003C   ;
@@ -6367,9 +6367,9 @@ c$977E LD HL,($FE70) ;
  $AAB2 LD ($FE42),HL ;
  $AAB5 LD HL,($FEE0) ;
  $AAB8 LD ($FE46),HL ;
- $AABB LD HL,$DD6E   ;
+ $AABB LD HL,$DD6E   ; EXBXL
  $AABE LD ($FE32),HL ;
- $AAC1 LD HL,$DE1E   ;
+ $AAC1 LD HL,$DE1E   ; EXBZL
  $AAC4 LD ($FE36),HL ;
  $AAC7 LD A,($FED6)  ;
  $AACA DEC A         ;
@@ -6402,12 +6402,12 @@ c$977E LD HL,($FE70) ;
  $AB0D CALL $90BA    ;
  $AB10 SUB A         ;
  $AB11 OUT ($FE),A   ;
-*$AB13 LD HL,$DEC8   ;
+*$AB13 LD HL,$DEC8   ; YPERS
  $AB16 LD ($FE38),HL ;
  $AB19 LD HL,$DF00   ;
  $AB1C LD ($FE3A),HL ;
  $AB1F LD ($FE00),SP ;
- $AB23 LD SP,$DD6E   ;
+ $AB23 LD SP,$DD6E   ; EXBXL
  $AB26 LD DE,($FEBC) ;
  $AB2A LD BC,($FED8) ;
  $AB2E LD A,B        ;
@@ -6444,7 +6444,7 @@ c$977E LD HL,($FE70) ;
  $AB5C ADD HL,DE     ;
  $AB5D PUSH HL       ;
  $AB5E DJNZ $AB59    ;
- $AB60 LD SP,$DE1E   ;
+ $AB60 LD SP,$DE1E   ; EXBZL
  $AB63 LD DE,($FEBE) ;
  $AB67 LD BC,($FED8) ;
  $AB6B LD A,B        ;
@@ -8996,6 +8996,20 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $D944 DEFB $DE,$AA,$DE,$A4,$DE,$DC,$DE,$DE
  $D94C DEFB $DE,$A4,$DE,$A6,$DE,$DE,$DE,$E0
  $D954 DEFB $DE,$A6,$DE,$A8,$DE,$05,$05,$05
+
+; Geometry and location table anchors from Red-book-scan2 pages 21-25.
+;
+; Current high-confidence matches:
+; - XTAB table at #R$D9D0
+; - ZTAB table at #R$DAC4
+; - YLOC table at #R$DBB8
+; - HBLXLC/OBXLC/EXXLC at #R$DD20/#R$DD28/#R$DD36
+; - EXBXL at #R$DD6E
+; - HBLZLC/OBZLC/EXZLC at #R$DDD0/#R$DDD8/#R$DDE6
+; - EXBZL at #R$DE1E
+; - XPERS/YPERS output buffers at #R$DE90/#R$DEC8
+;   (`FE38`/`FE3A` are usually seeded with interior end-pointers and the
+;   perspective code writes downward via `SP`/`PUSH`)
  $D95C DEFB $05,$C8,$DE,$CA,$DE,$90,$DE,$92
  $D964 DEFB $DE,$CC,$DE,$CE,$DE,$94,$DE,$96
  $D96C DEFB $DE,$D0,$DE,$D2,$DE,$98,$DE,$9A
