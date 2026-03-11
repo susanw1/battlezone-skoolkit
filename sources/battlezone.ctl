@@ -23,7 +23,27 @@ N $8C3C #PUSHS #UDGTABLE { #SIM(start=$8C3C,stop=$8C84)#SCR$02(test) } UDGTABLE#
 
 b $8CA0
 
+; MESPR / MESER / SCOPR / NUMBA notebook names from Red-book-scan2.
+c $9452 MESPR
+R $9452 HL Address of rectangle descriptor
+@ $9452 label=MESPR
+
+c $9476 MESER
+R $9476 HL Address of rectangle descriptor
+@ $9476 label=MESER
+
+c $948C Plot Number Glyph
+R $948C A Digit or symbol index
+R $948C BC Destination address
+@ $948C label=PlotNumberGlyph
+
+c $94AC SCOPR
+R $94AC B Score increment in packed BCD
+@ $94AC label=SCOPR
+
 c $94EC
+R $94EC HL Packed BCD value to display
+@ $94EC label=NUMBA
 
 c $977E
 
@@ -34,7 +54,8 @@ c $AD0C
 
 b $AD1B
 
-c $AD3E
+c $AD3E KEMPST
+@ $AD3E label=KEMPST
 
 c $B1F4
   $B1F4,$05 FLASH: OFF.
@@ -132,6 +153,11 @@ b $C9B4 Custom Font
 @ $C9B4 label=CustomFont
   $C9B4,$08 #UDG(#PC)
 L $C9B4,$08,$60
+
+t $CD80 Number Glyphs
+@ $CD80 label=NumberGlyphs
+  $CD80,$08 #UDG(#PC)
+L $CD80,$08,$0C
 
 b $F700
 

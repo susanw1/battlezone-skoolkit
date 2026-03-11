@@ -3765,31 +3765,141 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $9438 DEFB $78,$C8,$ED,$44,$C9,$00,$00,$00
  $9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9450 DEFB $00,$00,$5E,$23,$56,$23,$4E,$23
- $9458 DEFB $46,$23,$78,$08,$7B,$D9,$4F,$08
- $9460 DEFB $47,$D9,$7E,$23,$12,$1C,$10,$FA
- $9468 DEFB $D9,$78,$08,$79,$D9,$5F,$08,$47
- $9470 DEFB $14,$0D,$C2,$62,$94,$C9,$5E,$23
- $9478 DEFB $56,$23,$4E,$23,$46,$63,$68,$97
- $9480 DEFB $12,$1C,$10,$FC,$14,$5C,$45,$0D
- $9488 DEFB $C2,$80,$94,$C9,$C5,$E6,$0F,$07
- $9490 DEFB $07,$07,$50,$59,$21,$80,$CD,$85
- $9498 DEFB $6F,$06,$07,$7E,$12,$23,$14,$10
- $94A0 DEFB $FA,$C1,$03,$C9,$00,$00,$00,$00
- $94A8 DEFB $00,$00,$00,$00,$2A,$76,$FE,$78
- $94B0 DEFB $85,$27,$6F,$30,$05,$7C,$C6,$01
- $94B8 DEFB $27,$67,$ED,$5B,$E6,$FE,$E5,$ED
- $94C0 DEFB $52,$FA,$EB,$94,$3A,$E4,$FE,$3C
- $94C8 DEFB $32,$E4,$FE,$CB,$23,$CB,$12,$ED
- $94D0 DEFB $53,$E6,$FE,$FE,$08,$30,$14,$01
- $94D8 DEFB $10,$40,$6F,$26,$00,$29,$09,$44
- $94E0 DEFB $4D,$3E,$0A,$CD,$8C,$94,$3E,$0B
- $94E8 DEFB $CD,$8C,$94,$E1
+ $9450 DEFB $00,$00
 
-; Routine at 94EC
+; MESPR
+;
+; HL Address of a rectangle descriptor: destination, height, width, then data
+@label=MESPR
+c$9452 LD E,(HL)     ; Load the destination address low byte.
+ $9453 INC HL        ;
+ $9454 LD D,(HL)     ; Load the destination address high byte.
+ $9455 INC HL        ;
+ $9456 LD C,(HL)     ; Load the rectangle height.
+ $9457 INC HL        ;
+ $9458 LD B,(HL)     ; Load the rectangle width.
+ $9459 INC HL        ;
+ $945A LD A,B        ; Stash the width in the alternate register set.
+ $945B EX AF,AF'     ;
+ $945C LD A,E        ; Stash the starting column too.
+ $945D EXX           ;
+ $945E LD C,A        ;
+ $945F EX AF,AF'     ;
+ $9460 LD B,A        ;
+ $9461 EXX           ;
+*$9462 LD A,(HL)     ; Copy one row of rectangle data.
+ $9463 INC HL        ;
+ $9464 LD (DE),A     ;
+ $9465 INC E         ;
+ $9466 DJNZ $9462    ;
+ $9468 EXX           ; Restore the start column and width for the next row.
+ $9469 LD A,B        ;
+ $946A EX AF,AF'     ;
+ $946B LD A,C        ;
+ $946C EXX           ;
+ $946D LD E,A        ;
+ $946E EX AF,AF'     ;
+ $946F LD B,A        ;
+ $9470 INC D         ; Advance to the next character row.
+ $9471 DEC C         ;
+ $9472 JP NZ,$9462   ;
+ $9475 RET           ;
+
+; MESER
+;
+; HL Address of a rectangle descriptor: destination, height, width
+@label=MESER
+c$9476 LD E,(HL)     ; Load the destination address low byte.
+ $9477 INC HL        ;
+ $9478 LD D,(HL)     ; Load the destination address high byte.
+ $9479 INC HL        ;
+ $947A LD C,(HL)     ; Load the rectangle height.
+ $947B INC HL        ;
+ $947C LD B,(HL)     ; Load the rectangle width.
+ $947D LD H,E        ; Preserve the starting column in HL.
+ $947E LD L,B        ; Preserve the width in HL.
+ $947F SUB A         ; Fill with zero bytes.
+*$9480 LD (DE),A     ;
+ $9481 INC E         ;
+ $9482 DJNZ $9480    ;
+ $9484 INC D         ; Advance to the next character row.
+ $9485 LD E,H        ; Restore the starting column.
+ $9486 LD B,L        ; Restore the width.
+ $9487 DEC C         ;
+ $9488 JP NZ,$9480   ;
+ $948B RET           ;
+
+; Plot Number Glyph
+;
+; A Digit or symbol index
+; BC Destination address
+@label=PlotNumberGlyph
+c$948C PUSH BC       ; Preserve the destination pointer for the caller.
+ $948D AND $0F       ; Keep only the low nibble.
+ $948F RLCA          ; Multiply by eight to index 8-byte glyphs.
+ $9490 RLCA          ;
+ $9491 RLCA          ;
+ $9492 LD D,B        ; Move the destination address into DE.
+ $9493 LD E,C        ;
+ $9494 LD HL,$CD80   ; NumberGlyphs
+ $9497 ADD A,L       ;
+ $9498 LD L,A        ;
+ $9499 LD B,$07      ; Copy the 7 visible rows of the glyph.
+*$949B LD A,(HL)     ;
+ $949C LD (DE),A     ;
+ $949D INC HL        ;
+ $949E INC D         ;
+ $949F DJNZ $949B    ;
+ $94A1 POP BC        ; Advance to the next screen column for chained calls.
+ $94A2 INC BC        ;
+ $94A3 RET           ;
+ $94A4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; SCOPR
+;
+; B Score increment in packed BCD
+@label=SCOPR
+c$94AC LD HL,($FE76) ; Load the current score.
+ $94AF LD A,B        ;
+ $94B0 ADD A,L       ; Add the score increment to the low BCD byte.
+ $94B1 DAA           ;
+ $94B2 LD L,A        ;
+ $94B3 JR NC,$94BA   ;
+ $94B5 LD A,H        ; Carry into the high BCD byte.
+ $94B6 ADD A,$01     ;
+ $94B8 DAA           ;
+ $94B9 LD H,A        ;
+*$94BA LD DE,($FEE6) ; Compare with the next extra-life threshold.
+ $94BE PUSH HL       ;
+ $94BF SBC HL,DE     ;
+ $94C1 JP M,$94EB    ;
+ $94C4 LD A,($FEE4)  ; Award an extra life and double the next threshold.
+ $94C7 INC A         ;
+ $94C8 LD ($FEE4),A  ;
+ $94CB SLA E         ;
+ $94CD RL D          ;
+ $94CF LD ($FEE6),DE ;
+ $94D3 CP $08        ; Stop drawing life symbols once the strip is full.
+ $94D5 JR NC,$94EB   ;
+ $94D7 LD BC,$4010   ;
+ $94DA LD L,A        ;
+ $94DB LD H,$00      ;
+ $94DD ADD HL,HL     ;
+ $94DE ADD HL,BC     ;
+ $94DF LD B,H        ;
+ $94E0 LD C,L        ;
+ $94E1 LD A,$0A      ;
+ $94E3 CALL $948C    ;
+ $94E6 LD A,$0B      ;
+ $94E8 CALL $948C    ;
+ $94EB POP HL        ;
+
+; NUMBA
 ;
 ; Used by the routines at #R$AD3E and #R$B55D.
-c$94EC LD ($FE76),HL ;
+; HL Packed BCD value to display
+@label=NUMBA
+c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $94EF LD BC,$4059   ;
  $94F2 LD A,H        ;
  $94F3 AND A         ;
@@ -5806,14 +5916,18 @@ c$977E LD HL,($FE70) ;
  $A680 RET           ;
  $A681 JP $A692      ;
  $A684 SUB A         ;
-*$A685 CALL $AD3E    ;
+; KEYIN / KBORD INTERPRETATION
+;
+; This block merges Kempston and keyboard input, masks movement against nearby
+; obstacles, and prepares the turn/movement handler state.
+*$A685 CALL $AD3E    ; Read Kempston movement bits if present.
  $A688 PUSH AF       ;
  $A689 LD A,$08      ;
  $A68B OUT ($FE),A   ;
  $A68D CALL $9132    ;
  $A690 POP BC        ;
  $A691 OR B          ;
-*$A692 LD ($FE56),A  ;
+*$A692 LD ($FE56),A  ; KMOV
  $A695 LD A,($FE99)  ;
  $A698 ADD A,$03     ;
  $A69A SUB $06       ;
@@ -5866,7 +5980,7 @@ c$977E LD HL,($FE70) ;
  $A70F PUSH BC       ;
  $A710 CALL $9452    ;
  $A713 POP BC        ;
-*$A714 LD A,($FE56)  ;
+*$A714 LD A,($FE56)  ; Apply the surviving movement bits.
  $A717 AND C         ;
  $A718 LD ($FE56),A  ;
  $A71B BIT 5,A       ;
@@ -5888,7 +6002,7 @@ c$977E LD HL,($FE70) ;
  $A743 LD DE,$0020   ;
 *$A746 LD HL,($FE2C) ;
  $A749 ADD HL,DE     ;
- $A74A LD ($FE5C),BC ;
+ $A74A LD ($FE5C),BC ; TURN
  $A74E LD C,A        ;
  $A74F LD A,H        ;
  $A750 CP $79        ;
@@ -6547,9 +6661,10 @@ b$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD33 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD3B DEFB $00,$00,$00
 
-; Routine at AD3E
+; KEMPST
 ;
 ; Used by the routine at #R$977E.
+@label=KEMPST
 c$AD3E LD BC,$0000   ;
  $AD41 IN A,($1F)    ;
  $AD43 AND A         ;
@@ -8455,7 +8570,11 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CD64 DEFB $BE,$FF,$AA,$FF,$C8,$FF,$AA,$FF
  $CD6C DEFB $D2,$FF,$0E,$00,$22,$00,$04,$00
  $CD74 DEFB $22,$00,$3B,$00,$41,$00,$2C,$00
- $CD7C DEFB $41,$00,$C8,$FF,$38,$44,$44,$44
+ $CD7C DEFB $41,$00,$C8,$FF
+
+; Number Glyphs
+@label=NumberGlyphs
+ $CD80 DEFB $38,$44,$44,$44
  $CD84 DEFB $44,$44,$38,$00,$10,$30,$10,$10
  $CD8C DEFB $10,$10,$38,$00,$38,$44,$04,$08
  $CD94 DEFB $10,$20,$7C,$00,$7C,$04,$08,$10
