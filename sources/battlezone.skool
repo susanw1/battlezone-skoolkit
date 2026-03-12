@@ -7392,6 +7392,10 @@ c$AD3E LD BC,$0000   ;
 ; Routine at B1F4
 ;
 ; Used by the routines at #R$977E, #R$AD0C, #R$AD3E and #R$B676.
+; Current best read: attract-mode stage A/B.
+; It clears the screen, prepares title/demo resources, runs the tumbling
+; title/logo animation blocks, and checks `S` at multiple points so the player
+; can break straight into the common start-game transition at #R$B0BC.
 c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B1F6 RST $10       ;
  $B1F7 SUB A         ;
@@ -7679,6 +7683,7 @@ c$B2F5 DEC (HL)      ;
  $B485 LDIR          ;
  $B487 LDIR          ;
  $B489 JP $B4B2      ;
+; Current best read: attract-mode credits/footer text stage.
 *$B48C LD B,$20      ;
  $B48E LD HL,$C5DA   ;
 *$B491 LD A,(HL)     ;
@@ -7736,12 +7741,12 @@ c$B2F5 DEC (HL)      ;
  $B507 LDIR          ;
  $B509 LD A,$80      ;
  $B50B LD ($FEEC),A  ;
- $B50E LD A,$C9      ;
- $B510 LD ($8C3C),A  ;
+ $B50E LD A,$C9      ; Probable self-modifying attract-mode hack:
+ $B510 LD ($8C3C),A  ; patch SDRAW temporarily,
  $B513 SUB A         ;
- $B514 LD ($960D),A  ;
+ $B514 LD ($960D),A  ; and alter the status-area colour/write behaviour.
  $B517 CALL $956A    ;
- $B51A LD A,$21      ;
+ $B51A LD A,$21      ; Restore the patched bytes after the forced demo setup.
  $B51C LD ($8C3C),A  ;
  $B51F CALL $8C5E    ;
  $B522 LD A,$43      ;
@@ -7795,6 +7800,10 @@ c$B55D CALL $977E    ; Call #R$977E.
 ; Routine at B587
 ;
 ; Used by the routine at #R$B2F5.
+; Current best read: attract-mode stage C.
+; This block appears to force selected entity states and repeatedly call the
+; main game loop to showcase tank / supertank / saucer / missile examples,
+; with an `S` check between each showcase stage.
 c$B587 LD HL,$00C0   ;
  $B58A LD ($FE62),HL ;
  $B58D LD HL,$0001   ;
@@ -7907,6 +7916,9 @@ c$B66C LD A,(HL)     ; Load the character from *#REGhl into #REGa.
 ; Routine at B676
 ;
 ; Used by the routine at #R$B587.
+; Current best read: attract-mode stages D/E.
+; Prints the controls/instructions text pages, each with its own timed `S`
+; check before looping back to the earlier attract-mode stages.
 c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B679 LD B,$00      ; #REGb=#N$00.
  $B67B CALL $B66C    ; Call #R$B66C.
@@ -8401,11 +8413,13 @@ t$C2B6 DEFB $16,$05,$08                                                         
                                                                                                                                          ; (#PEEK(#PC+$01),
                                                                                                                                          ; #PEEK(#PC+$02)).
  $C2CC DEFM "CONTROLS:"                                                                                                                  ; "#STR(#PC,$04,$09)".
+; Controls / instructions page 1 body.
  $C2D5 DEFM $0D,$0D,$0D,"YOUR TANK HAS TWO CATERPILLAR",$0D,"TRACKS. THESE CAN BE CONTROLLED",$0D
  $C316 DEFM "INDIVIDUALLY.",$0D,$0D,"LEFT TRACK:",$0D,$0D,"1-5 & Q-T",$06,"  = FORWARD",$0D,"A-G & ",$14,$01,"CAPS",$14,$00,"-"
  $C357 DEFM "V",$06,"  = REVERSE",$0D,$0D,$0D,"RIGHT TRACK:",$0D,$0D,"6-9 & Y-P",$06,"  = FORWARD",$0D,"J-",$14,$01,"ENTER",$14,$00," &"
  $C398 DEFM " B-",$14,$01,"SPC",$14,$00,$06,"  = REVERSE",$16,$12,$0F,"0  = FIRE",$16,$14,$04,"H = HOLD    S = START",$0D,"     ",$14
  $C3D9 DEFM $01,"CAPS",$14,$00," H = ABORT GAME"
+; Controls / instructions page 2 body.
 @label=ControlsText
  $C3EF DEFB $16,$00,$00                                                                                                                  ; PRINT AT
                                                                                                                                          ; (#PEEK(#PC+$01),
@@ -8420,6 +8434,8 @@ t$C2B6 DEFB $16,$05,$08                                                         
  $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00,$16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
  $C5FA DEFM $00,$00,$00,$00,$00,$00,$00,$00
 
+; Probable attract-mode line-data family used by the title/logo stages.
+; This block is consumed by the earlier attract/demo pipeline at #R$B346.
 ; Data block at C602
 b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C60A DEFB $DE,$F8,$DE,$F6,$DE,$C0,$DE,$BE
@@ -8713,6 +8729,8 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CDFC DEFB $08,$54,$4F,$44,$41,$59,$53,$5B
  $CE04 DEFB $47,$52,$45,$41,$54,$45,$53,$54
  $CE0C DEFB $00,$00,$00,$00,$00,$00,$16,$03
+; `QUICKSILVA PRESENTS` attract-mode text block printed at $B2C5.
+@label=QuicksilvaPresentsText
  $CE14 DEFB $06,$10,$04,$11,$00,$51,$55,$49
  $CE1C DEFB $43,$4B,$53,$49,$4C,$56,$41,$5B
  $CE24 DEFB $50,$52,$45,$53,$45,$4E,$54,$53
