@@ -4677,7 +4677,8 @@ c$977E LD HL,($FE70) ;
  $9B33 SUB C         ;
  $9B34 SUB $0B       ;
  $9B36 JP NC,$9B44   ;
- $9B39 LD A,($FE74)  ;
+ $9B39 LD A,($FE74)  ; Probable proximity-driven border/sound latch update in
+                     ; the tank/supertank path.
  $9B3C XOR $18       ;
  $9B3E LD ($FE74),A  ;
  $9B41 JP $9B48      ;
@@ -5005,7 +5006,8 @@ c$977E LD HL,($FE70) ;
  $9E28 LD ($FE1E),HL ;
  $9E2B LD HL,$D338   ;
  $9E2E LD ($FE02),HL ;
- $9E31 CALL $A0C3    ;
+ $9E31 CALL $A0C3    ; Strong current-best saucer sound candidate: audible
+                     ; delay/audio helper bracketing the visible saucer draw.
  $9E34 CALL $805C    ;
  $9E37 CALL $A0C3    ;
  $9E3A JP $A122      ;
@@ -5160,7 +5162,8 @@ c$977E LD HL,($FE70) ;
  $9F9D NEG           ;
  $9F9F SUB $0B       ;
  $9FA1 JP NC,$9FAF   ;
- $9FA4 LD A,($FE74)  ;
+ $9FA4 LD A,($FE74)  ; Strong current-best missile sound candidate: toggle the
+                     ; shared border/sound latch when the missile is close.
  $9FA7 XOR $18       ;
  $9FA9 LD ($FE74),A  ;
  $9FAC JP $9FB3      ;
@@ -5273,8 +5276,10 @@ c$977E LD HL,($FE70) ;
  $A0A8 OUT ($FE),A   ;
  $A0AA CALL $805C    ;
  $A0AD JP $A122      ;
-; Probable short delay helper.
-; Tight border-toggling loop used after quick effect renders.
+; Probable short delay / audio helper.
+; Tight OUT ($FE),A toggling loop used after quick effect renders. Because
+; port $FE is the Spectrum border/beeper port, this likely contributes both
+; pause timing and audible activity.
 *$A0B0 LD C,$10      ;
  $A0B2 LD A,$00      ;
 *$A0B4 LD B,$00      ;
@@ -5285,7 +5290,7 @@ c$977E LD HL,($FE70) ;
  $A0BE DEC C         ;
  $A0BF JP NZ,$A0B4   ;
  $A0C2 RET           ;
-; Probable longer delay helper.
+; Probable longer delay / audio helper.
 ; Same structure as $A0B0 but with a larger inner-loop count.
 *$A0C3 LD C,$0A      ;
  $A0C5 LD A,$00      ;
@@ -6223,19 +6228,19 @@ c$977E LD HL,($FE70) ;
  $A906 CALL $91E6    ;
  $A909 LD ($FECC),DE ;
  $A90D LD ($FED0),BC ;
-*$A911 LD BC,$BFFE   ;
+*$A911 LD BC,$BFFE   ; Read the `ENTER L K J H` keyboard row.
  $A914 IN A,(C)      ;
- $A916 AND $10       ;
+ $A916 AND $10       ; `H` pressed?
  $A918 JP NZ,$A931   ;
- $A91B LD A,$FE      ;
+ $A91B LD A,$FE      ; Read the `CAPS SHIFT Z X C V` keyboard row.
  $A91D IN A,($FE)    ;
- $A91F AND $01       ;
- $A921 JP Z,$B1F4    ;
- $A924 LD BC,$FDFE   ;
+ $A91F AND $01       ; `CAPS SHIFT` pressed with hold active?
+ $A921 JP Z,$B1F4    ; Abort back to the title/instructions flow.
+ $A924 LD BC,$FDFE   ; Read the `A S D F G` keyboard row.
 *$A927 IN A,(C)      ;
- $A929 AND $02       ;
- $A92B JP Z,$A931    ;
- $A92E JP $A927      ;
+ $A929 AND $02       ; `S` pressed?
+ $A92B JP Z,$A931    ; Leave hold state and resume the main loop.
+ $A92E JP $A927      ; Stay paused until `S` is pressed.
 *$A931 JP $977E      ;
 ; Probable saucer explosion setup:
 ; - awards score increment `5`
@@ -6916,12 +6921,12 @@ c$AD3E LD BC,$0000   ;
  $AEB0 LD BC,$001F   ;
  $AEB3 LD (HL),$42   ;
  $AEB5 LDIR          ;
- $AEB7 LD HL,$CC5C   ;
- $AEBA LD DE,$CC5D   ;
- $AEBD LD (HL),$BF   ;
- $AEBF LD BC,$001F   ;
+ $AEB7 LD HL,$CC5C   ; Overlap-copy trick:
+ $AEBA LD DE,$CC5D   ; seed the first 32 bytes with `$BF`, leaving the second
+ $AEBD LD (HL),$BF   ; 32-byte half as the original handwritten `02..06`
+ $AEBF LD BC,$001F   ; drip-length values.
  $AEC2 LDIR          ;
- $AEC4 LD A,$62      ;
+ $AEC4 LD A,$62      ; Number of outer drip frames to generate.
 *$AEC6 LD ($FE4E),A  ;
  $AEC9 EXX           ;
  $AECA LD C,$00      ;
@@ -6931,12 +6936,12 @@ c$AD3E LD BC,$0000   ;
  $AED0 LD A,C        ;
  $AED1 EXX           ;
  $AED2 ADD A,$5C     ;
- $AED4 LD L,A        ;
- $AED5 LD C,(HL)     ;
- $AED6 LD ($FE14),HL ;
+ $AED4 LD L,A        ; First half: mutable current row / byte-row for this
+ $AED5 LD C,(HL)     ; column.
+ $AED6 LD ($FE14),HL ; Remember the per-column row slot so it can be updated.
  $AED9 ADD A,$20     ;
- $AEDB LD L,A        ;
- $AEDC LD B,(HL)     ;
+ $AEDB LD L,A        ; Second half: remaining drip length / life for this
+ $AEDC LD B,(HL)     ; column.
  $AEDD LD A,C        ;
  $AEDE AND A         ;
  $AEDF JP Z,$AF2B    ;
@@ -7203,6 +7208,10 @@ c$AD3E LD BC,$0000   ;
  $B0B9 JP $B14C      ;
 ; This entry point is used by the routines at #R$B1F4, #R$B2F5, #R$B587 and
 ; #R$B676.
+; Common start-game transition from the attract/title/instructions flow.
+; Multiple raw `S`-key checks in the intro code jump here; this path runs a
+; short visual/audio transition, restores the score display, and then jumps
+; into the main game initialisation at #R$956A.
 *$B0BC CALL $B0EF    ;
  $B0BF LD HL,$4000   ;
  $B0C2 LD DE,$4001   ;
@@ -7371,12 +7380,12 @@ c$AD3E LD BC,$0000   ;
  $B1DF LD BC,$0000   ;
  $B1E2 LDIR          ;
  $B1E4 PUSH AF       ;
- $B1E5 LD A,$FD      ;
+ $B1E5 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B1E7 IN A,($FE)    ;
  $B1E9 LD C,A        ;
  $B1EA POP AF        ;
- $B1EB BIT 1,C       ;
- $B1ED JP Z,$B0BC    ;
+ $B1EB BIT 1,C       ; `S` pressed?
+ $B1ED JP Z,$B0BC    ; Start game.
  $B1F0 DEC A         ;
  $B1F1 JP NZ,$B1D9   ;
 
@@ -7458,10 +7467,10 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B29E LD ($FE3A),HL ;
  $B2A1 LD A,$16      ; #REGa=#N$16.
  $B2A3 CALL $8660    ; Call #R$8660.
- $B2A6 LD A,$FD      ;
+ $B2A6 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B2A8 IN A,($FE)    ;
- $B2AA AND $02       ;
- $B2AC JP Z,$B0BC    ;
+ $B2AA AND $02       ; `S` pressed?
+ $B2AC JP Z,$B0BC    ; Start game from the intro/title animation loop.
  $B2AF LD HL,$C91A   ;
  $B2B2 LD ($FE02),HL ;
  $B2B5 CALL $805C    ;
@@ -7490,12 +7499,12 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B2E1 LD BC,$02FF   ;
  $B2E4 LDIR          ;
  $B2E6 PUSH AF       ;
- $B2E7 LD A,$FD      ;
+ $B2E7 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B2E9 IN A,($FE)    ;
  $B2EB LD C,A        ;
  $B2EC POP AF        ;
- $B2ED BIT 1,C       ;
- $B2EF JP Z,$B0BC    ;
+ $B2ED BIT 1,C       ; `S` pressed?
+ $B2EF JP Z,$B0BC    ; Start game.
  $B2F2 JP $B2D5      ; Jump to #R$B2D5.
 
 ; Routine at B2F5
@@ -7791,10 +7800,10 @@ c$B587 LD HL,$00C0   ;
  $B58D LD HL,$0001   ;
  $B590 LD ($FE76),HL ;
  $B593 CALL $B55D    ;
- $B596 LD A,$FD      ;
+ $B596 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B598 IN A,($FE)    ;
- $B59A AND $02       ;
- $B59C JP Z,$B0BC    ;
+ $B59A AND $02       ; `S` pressed?
+ $B59C JP Z,$B0BC    ; Start game from the attract loop.
  $B59F LD A,($FE6E)  ;
  $B5A2 AND $80       ;
  $B5A4 JP NZ,$B587   ;
@@ -7813,10 +7822,10 @@ c$B587 LD HL,$00C0   ;
  $B5C8 LD HL,$0003   ;
  $B5CB LD ($FE76),HL ;
  $B5CE CALL $B55D    ;
- $B5D1 LD A,$FD      ;
+ $B5D1 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B5D3 IN A,($FE)    ;
- $B5D5 AND $02       ;
- $B5D7 JP Z,$B0BC    ;
+ $B5D5 AND $02       ; `S` pressed?
+ $B5D7 JP Z,$B0BC    ; Start game from the attract loop.
  $B5DA LD A,($FE6E)  ;
  $B5DD AND $40       ;
  $B5DF JP NZ,$B5C2   ;
@@ -7838,10 +7847,10 @@ c$B587 LD HL,$00C0   ;
  $B60B LD HL,$0005   ;
  $B60E LD ($FE76),HL ;
  $B611 CALL $B55D    ;
- $B614 LD A,$FD      ;
+ $B614 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B616 IN A,($FE)    ;
- $B618 AND $02       ;
- $B61A JP Z,$B0BC    ;
+ $B618 AND $02       ; `S` pressed?
+ $B61A JP Z,$B0BC    ; Start game from the attract loop.
  $B61D LD A,($FE6E)  ;
  $B620 AND $20       ;
  $B622 JP NZ,$B605   ;
@@ -7855,10 +7864,10 @@ c$B587 LD HL,$00C0   ;
 *$B637 LD HL,$0002   ;
  $B63A LD ($FE76),HL ;
  $B63D CALL $B55D    ;
- $B640 LD A,$FD      ;
+ $B640 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B642 IN A,($FE)    ;
- $B644 AND $02       ;
- $B646 JP Z,$B0BC    ;
+ $B644 AND $02       ; `S` pressed?
+ $B646 JP Z,$B0BC    ; Start game from the attract loop.
  $B649 LD A,($FE81)  ;
  $B64C CP $04        ;
  $B64E JP P,$B637    ;
@@ -8623,8 +8632,17 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
 ; The zero-lives branch at $AEB7 immediately overwrites this region and then
 ; iterates over it while painting the late blood/end-screen effect.
 ; Structurally this is *not* an `LNLPT` block: it is treated as 32 mutable
-; bytes, where the first 32 bytes act as per-column state and the following
-; 32 bytes (written by the initial `LDIR`) act as companion counters/limits.
+; bytes, where an overlapping `LDIR` first fills the first 32 bytes with `$BF`
+; and leaves the second 32 bytes as the original handwritten seed values.
+; Current best read of the zero-lives loop:
+; - first 32 bytes: mutable current row / byte-row per column, initialised to
+;   `$BF` by the overlap-copy trick at $AEB7
+; - second 32 bytes: remaining drip length / life for that column, preserving
+;   the original small seed values (`02`..`06`)
+; Each active column paints a 3-byte vertical trail (`FF`, `7E`, `18`) into
+; the pixel bitmap and writes attribute `42` for the touched cell.
+; Susan's recollection of slightly different drip speeds may correspond to
+; these per-column seed lengths/phases rather than a separate velocity field.
 @label=Probable_BloodDripSeedTable
  $CC5C DEFB $03,$05,$03,$06,$02,$02,$06,$03 ; #UDG(#PC)
  $CC64 DEFB $02,$03,$05,$03,$03,$05,$05,$05 ; #UDG(#PC)
@@ -10381,7 +10399,8 @@ g$FE4A DEFW $0000
 g$FE4C DEFW $0000
 
 @label=MUCNT
-g$FE4E DEFW $0000
+g$FE4E DEFW $0000    ; Shared small counter slot; in the zero-lives branch it
+                     ; becomes the outer drip-frame countdown.
 
 @label=EXBLP
 g$FE50 DEFW $0000
@@ -10440,7 +10459,16 @@ g$FE68 DEFB $00,$00
  $FE6C DEFB $00,$00
 @label=Probable_PRSTA
  $FE6E DEFB $00,$00
- $FE70 DEFB $00,$00,$00,$00,$00,$00
+ $FE70 DEFB $00,$00,$00,$00
+
+; Probable border/sound latch.
+; Current best read:
+; - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
+;   `0x9FA4`
+; - read by geometry/line routines before `OUT ($FE),A`
+; - likely controls combined border/beeper activity rather than game logic
+@label=Probable_BorderSoundLatch
+ $FE74 DEFB $00,$00
 
 ; Packed-BCD score and nearby effect/state workspace.
 @label=ScoreBCD
