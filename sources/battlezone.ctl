@@ -174,6 +174,18 @@ t $CD80 Number Glyphs
   $CD80,$08 #UDG(#PC)
 L $CD80,$08,$0C
 
+b $CC5C probable blood/end-screen workspace seed
+@ $CC5C label=Probable_BloodDripSeedTable
+
+b $CC9C probable lose-life crack line-data block
+@ $CC9C label=Probable_CrashBreak_LineData
+
+b $CDE8 GAME OVER text/control block
+@ $CDE8 label=GameOverText
+
+b $CDFA TODAYS GREATEST text/control block
+@ $CDFA label=TodaysGreatestText
+
 b $D9D0 XTAB table from Red-book-scan2 pages 23-25
 @ $D9D0 label=XTAB_Table
 
@@ -225,14 +237,14 @@ b $D8B0 probable MSEXV line-data family
 b $D95C probable EXBLT line-data family
 @ $D95C label=Probable_EXBLT_LineData
 
-b $D392 probable CRAVU line-data family A
-@ $D392 label=Probable_CRAVU_A_LineData
+b $D392 probable missile view line-data family 0
+@ $D392 label=Probable_MISS_View0_LineData
 
-b $D3DC probable CRAVU line-data family B
-@ $D3DC label=Probable_CRAVU_B_LineData
+b $D3DC probable missile view line-data family 1
+@ $D3DC label=Probable_MISS_View1_LineData
 
-b $D43E probable CRAVU line-data family C
-@ $D43E label=Probable_CRAVU_C_LineData
+b $D43E probable missile view line-data family 2
+@ $D43E label=Probable_MISS_View2_LineData
 
 b $D488 probable shared MBLVU/HBLVU line-data family
 @ $D488 label=Probable_BulletVU_LineData

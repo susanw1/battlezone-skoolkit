@@ -5260,19 +5260,21 @@ c$977E LD HL,($FE70) ;
  $A084 LD HL,($DE9A) ;
  $A087 SBC HL,DE     ;
  $A089 JP P,$A092    ;
- $A08C LD HL,$D392   ; Probable `CRAVU` crash-view family A.
+ $A08C LD HL,$D392   ; Probable missile visible-line View0 family.
  $A08F JP $A0A3      ;
 *$A092 LD HL,($DE98) ;
  $A095 SBC HL,DE     ;
  $A097 JP P,$A0A0    ;
- $A09A LD HL,$D3DC   ; Probable `CRAVU` crash-view family B.
+ $A09A LD HL,$D3DC   ; Probable missile visible-line View1 family.
  $A09D JP $A0A3      ;
-*$A0A0 LD HL,$D43E   ; Probable `CRAVU` crash-view family C.
+*$A0A0 LD HL,$D43E   ; Probable missile visible-line View2 family.
 *$A0A3 LD ($FE02),HL ;
  $A0A6 LD A,$18      ;
  $A0A8 OUT ($FE),A   ;
  $A0AA CALL $805C    ;
  $A0AD JP $A122      ;
+; Probable short delay helper.
+; Tight border-toggling loop used after quick effect renders.
 *$A0B0 LD C,$10      ;
  $A0B2 LD A,$00      ;
 *$A0B4 LD B,$00      ;
@@ -5283,6 +5285,8 @@ c$977E LD HL,($FE70) ;
  $A0BE DEC C         ;
  $A0BF JP NZ,$A0B4   ;
  $A0C2 RET           ;
+; Probable longer delay helper.
+; Same structure as $A0B0 but with a larger inner-loop count.
 *$A0C3 LD C,$0A      ;
  $A0C5 LD A,$00      ;
 *$A0C7 LD B,$32      ;
@@ -6810,6 +6814,18 @@ c$AD3E LD BC,$0000   ;
  $ADD1 NOP           ;
  $ADD2 NOP           ;
  $ADD3 NOP           ;
+; Probable `CRASH` / lose-life and game-over sequence.
+; This is the current best code match for the notebook's page-17 `CRASH`
+; heading: repeated animation/display work, decrement lives at `FEE4`, branch
+; to a zero-lives end sequence, otherwise return to the main reinitialisation
+; path at `9644`.
+; Current best refinement from the data it uses:
+; - `CC9C` is a probable screen-break / crack line-data block drawn three times
+;   before the life counter is decremented
+; - the zero-lives branch uses `CDE8` for the `GAME OVER` text and later
+;   `CDFA` for the `TODAYS GREATEST` high-score heading
+; - `CC5C` is reused as a mutable table/workspace during the blood/end-screen
+;   effect rather than as a static text block
 ; This entry point is used by the routine at #R$977E.
 *$ADD4 LD A,$C9      ;
  $ADD6 LD ($8C5E),A  ;
@@ -6862,9 +6878,9 @@ c$AD3E LD BC,$0000   ;
  $AE59 LDIR          ;
  $AE5B POP BC        ;
  $AE5C DJNZ $AE47    ;
- $AE5E LD A,($FEE4)  ;
+ $AE5E LD A,($FEE4)  ; Load lives (`SHIPS` in the notebook).
  $AE61 DEC A         ;
- $AE62 LD ($FEE4),A  ;
+ $AE62 LD ($FEE4),A  ; Store decremented lives.
  $AE65 JP Z,$AE90    ;
  $AE68 CP $07        ;
  $AE6A JP NC,$AE81   ;
@@ -8603,6 +8619,10 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CC44 DEFB $01,$50,$52,$45,$53,$53,$5B,$46 ; #UDG(#PC)
  $CC4C DEFB $49,$52,$45,$00,$00,$00,$00,$00 ; #UDG(#PC)
  $CC54 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
+; Probable mutable drip/end-screen workspace seed.
+; The zero-lives branch at $AEB7 immediately overwrites this region and then
+; iterates over it while painting the late blood/end-screen effect.
+@label=Probable_BloodDripSeedTable
  $CC5C DEFB $03,$05,$03,$06,$02,$02,$06,$03 ; #UDG(#PC)
  $CC64 DEFB $02,$03,$05,$03,$03,$05,$05,$05 ; #UDG(#PC)
  $CC6C DEFB $05,$03,$02,$03,$06,$06,$05,$02 ; #UDG(#PC)
@@ -8611,6 +8631,10 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CC84 DEFB $03,$04,$06,$04,$04,$06,$06,$06 ; #UDG(#PC)
  $CC8C DEFB $06,$02,$03,$02,$05,$05,$06,$03 ; #UDG(#PC)
  $CC94 DEFB $05,$02,$02,$06,$06,$06,$04,$04 ; #UDG(#PC)
+; Probable screen-break / crack line-data block used by the lose-life effect.
+; `FE02` is pointed here at $ADDF/$AE0B/$AE2E and the block is consumed by
+; `LNLPT`.
+@label=Probable_CrashBreak_LineData
  $CC9C DEFB $05,$58,$CD,$5A,$CD,$30,$CD,$32 ; #UDG(#PC)
  $CCA4 DEFB $CD,$58,$CD,$62,$CD,$30,$CD,$3A ; #UDG(#PC)
  $CCAC DEFB $CD,$58,$CD,$70,$CD,$30,$CD,$48 ; #UDG(#PC)
@@ -8657,8 +8681,12 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CDD4 DEFB $3F,$1F,$00,$00,$F8,$FC,$FC,$FE
  $CDDC DEFB $FF,$FE,$00,$00,$00,$00,$00,$00
  $CDE4 DEFB $00,$00,$00,$00,$10,$00,$11,$02
+; `GAME OVER` text/control block printed in the zero-lives branch.
+@label=GameOverText
  $CDEC DEFB $16,$0C,$0B,$47,$41,$4D,$45,$5B
  $CDF4 DEFB $5B,$4F,$56,$45,$52,$00,$16,$03
+; `TODAYS GREATEST` heading printed before the high-score table.
+@label=TodaysGreatestText
  $CDFC DEFB $08,$54,$4F,$44,$41,$59,$53,$5B
  $CE04 DEFB $47,$52,$45,$41,$54,$45,$53,$54
  $CE0C DEFB $00,$00,$00,$00,$00,$00,$16,$03
@@ -9048,6 +9076,8 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
 ; - $D95C: probable `EXBLT`
 ; Current best bullet / obstacle-view matches:
 ; - $D488: probable shared `MBLVU` / `HBLVU`
+; - $D392/$D3DC/$D43E: probable ordered missile view families from page-21
+;   `MISS` (selected at $A080)
 ; - $D4A2/$D4DE/$D51A: probable shared cube-family obstacle views
 ; - $D554/$D590/$D5CC: probable pyramid-family obstacle views
 ; - $D5F6/$D632/$D66E: probable low-block obstacle views
