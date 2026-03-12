@@ -7564,11 +7564,14 @@ c$B2F5 DEC (HL)      ;
  $B367 LD ($FE36),HL ;
  $B36A LD A,($FE62)  ;
  $B36D LD L,A        ;
- $B36E LD A,$1A      ;
+ $B36E LD A,$1A      ; Probable attract-mode X-axis rotation hack, part 1:
+                     ; feed a non-standard coordinate pair through the normal
+                     ; X/Z rotator at #R$88EA to obtain a rotated Y/Z pair.
  $B370 CALL $88EA    ;
- $B373 LD HL,($FE32) ;
- $B376 LD ($FE34),HL ;
- $B379 LD HL,$C814   ;
+ $B373 LD HL,($FE32) ; Take the freshly rotated first output table
+ $B376 LD ($FE34),HL ; and reuse it as the Y-input table for #R$8660.
+ $B379 LD HL,$C814   ; Swap in a fixed attract-mode X table for the title/logo
+                     ; piece before perspective projection.
  $B37C LD ($FE32),HL ;
  $B37F LD HL,$DEC4   ;
  $B382 LD ($FE38),HL ;
@@ -7596,7 +7599,8 @@ c$B2F5 DEC (HL)      ;
  $B3BD LD ($FE36),HL ;
  $B3C0 LD A,($FE92)  ;
  $B3C3 LD L,A        ;
- $B3C4 LD A,$17      ;
+ $B3C4 LD A,$17      ; Same probable attract-mode Y/Z-rotation hack for the
+                     ; second title/logo piece.
  $B3C6 CALL $88EA    ;
  $B3C9 LD HL,($FE32) ;
  $B3CC LD ($FE34),HL ;
