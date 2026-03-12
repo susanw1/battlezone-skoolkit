@@ -1473,9 +1473,16 @@ c$8000 LD HL,$F97F   ;
  $8059 JR NZ,$804D   ;
  $805B RET           ; Return.
 
-; Routine at 805C
+; LNLPT
+;
+; Current best notebook match: `LNLPT` / line plotting routine.
+; `FE02` points at line-data blocks encoded as:
+; - 1 byte: line count
+; - then one record per line, each record being four 16-bit pointers
+;   into the current XPERS/YPERS-style projected-coordinate buffers.
 ;
 ; Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
+@label=LNLPT
 c$805C LD HL,($FE02) ;
  $805F LD A,(HL)     ;
  $8060 LD ($FE04),A  ;
@@ -5472,8 +5479,8 @@ c$977E LD HL,($FE70) ;
  $A225 SUB H         ;
  $A226 SUB $07       ;
  $A228 JP C,$A9AC    ;
-*$A22B LD HL,$D488   ; Unresolved fallback LINCDS family, likely the no-hit /
-                     ; no-draw obstacle case.
+*$A22B LD HL,$D488   ; Probable shared my-bullet / hostile-bullet visible-line
+                     ; family (`MBLVU` / `HBLVU` current best read).
  $A22E LD ($FE02),HL ;
  $A231 CALL $805C    ;
 *$A234 LD A,$18      ;
@@ -5605,7 +5612,7 @@ c$977E LD HL,($FE70) ;
  $A367 OR $04        ;
  $A369 LD ($FE6C),A  ;
  $A36C JP $A37B      ;
-*$A36F LD HL,$D488   ; Same unresolved fallback LINCDS family.
+*$A36F LD HL,$D488   ; Same probable shared bullet visible-line family.
  $A372 SUB A         ;
  $A373 OUT ($FE),A   ;
  $A375 LD ($FE02),HL ;
@@ -5630,7 +5637,8 @@ c$977E LD HL,($FE70) ;
  $A3A6 LD ($FEEA),HL ;
  $A3A9 LD B,D        ;
  $A3AA LD C,$02      ; Cube-family low-bit selector.
- $A3AC LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family.
+ $A3AC LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family
+                     ; base (View0 at D4A2, View1 at D4DE, View2 at D51A).
 *$A3AF LD A,($FE9F)  ;
  $A3B2 CP B          ;
  $A3B3 JP NC,$A3D0   ;
@@ -5643,7 +5651,7 @@ c$977E LD HL,($FE70) ;
  $A3C6 LD DE,($FE9E) ;
  $A3CA LD B,D        ;
  $A3CB LD C,$02      ; Cube-family low-bit selector.
- $A3CD LD HL,$D4A2   ; Probable shared OB1VU/OB2VU cube line-data family.
+ $A3CD LD HL,$D4A2   ; Same cube-family line-data base.
 *$A3D0 LD A,($FEA3)  ;
  $A3D3 CP B          ;
  $A3D4 JP NC,$A3F1   ;
@@ -5656,7 +5664,8 @@ c$977E LD HL,($FE70) ;
  $A3E7 LD DE,($FEA2) ;
  $A3EB LD C,$03      ; Pyramid-family low-bit selector.
  $A3ED LD B,D        ;
- $A3EE LD HL,$D554   ; Probable OB3VU / pyramid line-data family.
+ $A3EE LD HL,$D554   ; Probable OB3VU / pyramid line-data family base
+                     ; (View0 at D554, View1 at D590, View2 at D5CC).
 *$A3F1 LD A,($FEA7)  ;
  $A3F4 CP B          ;
  $A3F5 JP NC,$A411   ;
@@ -5668,7 +5677,8 @@ c$977E LD HL,($FE70) ;
  $A405 LD ($FEE8),HL ;
  $A408 LD DE,($FEA6) ;
  $A40C LD C,$01      ; Low-block-family low-bit selector.
- $A40E LD HL,$D5F6   ; Probable OB4VU / low-block line-data family.
+ $A40E LD HL,$D5F6   ; Probable OB4VU / low-block line-data family base
+                     ; (View0 at D5F6, View1 at D632, View2 at D66E).
 *$A411 LD ($FE02),HL ;
  $A414 LD HL,$84D0   ;
  $A417 LD ($FE20),HL ;
@@ -9036,6 +9046,11 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
 ; - #R$D7CC: probable `SAEXV`
 ; - #R$D8B0: probable `MSEXV`
 ; - #R$D95C: probable `EXBLT`
+; Current best bullet / obstacle-view matches:
+; - #R$D488: probable shared `MBLVU` / `HBLVU`
+; - #R$D4A2/#R$D4DE/#R$D51A: probable shared cube-family obstacle views
+; - #R$D554/#R$D590/#R$D5CC: probable pyramid-family obstacle views
+; - #R$D5F6/#R$D632/#R$D66E: probable low-block obstacle views
  $D95C DEFB $05,$C8,$DE,$CA,$DE,$90,$DE,$92
  $D964 DEFB $DE,$CC,$DE,$CE,$DE,$94,$DE,$96
  $D96C DEFB $DE,$D0,$DE,$D2,$DE,$98,$DE,$9A

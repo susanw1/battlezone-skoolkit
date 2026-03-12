@@ -12,7 +12,8 @@ D $4000 #UDGTABLE { =h Battlezone Loading Screen. } { #SCR$02(loading) } UDGTABL
 c $8000
   $805B,$01 Return.
 
-c $805C
+c $805C LNLPT
+@ $805C label=LNLPT
 
 c $8660
 
@@ -232,6 +233,36 @@ b $D3DC probable CRAVU line-data family B
 
 b $D43E probable CRAVU line-data family C
 @ $D43E label=Probable_CRAVU_C_LineData
+
+b $D488 probable shared MBLVU/HBLVU line-data family
+@ $D488 label=Probable_BulletVU_LineData
+
+b $D4A2 probable cube-family obstacle view line-data base
+@ $D4A2 label=Probable_OB12VU_View0
+
+b $D4DE probable cube-family obstacle view line-data variant
+@ $D4DE label=Probable_OB12VU_View1
+
+b $D51A probable cube-family obstacle view line-data variant
+@ $D51A label=Probable_OB12VU_View2
+
+b $D554 probable pyramid obstacle view line-data base
+@ $D554 label=Probable_OB3VU_View0
+
+b $D590 probable pyramid obstacle view line-data variant
+@ $D590 label=Probable_OB3VU_View1
+
+b $D5CC probable pyramid obstacle view line-data variant
+@ $D5CC label=Probable_OB3VU_View2
+
+b $D5F6 probable low-block obstacle view line-data base
+@ $D5F6 label=Probable_OB4VU_View0
+
+b $D632 probable low-block obstacle view line-data variant
+@ $D632 label=Probable_OB4VU_View1
+
+b $D66E probable low-block obstacle view line-data variant
+@ $D66E label=Probable_OB4VU_View2
 
 b $F700
 
