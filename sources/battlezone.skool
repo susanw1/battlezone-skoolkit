@@ -8622,6 +8622,9 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
 ; Probable mutable drip/end-screen workspace seed.
 ; The zero-lives branch at $AEB7 immediately overwrites this region and then
 ; iterates over it while painting the late blood/end-screen effect.
+; Structurally this is *not* an `LNLPT` block: it is treated as 32 mutable
+; bytes, where the first 32 bytes act as per-column state and the following
+; 32 bytes (written by the initial `LDIR`) act as companion counters/limits.
 @label=Probable_BloodDripSeedTable
  $CC5C DEFB $03,$05,$03,$06,$02,$02,$06,$03 ; #UDG(#PC)
  $CC64 DEFB $02,$03,$05,$03,$03,$05,$05,$05 ; #UDG(#PC)
@@ -8634,6 +8637,8 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
 ; Probable screen-break / crack line-data block used by the lose-life effect.
 ; `FE02` is pointed here at $ADDF/$AE0B/$AE2E and the block is consumed by
 ; `LNLPT`.
+; Structure matches `LNLPT` exactly: line count byte `05`, then five line
+; records of four 16-bit projected-coordinate pointers each.
 @label=Probable_CrashBreak_LineData
  $CC9C DEFB $05,$58,$CD,$5A,$CD,$30,$CD,$32 ; #UDG(#PC)
  $CCA4 DEFB $CD,$58,$CD,$62,$CD,$30,$CD,$3A ; #UDG(#PC)
