@@ -73,6 +73,7 @@ c $AD3E KEMPST
 @ $AD3E label=KEMPST
 
 c $B1F4
+@ $B1F4 label=AttractModeTitleSequence
   $B1F4,$05 FLASH: OFF.
   $B1F9,$06 BRIGHT: ON.
   $B1FF,$05 INVERSE: OFF.
@@ -98,6 +99,7 @@ c $B1F4
 c $B2F5
 
 c $B55D
+@ $B55D label=AttractModeShowcaseFrame
   $B55D,$03 Call #R$977E.
   $B560,$06 Write #N$50AB to *#R$94EF(#N$94F0).
   $B566,$03 #REGhl=*#R$FE76.
@@ -110,6 +112,7 @@ c $B55D
   $B586,$01 Return.
 
 c $B587
+@ $B587 label=AttractModeEntityShowcase
 
   $B663,$06 #HTML(Write <a rel="noopener nofollow" href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a> to *<a rel="noopener nofollow" href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
   $B669,$03 Jump to #R$B676.
@@ -127,6 +130,7 @@ R $B66C B Number of characters to print
   $B675,$01 Return.
 
 c $B676
+@ $B676 label=AttractModeInstructionPages
   $B676,$03 #REGhl=#R$C2C9.
   $B679,$02 #REGb=#N$00.
   $B67B,$03 Call #R$B66C.

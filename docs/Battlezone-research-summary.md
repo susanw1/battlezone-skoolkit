@@ -405,6 +405,21 @@ Working summary of verified facts, local source material, and open questions for
   - copy one rotated output table into the usual Y-input slot,
   - then swap in a fixed X table before calling the perspectiviser at `$8660`.
 - `LNLPT` at `$805C` updates `FE02` on return, which explains how the title-word stage can draw one line-data block and then immediately continue into the next chained block without reloading `FE02`.
+- The attract/demo loop now has first-pass stage labels in the disassembly:
+  - `AttractModeTitleSequence` = `$B1F4`
+  - `AttractModeQSTumbleLoop` = `$B24D`
+  - `AttractModeDrawBattleAndZone` = `$B346`
+  - `AttractModeTitleSeparationAndFlyoff` = `$B3FB`
+  - `AttractModeCreditsFooter` = `$B48C`
+  - `AttractModeShowcaseFrame` = `$B55D`
+  - `AttractModeEntityShowcase` = `$B587`
+  - `AttractModeInstructionPages` = `$B676`
+- Current best attract/demo sequence is:
+  - stage A: tumbling `QS`
+  - stage B: tumbling `BATTLE` / `ZONE`, then title separation / flyoff plus credits/footer
+  - stage C: forced in-engine entity showcase
+  - stage D/E: two instruction pages with timed `S` exits
+  - then loop back to stage A unless `S` starts the game via `$B0BC`
 
 ## Ground rules for future updates
 

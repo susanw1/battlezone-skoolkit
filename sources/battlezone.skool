@@ -7399,6 +7399,7 @@ c$AD3E LD BC,$0000   ;
 ; It clears the screen, prepares title/demo resources, runs the tumbling
 ; title/logo animation blocks, and checks `S` at multiple points so the player
 ; can break straight into the common start-game transition at #R$B0BC.
+@label=AttractModeTitleSequence
 c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B1F6 RST $10       ;
  $B1F7 SUB A         ;
@@ -7442,6 +7443,8 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B245 LD ($FE62),HL ; }
  $B248 LD A,$30      ; {Write #N$30 to *#R$FE68.
  $B24A LD ($FE68),A  ; }
+; Current best read: attract-mode stage A, tumbling `QS` logo loop.
+@label=AttractModeQSTumbleLoop
 *$B24D LD HL,$CA28   ; {Write #N$CA28 to *#R$FE42.
                      ; Current best read: probable QS rotating Y/Z seed table.
  $B250 LD ($FE42),HL ; }
@@ -7558,6 +7561,9 @@ c$B2F5 DEC (HL)      ;
  $B33F DEC A         ;
  $B340 JP NZ,$B31E   ;
  $B343 JP $B3FB      ;
+; Current best read: attract-mode stage B helper, drawing the split
+; `BATTLE` / `ZONE` title words with the same X-axis tumble hack used for `QS`.
+@label=AttractModeDrawBattleAndZone
 *$B346 LD HL,$C7B0   ; Current best read: `Probable_BATTLE_RotatingYZTable`.
  $B349 LD ($FE42),HL ;
  $B34C LD HL,$CA5E   ; Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
@@ -7635,6 +7641,8 @@ c$B2F5 DEC (HL)      ;
  $B3F6 POP HL        ;
  $B3F7 POP HL        ;
  $B3F8 JP $B0BC      ;
+; Current best read: post-title separation / zoom-away phase.
+@label=AttractModeTitleSeparationAndFlyoff
 *$B3FB LD HL,$0000   ;
  $B3FE LD ($FE8E),HL ;
  $B401 LD ($FE5E),HL ;
@@ -7699,6 +7707,7 @@ c$B2F5 DEC (HL)      ;
  $B487 LDIR          ;
  $B489 JP $B4B2      ;
 ; Current best read: attract-mode credits/footer text stage.
+@label=AttractModeCreditsFooter
 *$B48C LD B,$20      ;
  $B48E LD HL,$C5DA   ;
 *$B491 LD A,(HL)     ;
@@ -7790,6 +7799,7 @@ c$B2F5 DEC (HL)      ;
 ; Routine at B55D
 ;
 ; Used by the routine at #R$B587.
+@label=AttractModeShowcaseFrame
 c$B55D CALL $977E    ; Call #R$977E.
  $B560 LD HL,$50AB   ; {Write #N$50AB to *#R$94EF(#N$94F0).
  $B563 LD ($94F0),HL ; }
@@ -7819,6 +7829,7 @@ c$B55D CALL $977E    ; Call #R$977E.
 ; This block appears to force selected entity states and repeatedly call the
 ; main game loop to showcase tank / supertank / saucer / missile examples,
 ; with an `S` check between each showcase stage.
+@label=AttractModeEntityShowcase
 c$B587 LD HL,$00C0   ;
  $B58A LD ($FE62),HL ;
  $B58D LD HL,$0001   ;
@@ -7934,6 +7945,7 @@ c$B66C LD A,(HL)     ; Load the character from *#REGhl into #REGa.
 ; Current best read: attract-mode stages D/E.
 ; Prints the controls/instructions text pages, each with its own timed `S`
 ; check before looping back to the earlier attract-mode stages.
+@label=AttractModeInstructionPages
 c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B679 LD B,$00      ; #REGb=#N$00.
  $B67B CALL $B66C    ; Call #R$B66C.
