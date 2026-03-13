@@ -128,6 +128,18 @@ Working summary of verified facts, local source material, and open questions for
   - `PressStartPrompt`
   - `ControlsHeading`
   - `ControlsText`
+- Workflow note:
+  - the repo's canonical SkoolKit flow is recorded in `sources/battlezone.ref`:
+    - `tap2sna.py @battlezone.t2s`
+    - `sna2skool.py -H -c sources/battlezone.ctl Battlezone.z80 > sources/battlezone.skool`
+    - `skool2html.py -H sources/battlezone.skool ...`
+  - `Battlezone.z80` can be produced from the TZX source or another compatible snapshot source when regeneration is needed
+  - `sources/battlezone.ctl` has now been replaced with a full ctl extracted from the annotated `sources/battlezone.skool`, with a local fix for the `C842/C848` overlap in the attract-title fixed-X tables
+  - so `.ctl` should now be treated as the structural source of truth
+  - `sources/battlezone.skool` has now been regenerated from that ctl, so the checked-in pair is back in sync
+  - `.skool` remains the build input for `mkhtml.py`, but future structural changes should be made in `.ctl` and regenerated
+  - `skool2ctl.py` preserves labels/comments, but not operand spelling changes such as replacing `($FE00)` with `(SP1)`
+  - the short-lived operand-label rewrite pass was reverted for that reason
 - Added first-pass notebook-driven routine labels in the `94xx` UI/score block:
   - `MESPR` at `0x9452`: rectangle/message blitter driven by a descriptor containing destination, height, width, then data
   - `MESER` at `0x9476`: rectangle eraser using the same descriptor format
@@ -456,12 +468,23 @@ Working summary of verified facts, local source material, and open questions for
   - `PlayStartTheme` drives `OUT ($FE),A` directly rather than calling a ROM sound routine
   - it loads `SP` from `StartThemeData`, sets a 10-phrase count in `FE4E`, and consumes ten four-byte records via `POP HL` / `POP DE`
   - so the startup theme is current-best read as custom beeper code, not ROM sound
+  - Susan confirms this is definitely the opening `1812` phrase.
+  - Susan's current listening check from FUSE emulation is:
+    - starts on a fairly low `C`-ish note
+    - then roughly `F G A G F G A - F - F ---`
+    - overall harmony feels `F major`, though it may be closer to `F#` than `F`
+    - the longer notes have a slight rallentando feel
   - current best record/timing model:
     - record format = little-endian `[period, repeat_count]`
     - OUT-to-OUT delay alternates between `4*period+82` and `4*period+87` T-states
     - one full wave cycle is therefore about `8*period+169` T-states
     - at 3.5 MHz, `frequency ~= 3500000 / (8*period+169)` Hz
     - phrase duration is approximately `(repeat_count+1)` full cycles
+    - these derived frequencies should be treated as approximate relative pitches/durations, not concert-pitch claims
+    - Susan's listening check appears to tally well enough with the derived Hz table that the current best working method is:
+      - trust the table for relative contour and duration shape
+      - use the ear-check for musical naming
+      - avoid claiming exact concert pitch
   - current best table from `StartThemeData`:
     - `1982/000B` -> ~66.78 Hz for ~179.7 ms
     - `1388/000E` -> ~87.13 Hz for ~172.2 ms
@@ -473,6 +496,17 @@ Working summary of verified facts, local source material, and open questions for
     - `0FBE/002A` -> ~107.99 Hz for ~398.2 ms
     - `1388/002A` -> ~87.13 Hz for ~493.5 ms
     - `1388/0054` -> ~87.13 Hz for ~975.5 ms
+  - current best per-phrase musical reading:
+    - `$CA94: 1982/000B` -> low `C`-ish starter
+    - `$CA98: 1388/000E` -> `F/F#`-ish
+    - `$CA9C: 119E/0011` -> `G`-ish
+    - `$CAA0: 0FBE/0014` -> `A`-ish
+    - `$CAA4: 119E/0011` -> `G`-ish
+    - `$CAA8: 1388/000E` -> `F/F#`-ish
+    - `$CAAC: 119E/0011` -> `G`-ish
+    - `$CAB0: 0FBE/002A` -> `A`-ish, held longer
+    - `$CAB4: 1388/002A` -> `F/F#`-ish, held longer
+    - `$CAB8: 1388/0054` -> `F/F#`-ish, longest hold
 
 ## Ground rules for future updates
 

@@ -17,6 +17,25 @@ and point the environment variable SKOOLKIT_HOME at it. Then:
 
     $ utils/mkhtml.py
 
+Canonical regeneration workflow
+-------------------------------
+
+The intended SkoolKit workflow for this repo is ctl-first:
+
+    $ tap2sna.py @battlezone.t2s
+    $ sna2skool.py -H -c sources/battlezone.ctl Battlezone.z80 > sources/battlezone.skool
+    $ utils/mkhtml.py
+
+So `sources/battlezone.ctl` should be treated as the structural source of
+truth where practical, and `sources/battlezone.skool` as the generated/build
+input. If `battlezone.skool` is edited directly for annotation work, use
+`skool2ctl.py` to preserve those annotations back into a control file before
+doing block-structure regeneration.
+
+`Battlezone.z80` can be produced from the TZX source or another compatible
+snapshot source when regeneration is needed.
+
+
 Disclaimer
 ----------
 
