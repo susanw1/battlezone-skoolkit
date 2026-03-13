@@ -1,0 +1,414 @@
+# Battlezone Research Summary
+
+Last updated: 2026-03-13
+
+## Purpose
+
+Working summary of verified facts, local source material, and open questions for the Quicksilva ZX Spectrum game `Battlezone`.
+
+## Primary local sources
+
+- `zx-battlezone/`
+  - `README.md`: high-level recollection of game architecture.
+  - `docs/index.md`: inventory of scanned original design notes and Susan's current recollections of what each scan contains.
+  - `docs/*.pdf`: scanned development notes, diagrams, tables, and memory maps.
+- `battlezone-skoolkit/`
+  - Fork of pobtastic's disassembly work.
+  - `sources/battlezone.skool`: current disassembly with partial labels and comments.
+  - `sources/battlezone.ctl`: SkoolKit control file.
+  - `battlezone.t2s`: snapshot-build metadata, including tape source and start address `0xFF27`.
+- `battlezone-skoolkit/docs/spectrum-computing-discussion.md`
+  - Copy of the 2024 Spectrum Computing thread, including first-hand comments from Susan Witts.
+
+## Verified facts so far
+
+- The game is Quicksilva's 1984 ZX Spectrum `Battlezone`, an Atari-approved/licensed version of the arcade game.
+- Susan Witts wrote the game in Z80 assembler while still at school.
+- The game was reportedly finished in autumn 1983 and released later after Quicksilva resolved Atari/licensing concerns.
+- Susan recalls delivering Quicksilva a binary and start address; Quicksilva added the loader/splash-screen wrapping.
+- The executable start address used in the current SkoolKit setup is `0xFF27`, which jumps into the game entry path.
+- The game is all machine code, no BASIC.
+- Susan's current recollection is that the game loop used:
+  - world coordinates centered on the player,
+  - 16-bit signed `x,y,z`,
+  - 8-bit angles,
+  - off-screen drawing followed by copy to the display,
+  - line generation from transformed vertices,
+  - primitive hidden-line selection by view,
+  - hill drawing, sights, messages, score, radar, then control/collision updates.
+- Four obstruction objects are recalled: two cubes, one pyramid, one low block.
+- Susan clarified that missiles:
+  - zig-zag left/right,
+  - return to their original path after a zig,
+  - gain one additional zig as difficulty increases,
+  - hop over obstacles using up/down state flags when an obstacle is in the path.
+- Susan clarified that tanks:
+  - can trundle, stop, and become aggressive/attack,
+  - use a frame-based delay before switching into attacking behavior,
+  - likely scale that delay with score.
+- Susan clarified that tanks and supertanks share almost all logic, with only a few conditional differences.
+- Susan clarified that supertanks are mainly faster and use different graphics, otherwise behaving like tanks.
+- Susan clarified that `SP1` is temporary storage for the stack pointer when `SP` is reused as a general address register inside a routine.
+- Susan clarified that `SP2` is likely the same kind of stack-pointer scratch slot used when `SP1` is already occupied in a caller.
+- Susan confirmed that the two-digit values in `Mem-locations.pdf` are shorthand offsets from the handwritten base addresses.
+- Susan clarified the hill-rendering intent:
+  - a plain hill pass behind objects looked wrong once hidden-line removal was added to entities
+  - the code then tracked object left/right screen limits and suppressed the ordinary hill draw inside those bounds
+  - that also looked wrong for distant small objects, so a second hill infill pass was added inside the object bounds
+  - the second pass worked by scanning downward from the top of each screen-byte column until it hit nonzero data, then moving on
+  - Susan also recalls a left-edge hack for nearby obstacles partly offscreen on the left: force a pixel in the top-left hill byte so the hill pass stops, then clear it afterwards
+- The in-game instruction strings in the disassembly confirm the intended controls:
+  - left track forward: `1-5`, `Q-T`
+  - right track forward: `6-9`, `Y-P`
+  - left track reverse: `A-G`, `Caps Shift-V`
+  - right track reverse: `J-Enter`, `B-Space`
+  - `0` = fire
+  - `H` = hold
+  - `S` = start
+  - `Caps Shift+H` = abort game
+- The instruction text also confirms Kempston joystick support.
+- The instruction text tells the player to use cubes and pyramids as shields, use the radar to find the enemy, and avoid remaining stationary.
+
+## Compatibility notes
+
+- An older claim that controls only work on an Issue 2 Spectrum is not the full story.
+- Discussion in 2024 suggests the real problem is related to keyboard reads from port `#FE` and failure to mask the EAR bit on some later machines.
+- Reported testing from the copied discussion says keyboard control worked on:
+  - 48K Issue 3
+  - 128K "toastrack"
+- Reported testing says keyboard control was not responsive on:
+  - `+2B`
+- A plausible workaround on affected machines is that audio on the EAR input can make controls partially respond, though jerkily.
+
+## Files already useful for annotation
+
+- `battlezone-skoolkit/sources/battlezone.skool`
+  - Contains the instruction text block and a small number of meaningful labels.
+- `battlezone-skoolkit/sources/battlezone.ctl`
+  - Confirms current labelled entry points and selected comments.
+- `zx-battlezone/docs/index.md`
+  - Already gives a page-by-page map of the scanned notebooks.
+- `zx-battlezone/README.md`
+  - Already outlines Susan's current recollection of the architecture and game loop.
+- `zx-battlezone/docs/Red-book-scan1-transcription.md`
+  - Working Markdown companion for the first red notebook scan.
+- `zx-battlezone/docs/Red-book-scan2-transcription.md`
+  - Working Markdown companion for the second red notebook scan.
+- `zx-battlezone/docs/Mem-locations-transcription.md`
+  - First-pass transcription of the fixed memory location sheet.
+- `zx-battlezone/docs/Data-regions-transcription.md`
+  - First-pass transcription of data-range inventories and code/data block lists.
+- `zx-battlezone/docs/Gameplay-stats-transcription.md`
+  - First-pass transcription of spawn/strategy/statistical rules.
+- `zx-battlezone/docs/Entity-designs-transcription.md`
+  - First-pass page map for the entity geometry/design sheets.
+- `zx-battlezone/docs/DIV-transcription.md`
+  - First-pass notes on the division/perspective maths pages.
+- `zx-battlezone/docs/Hills-transcription.md`
+  - First-pass notes on the hill-drawing code.
+- `zx-battlezone/docs/Eraser-Scanner-transcription.md`
+  - First-pass notes on the eraser/scanner code sheets.
+- `zx-battlezone/docs/Battlezone-symbol-glossary.md`
+  - Seed glossary linking notebook symbols to current best meanings and future disassembly mappings.
+- `zx-battlezone/docs/extracted/red-book-scan1/`
+  - Derived page images extracted from `Red-book-scan1.pdf` for manual transcription and future linking.
+- `zx-battlezone/docs/extracted/`
+  - Derived page images now exist for all scanned PDFs in `zx-battlezone/docs/`.
+
+## SkoolKit annotation progress
+
+- Added first-pass labels in `battlezone-skoolkit/sources/battlezone.skool` and `battlezone-skoolkit/sources/battlezone.ctl` for the RAM workspace described by `Mem-locations.pdf`.
+- The labeled workspace entries currently include:
+  - `SP1`, `LINCD`, `LNCNT`, `SPPL`, `X1`, `X2`, `XD`, `Y1`, `Y2`, `YD`
+  - `DRTP1`, `DRTP2`, `SPPL1`, `SPPL2`
+  - `MAX1`, `MIN1`, `MAX2`, `MIN2`, `LIM1`, `LIM2`, `LIM3`, `LIM4`, `HLCNT`, `SHCNT`, `LIM`
+  - `XLOC`, `YLOC`, `ZLOC`, `XPERS`, `YPERS`, `XMAX`, `XMIN`, `DYCNT`
+  - `XTAB`, `YTAB`, `ZTAB`, `MMAT`, `XDIS`, `ZDIS`, `MUCNT`, `EXBLP`, `EXSCN`, `TRIGA`, `KMOV`, `SIGHT`, `SP2`, `TURN`
+- Added first-pass text labels for:
+  - `PressStartPrompt`
+  - `ControlsHeading`
+  - `ControlsText`
+- Added first-pass notebook-driven routine labels in the `94xx` UI/score block:
+  - `MESPR` at `0x9452`: rectangle/message blitter driven by a descriptor containing destination, height, width, then data
+  - `MESER` at `0x9476`: rectangle eraser using the same descriptor format
+  - `PlotNumberGlyph` at `0x948C`: draws one 7-row numeral/symbol glyph from `NumberGlyphs`
+  - `SCOPR` at `0x94AC`: packed-BCD score increment routine with extra-life threshold handling
+  - `NUMBA` at `0x94EC`: packed-BCD score display routine, reached directly or by falling through from `SCOPR`
+- Added `NumberGlyphs` label at `0xCD80`.
+- Added a confident joystick-input mapping:
+  - `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield
+  - the `0xA685..0xA75E` block now has notebook-backed comments as the `KEYIN` / keyboard-interpretation path that merges input, applies obstacle masking, and sets up `KMOV` / `TURN`
+- Added a first-pass main-loop and screen-pipeline mapping:
+  - `MainGameLoop` at `0x977E`: current best match for Susan's recollected giant shallow-call frame loop, returning via `JP 0x977E` from `0xA931`
+  - `SDRAW` at `0x8C3C`: presents the off-screen buffers to the Spectrum display and clears them for the next frame
+  - `MHLC` at `0x8D68`: probable main-hill limit calculation routine
+  - `SHLC` at `0x8E08`: probable secondary-hill limit calculation routine
+  - `MHLPT` at `0x8E38`: probable main-hill plotting stage
+  - `SHLPT` at `0x8F53`: probable secondary-hill plotting stage
+  - the `0xA5AE..0xA5CE` block is now annotated as the current best `SCREEN`-phase match, calling `MHLC`, `SHLC`, `MHLPT`, `SHLPT`, then `SDRAW`
+  - current best interpretation is:
+    - `FE1C/FE1E/FE20/FE22` hold raw object edge limits for hill suppression
+    - `MHLC` derives the primary hill limits into `FE24/FE26`
+    - `SHLC` derives a second set of hill limits into `FE28/FE2A`
+    - `MHLPT` and `SHLPT` are therefore good candidates for the outside/object-interior hill passes respectively
+- Added a first-pass `TABS` mapping from `Red-book-scan2` pages 23-25 into the disassembly:
+  - shared geometry table anchors:
+    - `XTAB` table start = `0xD9D0`
+    - `ZTAB` table start = `0xDAC4`
+    - `YLOC` table start = `0xDBB8`
+  - current code also uses interior offsets into those families:
+    - `0xD9D8`, `0xDACC`, `0xDBC0`
+  - hostile bullet / obstacle / explosion location-table anchors:
+    - `HBLXLC` = `0xDD20`
+    - `HBLZLC` = `0xDDD0`
+    - `OBXLC` = `0xDD28`
+    - `OBZLC` = `0xDDD8`
+    - `EXXLC` = `0xDD36`
+    - `EXZLC` = `0xDDE6`
+    - `EXBXL` = `0xDD6E`
+    - `EXBZL` = `0xDE1E`
+  - perspective-output buffer anchors:
+    - `XPERS` buffer base = `0xDE90`
+    - `YPERS` buffer base = `0xDEC8`
+  - current best interpretation:
+    - `FE38` / `FE3A` hold interior end-pointers into those buffers
+    - the perspective stage writes downward using `SP`/`PUSH`
+    - later code therefore samples interior words such as `0xDE92`, `0xDE98`, `0xDE9E`, `0xDED0`, and `0xDED6`
+- Added a cautious first-pass `LINCDS` note for the obstacle selector at `0xA37B`:
+  - `0xD488` is now the current best shared bullet visible-line family (`MBLVU` / `HBLVU`)
+  - the obstacle families now look like three fixed view slots selected by `0xA576` using offsets `0x00`, `0x3C`, and `0x78`
+  - current best obstacle-family bases:
+    - `0xD4A2` = shared cube-family base for `OB1VU` / `OB2VU`
+      - view slots at `0xD4A2`, `0xD4DE`, `0xD51A`
+    - `0xD554` = pyramid-family base for `OB3VU`
+      - view slots at `0xD554`, `0xD590`, `0xD5CC`
+    - `0xD5F6` = low-block-family base for `OB4VU`
+      - view slots at `0xD5F6`, `0xD632`, `0xD66E`
+- Added a probable `LNLPT` mapping:
+  - `0x805C` is now the current best match for the notebook's `LNLPT`
+  - current best line-data format read:
+    - 1 byte line count
+    - then one record per line
+    - each line record is four 16-bit pointers into the current projected-coordinate buffers
+- `SHIPS` in the notebook now looks very likely to be the runtime lives counter at `0xFEE4`
+  - the shipped death/game-over machinery at `0xADD4` is still the best code match for notebook `CRASH`, but it looks like a later expanded implementation rather than a close textual match to page 17
+  - initialised to `3` at `0x958B..0x958E`
+  - incremented for extra lives in `SCOPR` at `0x94C4..0x94C8`
+  - decremented in the current best `CRASH` / lose-life path at `0xAE5E..0xAE62`
+- Searching `MESER` call sites suggests `MESER` is not central to the shipped lose-life path
+  - current call sites are at `0x9A57`, `0x9AF5`, `0x9F61`, and `0xA704`
+  - these are short-lived UI/message erases in gameplay and input paths rather than the big `CRASH` / game-over routine
+- `0xA0B0` and `0xA0C3` are strong candidates for notebook delay helpers (`DLAY` / `DLAY1` style routines)
+  - both are tight `OUT ($FE),A` border/beeper toggling loops
+  - `0xA0C3` is the longer variant
+  - because the game only uses `OUT` on port `0xFE`, these are now better read as combined timing/audio helpers rather than pure inert delays
+- Sound/border evidence tightened:
+  - every `OUT` instruction in the current disassembly is `OUT ($FE),A`
+  - that means there is no separate sound-port machinery hidden elsewhere; all sound-like activity is being driven through the Spectrum's combined border/beeper port
+  - `FE74` is now the best current match for a live border/sound latch:
+    - it is written with `0` / `0x18` by transient gameplay logic at `0x9B39` and `0x9FA4`
+    - it is read by geometry/line routines such as `0x806F`, `0x88FE`, and `0x8A95` immediately before `OUT ($FE),A`
+    - this fits Susan's recollection that sound was added by scattering port-`FE` activity through gameplay code
+  - current best gameplay sound clusters:
+    - `0x9E31` / `0x9E37` call `0xA0C3` immediately around the visible saucer draw, making this the strongest current saucer-sound candidate
+    - `0x9FA4` toggles `FE74` inside the missile path based on missile proximity, making it the strongest current missile-sound candidate
+    - `0x9B39` similarly toggles `FE74` in the tank/supertank path and may be part of the general hostile-entity rumble/proximity sound
+  - still unresolved:
+    - the exact implementation of the `1812` startup theme
+    - a clean code separation between general rumble, radar blip, and any bullet-specific clicks
+- `S` key handling is now separated into two clear roles:
+  - gameplay hold/release path:
+    - at `0xA911..0xA92E`, the game reads the `H` row first
+    - if `H` is not pressed, it falls straight through back to `0x977E`
+    - if `H` is pressed, `Caps Shift+H` aborts back to the title/instructions flow at `0xB1F4`
+    - otherwise it loops on the `A S D F G` row until `S` is pressed, then resumes the main loop at `0x977E`
+  - actual start-game path:
+    - the attract/title/instructions code contains several raw `S` checks on the `A S D F G` row (`0xB1E5`, `0xB2A6`, `0xB2E7`, `0xB596`, `0xB5D1`, `0xB614`, `0xB640`)
+    - all of them jump to the common transition at `0xB0BC`
+    - `0xB0BC` then runs a short transition and jumps into the real game initialisation at `0x956A`, which eventually feeds the main loop at `0x977E`
+- Attract/demo structure now looks much more like Susan's staged recollection than a single static title screen:
+  - `0xB1F4..0xB343` is the best current match for the earlier title/logo attract stages
+  - `0xB587..0xB669` looks like a forced-entity showcase pass that repeatedly calls the main loop to demonstrate tank / supertank / saucer / missile behaviour
+  - `0xB676..0xB777` looks like the controls/instructions pages with timed `S` checks before looping back
+  - the repeated raw `S` checks likely exist because each attract/demo stage polls independently rather than because there are multiple unrelated start systems
+  - `0xB50E..0xB524` strongly supports Susan's recollection of an attract-mode hack that patches live code or display behavior:
+    - it writes `0xC9` into `0x8C3C` (the start of `SDRAW`)
+    - modifies `0x960D`
+    - runs `0x956A`
+    - then restores `0x8C3C` to `0x21` and `0x960D` to `0x43`
+    - current best interpretation is a temporary bypass/alteration of the normal screen/status presentation during the forced demo showcase
+  - newly anchored attract text/data:
+    - `0xCE14` = `QUICKSILVA PRESENTS` attract-mode text block, printed at `0xB2C5`
+    - `0xC2C9` + `0xC2D5` = controls/instructions page 1 heading and body
+    - `0xC3EF` = controls/instructions page 2 body
+    - `0xB48C` reads from `0xC5DA` and is the current best attract-mode credits/footer text stage (`BY BILL WITTS` / `QUICKSILVA`)
+    - `0xC602` is now at least identified as a probable attract-mode line-data family used by the earlier title/logo stages, though exact `QS` vs `BATTLE` vs `ZONE` assignment is still unresolved
+  - current best explanation for the tumbling `QS` / `BATTLE` / `ZONE` X-axis effect:
+    - the attract pipeline around `0xB346..0xB38D` and `0xB39C..0xB3E3` appears to abuse the normal X/Z rotation code at `0x88EA`
+    - `0x88EA` is first run on a non-standard coordinate pair, likely standing in for Y/Z
+    - the first rotated output table is then copied into `FE34`, which `0x8660` normally treats as the Y-input table
+    - a fixed attract-mode X table (`0xC814` or `0xC848`) is then swapped into `FE32` before perspective projection
+    - current best interpretation: this is the hack Susan remembered for making title/logo pieces rotate in the Y-Z plane even though the normal 3D pipeline expects Y to remain unchanged
+  - current best asset mapping for the tumbling attract pieces:
+    - stage at `0xB24D..0xB2B8` is now the best `QS` candidate
+      - point families: `0xC9F2` + `0xCA28`
+      - line-data family: `0xC91A`
+      - strongest clue: the raw point cloud splits into two widely separated clusters, fitting the two-letter QS logo better than a title word
+    - stage at `0xB346..0xB399` is the current best `BATTLE` candidate
+      - point families: `0xC7B0` + `0xC814`
+      - line-data: first `LNLPT` block at `0xC602` with count `0x1E` (30 lines)
+      - strongest clue: it is the wider of the two later title-word pieces
+    - stage at `0xB39C..0xB3E9` is the current best `ZONE` candidate
+      - point families: `0xC7E4` + `0xC848`
+      - line-data: second consecutive `LNLPT` block at `0xC6F3` with count `0x17` (23 lines)
+      - strongest clue: it is the narrower of the two later title-word pieces
+    - key enabling detail: `LNLPT` stores `SP` back into `FE02` at `0x80D1`, so repeated calls can walk chained line-data blocks automatically
+- Zero-lives branch asset progress:
+  - `0xCDE8` is now confirmed as the `GAME OVER` text/control block, printed via `RST $10` at `0xAF4E`
+  - `0xCDFA` is now confirmed as the `TODAYS GREATEST` heading printed before the high-score table at `0xB15F`
+  - `0xCC9C` is now structurally confirmed as a valid `LNLPT` block:
+    - line count byte `05`
+    - followed by five records of four 16-bit projected-coordinate pointers
+    - current best meaning remains the pre-zero-lives screen-break / crack overlay
+  - `0xCC5C` is structurally *not* an `LNLPT` block
+    - the zero-lives branch uses an overlapping `LDIR` trick that fills the first 32 bytes with `0xBF`
+    - the second 32 bytes keep the original handwritten seed values
+    - current best meaning remains mutable blood/end-screen workspace seed data
+    - current best field interpretation:
+      - first 32 bytes = mutable current row / byte-row per column, initialised to `0xBF`
+      - second 32 bytes = remaining drip length / life per column, using the original small seed values (`02`..`06`)
+    - each active column paints a 3-byte vertical trail into the bitmap (`FF`, `7E`, `18`) and sets the corresponding attribute cell to `42`
+    - Susan's recollection of slightly different drip speeds may fit these staggered per-column seed values/phases, even though no separate velocity byte is currently evident
+  - `FE4E` is reused in this branch as the outer drip-frame countdown
+- The `HL=0`, `DE=0`, `BC=<count>`, `LDIR` sequences in this area are very likely intentional delay loops rather than meaningful copies
+  - examples: `0xAE00..0xAE09`, `0xAE23..0xAE2C`, `0xAF56..0xAF5F`
+- Added a cautious first-pass explosion / crash `LINCDS` mapping:
+  - `0xD6B8` is the current best `TKEXV` family, used by the tank / supertank explosion path
+  - `0xD7CC` is the current best `SAEXV` family, used by the saucer explosion path
+  - `0xD8B0` is the current best `MSEXV` family, used by the missile explosion path
+  - `0xD95C` is the current best `EXBLT` family, used by the later bullet-impact / bullet-explosion path
+  - `0xD392`, `0xD3DC`, and `0xD43E` were originally tagged as `CRAVU`, but current code reading shows they are a better match for page-21 `MISS`
+  - current best read:
+    - the selector at `0xA080` sits inside the missile render path, not the player-crash path
+    - it chooses one of three ordered missile view families by comparing projected X values at `0xDE98/0xDE9A/0xDE9C`
+    - `0xD3DC` is the larger middle family, while `0xD392` and `0xD43E` look like mirrored side-view counterparts
+  - notebook `CRAVU` from page 17 is therefore unresolved again
+- Added a probable state-byte mapping around the main loop:
+  - `0xFE6A` = probable `EXST1` active-entity existence/state byte
+  - `0xFE6C` = probable `EXST2` deferred explosion/respawn state byte
+  - `0xFE6E` = probable `PRSTA` current render/visibility state byte
+  - current best interpretation:
+    - `FE6A` carries the active major-entity bits (tank/supertank, saucer, missile, my bullet, his bullet) plus low-bit obstacle/object state
+    - `FE6C` receives matching bits when an entity transitions into an explosion/effect path
+    - high bits from `FE6C` are later ORed back into `FE6A` at `0xAC12..0xAC17` before the reinitialisation path at `0x9644`
+    - `FE6E` is the current best match for the notebook's `PRSTA`, because visibility tests and render-eligibility checks set and clear it continuously during the frame
+    - current best bit map:
+      - bit 7 = tank
+      - bit 6 = supertank
+      - bit 5 = saucer
+      - bit 4 = missile
+      - bit 3 = player bullet
+      - bit 2 = hostile bullet
+      - bits 1-0 = obstacle/object selector
+    - current best `PRSTA` refinement:
+      - the high nibble appears to mirror the visible/drawable subset of `EXST1`
+      - explicit set/clear sites now line up with tank (`0x9BDF/0x9C03`), supertank (`0x9C8B/0x9CAF`), saucer (`0x9DFE/0x9E1A`), missile (`0xA04A/0xA06E`), player bullet (`0xA1C6/0xA1D3`), and hostile bullet (`0xA2E0/0xA2ED`)
+      - current best low-bit family map from the obstacle selector at `0xA37B`:
+        - `0` = no obstacle selected
+        - `1` = low block family
+        - `2` = cube family (`OB1` / `OB2`)
+        - `3` = pyramid family
+- Validation status:
+  - `skool2asm.py` succeeds on the edited `battlezone.skool`
+  - `battlezone-skoolkit/utils/mkhtml.py` now succeeds again
+  - direct `skool2html.py` now succeeds again
+  - root causes and fixes:
+    - `battlezone-skoolkit/sources/bases.ref` used `{SkoolKit[Path]}`, which is not available in the installed SkoolKit 9.6 template environment; replaced with a stable relative link using `{Game[alt_dir]}index.html`
+    - `battlezone-skoolkit/utils/skrunner.py` previously depended on importing `art` and `skoolkit` into the system `python3` environment; it now invokes the installed `skool2asm.py` and `skool2html.py` executables directly and only adds `Config/InitModule=...:publish` when `SKOOLKIT_HOME/tools` is actually present
+    - a later full-HTML failure under SkoolKit 9.6 turned out to be caused by `#R$...` macros in comments that pointed at data-block addresses rather than routine/instruction anchors; those comment references were rewritten as plain `$....` addresses
+  - useful commands:
+    - quick parse check: `~/.local/bin/skool2asm.py -q battlezone-skoolkit/sources/battlezone.skool >/tmp/bz.asm`
+    - index-only HTML check: `python3 battlezone-skoolkit/utils/mkhtml.py -q -w i`
+    - full HTML build: `python3 battlezone-skoolkit/utils/mkhtml.py -q`
+  - current main HTML entry point:
+    - `battlezone-skoolkit/build/html/battlezone/index.html`
+
+## Open questions
+
+- Which scanned pages correspond directly to the disassembled routines already present in `battlezone.skool`?
+- What exact memory variables and bitfields do names like `PRSTA`, `EXST1`, `EXST2`, `MSTRJ`, `KMOV`, `MESER`, `SCOPR`, `TEXST`, `TKSTRAT`, `HBULLT` and `NUMBA` map to in the binary?
+- `MESPR`, `MESER`, `SCOPR`, `NUMBA`, `KEMPST`, `MainGameLoop`, `SDRAW`, `MHLC`, and `SHLC` now have useful address mappings, and `MHLPT` / `SHLPT` are plausible current-best mappings. `TABS` now has strong anchor matches for the main geometry and location families; `LINCDS` still needs the remaining exact view-line-family matches.
+- The recalled hill-stop hack now has a strong candidate in code:
+  - `0xA569` sets bit 7 at off-screen playfield address `0xE740`
+  - `0xA571` sets bit 7 at `0xE75F`
+  - `0xA5C4` / `0xA5C9` clear those bits again immediately after the `SCREEN`-phase hill work
+  - current reading: these are temporary left/right edge stop pixels in the off-screen hill buffer, matching Susan's recollection closely
+- Current screen-buffer understanding:
+  - visible Spectrum buffers are the normal `0x4000` pixel screen and `0x5800` attributes
+  - `SDRAW` copies an off-screen top/status strip from `0xDFA0` to `0x40A0`
+  - `SDRAW` copies the off-screen main playfield from `0xE700` to `0x4800`
+- Are `MSTRJ` and `MSTRT` the same symbol at different points in the notes, or distinct but related state bytes?
+  - Current direction: Susan is confident `MSTRJ` is the missile action bitfield, so `MSTRT` should be treated as unresolved for now.
+- Where in the code are:
+  - world transforms,
+  - perspective divide,
+  - Bresenham line drawers,
+  - hill renderer,
+  - radar update,
+  - keyboard scan,
+  - Kempston input,
+  - object/view hidden-line selection,
+  - blood/drip effect,
+  - 1812 theme data?
+- Is the current SkoolKit branch complete enough to regenerate browsable HTML without further setup?
+- Which parts of Susan's 40-year recollection differ from the code and notebooks?
+
+## Proposed near-term workflow
+
+1. Transcribe each PDF into a readable Markdown companion file, preserving page breaks, headings, uncertain readings, and embedded image references.
+   - Started for the full scan set, with deepest coverage currently on `Red-book-scan1`.
+2. Build a cross-reference table:
+   - notebook symbol/name
+   - guessed meaning
+   - confirmed meaning
+   - disassembly address(es)
+   - evidence source
+3. Use that table to produce a basic SkoolKit pass:
+   - labels
+   - comments
+   - data block names
+   - string block names
+   - key entry points
+   - current focus after the `94xx` pass: the remaining `LINCDS` / view-line families plus deeper confirmation of the `SCREEN`-phase internals
+4. Iterate toward a full annotation:
+   - control flow
+   - entity lifecycle/state machines
+   - maths/data tables
+   - memory map
+   - rendering pipeline
+   - compatibility notes
+
+## Recent disassembly progress
+
+- The attract-mode `QS` / `BATTLE` / `ZONE` asset mapping is now strong enough to carry provisional exact-address labels in `battlezone.skool`.
+  - `Probable_QS_LineData` = `$C91A`
+  - `Probable_QS_FixedXTable` = `$C9F2`
+  - `Probable_QS_RotatingYZTable` = `$CA28`
+  - `Probable_Attract_ZeroAxisCompanionTable` = `$CA5E`
+  - `Probable_BATTLE_RotatingYZTable` = `$C7B0`
+  - `Probable_BATTLE_FixedXTable` = `$C814`
+  - `Probable_ZONE_LineData` = `$C6F3`
+  - `Probable_ZONE_RotatingYZTable` = `$C7E4`
+  - `Probable_ZONE_FixedXTable` = `$C848`
+- Current best mechanical reading of the attract-mode tumble:
+  - the title/logo code appears to abuse the normal `X/Z` rotator at `$88EA` on a non-standard coordinate pair,
+  - copy one rotated output table into the usual Y-input slot,
+  - then swap in a fixed X table before calling the perspectiviser at `$8660`.
+- `LNLPT` at `$805C` updates `FE02` on return, which explains how the title-word stage can draw one line-data block and then immediately continue into the next chained block without reloading `FE02`.
+
+## Ground rules for future updates
+
+- Prefer code and scanned notes over recollection when they conflict.
+- Record uncertainty explicitly rather than smoothing over it.
+- Keep provenance with every non-trivial claim.
+- Update this file when significant facts, mappings, or workflow decisions are confirmed.

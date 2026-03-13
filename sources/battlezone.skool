@@ -1480,6 +1480,9 @@ c$8000 LD HL,$F97F   ;
 ; - 1 byte: line count
 ; - then one record per line, each record being four 16-bit pointers
 ;   into the current XPERS/YPERS-style projected-coordinate buffers.
+; On return, `FE02` is updated from SP at $80D1, so consecutive line-data
+; blocks can be chained in memory and consumed one after another by repeated
+; calls.
 ;
 ; Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
 @label=LNLPT
@@ -7440,8 +7443,11 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B248 LD A,$30      ; {Write #N$30 to *#R$FE68.
  $B24A LD ($FE68),A  ; }
 *$B24D LD HL,$CA28   ; {Write #N$CA28 to *#R$FE42.
+                     ; Current best read: probable QS rotating Y/Z seed table.
  $B250 LD ($FE42),HL ; }
  $B253 LD HL,$CA5E   ; {Write #N$CA5E to *#R$FE46.
+                     ; Current best read: common zero-axis companion table used
+                     ; by the attract-mode X-axis rotation hack.
  $B256 LD ($FE46),HL ; }
  $B259 LD A,($FE62)  ;
  $B25C ADD A,$10     ;
@@ -7459,11 +7465,13 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B27D LD HL,$DDB6   ;
  $B280 LD ($FE36),HL ;
  $B283 LD L,A        ;
- $B284 LD A,$1A      ;
+ $B284 LD A,$1A      ; Probable attract-mode X-axis rotation hack for the QS
+                     ; logo: rotate a Y/Z-like pair via #R$88EA, then feed the
+                     ; result back into the normal perspectiviser.
  $B286 CALL $88EA    ; Call #R$88EA.
  $B289 LD HL,($FE32) ;
  $B28C LD ($FE34),HL ;
- $B28F LD HL,$C9F2   ;
+ $B28F LD HL,$C9F2   ; Current best read: `Probable_QS_FixedXTable`.
  $B292 LD ($FE32),HL ;
  $B295 LD HL,$DEC4   ;
  $B298 LD ($FE38),HL ;
@@ -7475,7 +7483,7 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B2A8 IN A,($FE)    ;
  $B2AA AND $02       ; `S` pressed?
  $B2AC JP Z,$B0BC    ; Start game from the intro/title animation loop.
- $B2AF LD HL,$C91A   ;
+ $B2AF LD HL,$C91A   ; Current best read: `Probable_QS_LineData`.
  $B2B2 LD ($FE02),HL ;
  $B2B5 CALL $805C    ;
  $B2B8 CALL $8C3C    ;
@@ -7550,9 +7558,9 @@ c$B2F5 DEC (HL)      ;
  $B33F DEC A         ;
  $B340 JP NZ,$B31E   ;
  $B343 JP $B3FB      ;
-*$B346 LD HL,$C7B0   ;
+*$B346 LD HL,$C7B0   ; Current best read: `Probable_BATTLE_RotatingYZTable`.
  $B349 LD ($FE42),HL ;
- $B34C LD HL,$CA5E   ;
+ $B34C LD HL,$CA5E   ; Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
  $B34F LD ($FE46),HL ;
  $B352 LD HL,($FE5E) ;
  $B355 LD ($FE4A),HL ;
@@ -7570,8 +7578,8 @@ c$B2F5 DEC (HL)      ;
  $B370 CALL $88EA    ;
  $B373 LD HL,($FE32) ; Take the freshly rotated first output table
  $B376 LD ($FE34),HL ; and reuse it as the Y-input table for #R$8660.
- $B379 LD HL,$C814   ; Swap in a fixed attract-mode X table for the title/logo
-                     ; piece before perspective projection.
+ $B379 LD HL,$C814   ; Swap in `Probable_BATTLE_FixedXTable` before
+                     ; perspective projection.
  $B37C LD ($FE32),HL ;
  $B37F LD HL,$DEC4   ;
  $B382 LD ($FE38),HL ;
@@ -7582,12 +7590,13 @@ c$B2F5 DEC (HL)      ;
  $B390 LD A,C        ;
  $B391 AND A         ;
  $B392 RET NZ        ;
- $B393 LD HL,$C602   ;
+ $B393 LD HL,$C602   ; First line-data block in the paired title-word family;
+                     ; current best read: the wider `BATTLE` piece.
  $B396 LD ($FE02),HL ;
  $B399 CALL $805C    ;
- $B39C LD HL,$C7E4   ;
+ $B39C LD HL,$C7E4   ; Current best read: `Probable_ZONE_RotatingYZTable`.
  $B39F LD ($FE42),HL ;
- $B3A2 LD HL,$CA5E   ;
+ $B3A2 LD HL,$CA5E   ; Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
  $B3A5 LD ($FE46),HL ;
  $B3A8 LD HL,($FE8E) ;
  $B3AB LD ($FE4A),HL ;
@@ -7604,7 +7613,7 @@ c$B2F5 DEC (HL)      ;
  $B3C6 CALL $88EA    ;
  $B3C9 LD HL,($FE32) ;
  $B3CC LD ($FE34),HL ;
- $B3CF LD HL,$C848   ;
+ $B3CF LD HL,$C848   ; Swap in `Probable_ZONE_FixedXTable`.
  $B3D2 LD ($FE32),HL ;
  $B3D5 LD HL,$DEBE   ;
  $B3D8 LD ($FE38),HL ;
@@ -7615,7 +7624,9 @@ c$B2F5 DEC (HL)      ;
  $B3E6 LD A,C        ;
  $B3E7 AND A         ;
  $B3E8 RET NZ        ;
- $B3E9 CALL $805C    ;
+ $B3E9 CALL $805C    ; `LNLPT` advances FE02, so this second draw likely uses
+                     ; `Probable_ZONE_LineData`; current best read: the
+                     ; narrower `ZONE` piece.
  $B3EC CALL $8C3C    ;
  $B3EF LD A,$FD      ;
  $B3F1 IN A,($FE)    ;
@@ -8438,8 +8449,13 @@ t$C2B6 DEFB $16,$05,$08                                                         
  $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00,$16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
  $C5FA DEFM $00,$00,$00,$00,$00,$00,$00,$00
 
-; Probable attract-mode line-data family used by the title/logo stages.
-; This block is consumed by the earlier attract/demo pipeline at #R$B346.
+; Probable attract-mode title-word line-data family.
+; This range appears to contain two consecutive `LNLPT` blocks:
+; - first block at $C602 begins with count `$1E` (30 lines)
+; - second block begins at $C6F3 with count `$17` (23 lines)
+; Because `LNLPT` updates `FE02` on return, the attract pipeline at #R$B346
+; can draw the first title piece and then the second one without reloading
+; `FE02`.
 ; Data block at C602
 b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C60A DEFB $DE,$F8,$DE,$F6,$DE,$C0,$DE,$BE
@@ -8471,7 +8487,10 @@ b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C6DA DEFB $DE,$CC,$DE,$CA,$DE,$94,$DE,$92
  $C6E2 DEFB $DE,$CA,$DE,$C8,$DE,$92,$DE,$90
  $C6EA DEFB $DE,$C8,$DE,$D6,$DE,$90,$DE,$9E
- $C6F2 DEFB $DE,$17,$F4,$DE,$F2,$DE,$BC,$DE
+ $C6F2 DEFB $DE
+; Probable `ZONE` line-data block in the paired title-word family.
+@label=Probable_ZONE_LineData
+ $C6F3 DEFB $17,$F4,$DE,$F2,$DE,$BC,$DE
  $C6FA DEFB $BA,$DE,$F2,$DE,$F0,$DE,$BA,$DE
  $C702 DEFB $B8,$DE,$F0,$DE,$EE,$DE,$B8,$DE
  $C70A DEFB $B6,$DE,$EE,$DE,$EC,$DE,$B6,$DE
@@ -8494,28 +8513,40 @@ b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C792 DEFB $94,$DE,$CC,$DE,$CA,$DE,$94,$DE
  $C79A DEFB $92,$DE,$CA,$DE,$C8,$DE,$92,$DE
  $C7A2 DEFB $90,$DE,$C8,$DE,$D4,$DE,$90,$DE
- $C7AA DEFB $9C,$DE,$DE,$00,$00,$00,$28,$00
+ $C7AA DEFB $9C,$DE,$DE,$00,$00,$00
+; Probable `BATTLE` rotating Y/Z seed table begins at $C7B0.
+@label=Probable_BATTLE_RotatingYZTable
+ $C7B0 DEFB $28,$00
  $C7B2 DEFB $1E,$00,$0A,$00,$00,$00,$0A,$80
  $C7BA DEFB $1E,$80,$14,$80,$28,$80,$28,$80
  $C7C2 DEFB $28,$00,$1E,$00,$28,$80,$1E,$00
  $C7CA DEFB $28,$00,$1E,$00,$28,$80,$1E,$00
  $C7D2 DEFB $28,$00,$28,$80,$14,$80,$28,$80
  $C7DA DEFB $14,$00,$00,$00,$14,$80,$28,$80
- $C7E2 DEFB $28,$00,$28,$00,$1E,$00,$0A,$00
+ $C7E2 DEFB $28,$00
+; Probable `ZONE` rotating Y/Z seed table begins at $C7E4.
+@label=Probable_ZONE_RotatingYZTable
+ $C7E4 DEFB $28,$00,$1E,$00,$0A,$00
  $C7EA DEFB $00,$00,$0A,$80,$1E,$80,$28,$80
  $C7F2 DEFB $28,$00,$00,$00,$28,$00,$28,$80
  $C7FA DEFB $00,$00,$28,$80,$28,$00,$00,$00
  $C802 DEFB $28,$80,$00,$00,$1E,$00,$28,$00
  $C80A DEFB $28,$00,$1E,$80,$28,$80,$28,$80
- $C812 DEFB $00,$00,$4C,$FF,$4C,$FF,$88,$FF
+ $C812 DEFB $00,$00
+; Probable `BATTLE` fixed X table.
+@label=Probable_BATTLE_FixedXTable
+ $C814 DEFB $4C,$FF,$4C,$FF,$88,$FF
  $C81A DEFB $56,$FF,$88,$FF,$88,$FF,$A6,$FF
  $C822 DEFB $C4,$FF,$A6,$FF,$C4,$FF,$CE,$FF
  $C82A DEFB $D8,$FF,$F6,$FF,$14,$00,$1E,$00
  $C832 DEFB $28,$00,$46,$00,$46,$00,$82,$00
  $C83A DEFB $5A,$00,$BE,$00,$8C,$00,$B4,$00
- $C842 DEFB $8C,$00,$BE,$00,$82,$00,$88,$FF
- $C84A DEFB $C4,$FF,$9C,$FF,$C4,$FF,$88,$FF
- $C852 DEFB $B0,$FF,$C4,$FF,$E2,$FF,$00,$00
+ $C842 DEFB $8C,$00,$BE,$00,$82,$00,$88,$FF,$C4,$FF
+; Probable `ZONE` fixed X table.
+@label=Probable_ZONE_FixedXTable
+ $C848 DEFB $9C,$FF,$C4,$FF,$88,$FF
+ $C84E DEFB $B0,$FF,$C4,$FF
+ $C852 DEFB $E2,$FF,$00,$00
  $C85A DEFB $E2,$FF,$0A,$00,$1E,$00,$46,$00
  $C862 DEFB $46,$00,$32,$00,$0A,$00,$50,$00
  $C86A DEFB $8C,$00,$5A,$00,$82,$00,$5A,$00
@@ -8540,6 +8571,11 @@ b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C902 DEFB $5A,$00,$78,$00,$82,$00,$82,$00
  $C90A DEFB $8C,$00,$BE,$00,$96,$00,$BE,$00
  $C912 DEFB $8C,$00,$00,$00,$00,$00,$00,$00
+; Probable QS-logo line-data block.
+; Current best evidence: the associated point tables at $C9F2/$CA28 split into
+; two large point clusters, fitting the two-letter QS mark better than the
+; later title words.
+@label=Probable_QS_LineData
  $C91A DEFB $1A,$C8,$DE,$CA,$DE,$90,$DE,$92
  $C922 DEFB $DE,$CA,$DE,$CC,$DE,$92,$DE,$94
  $C92A DEFB $DE,$CC,$DE,$CE,$DE,$94,$DE,$96
@@ -8570,21 +8606,30 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $C9D4 DEFB $DE,$F8,$DE,$BE,$DE,$C0,$DE,$F8 ; #UDG(#PC)
  $C9DC DEFB $DE,$FA,$DE,$C0,$DE,$C2,$DE,$FA ; #UDG(#PC)
  $C9E4 DEFB $DE,$E4,$DE,$C2,$DE,$AC,$DE,$DE ; #UDG(#PC)
- $C9EC DEFB $00,$00,$00,$00,$00,$00,$28,$00 ; #UDG(#PC)
+ $C9EC DEFB $00,$00,$00,$00,$00,$00         ; #UDG(#PC)
+; Probable QS fixed X table.
+@label=Probable_QS_FixedXTable
+ $C9F2 DEFB $28,$00                         ; #UDG(#PC)
  $C9F4 DEFB $28,$00,$40,$01,$40,$01,$28,$00 ; #UDG(#PC)
  $C9FC DEFB $28,$00,$68,$01,$68,$01,$50,$00 ; #UDG(#PC)
  $CA04 DEFB $50,$00,$68,$01,$68,$01,$D4,$FE ; #UDG(#PC)
  $CA0C DEFB $88,$FF,$60,$FF,$9C,$FF,$C4,$FF ; #UDG(#PC)
  $CA14 DEFB $C4,$FF,$D4,$FE,$AC,$FE,$B0,$FF ; #UDG(#PC)
  $CA1C DEFB $EC,$FF,$28,$00,$EC,$FF,$EC,$FF ; #UDG(#PC)
- $CA24 DEFB $AC,$FE,$00,$00,$78,$00,$78,$00 ; #UDG(#PC)
+ $CA24 DEFB $AC,$FE,$00,$00                 ; #UDG(#PC)
+; Probable QS rotating Y/Z seed table.
+@label=Probable_QS_RotatingYZTable
+ $CA28 DEFB $78,$00,$78,$00                 ; #UDG(#PC)
  $CA2C DEFB $78,$80,$B4,$80,$B4,$80,$78,$80 ; #UDG(#PC)
  $CA34 DEFB $78,$80,$50,$00,$50,$00,$50,$80 ; #UDG(#PC)
  $CA3C DEFB $28,$80,$28,$80,$50,$80,$50,$80 ; #UDG(#PC)
  $CA44 DEFB $78,$00,$50,$00,$50,$00,$14,$00 ; #UDG(#PC)
  $CA4C DEFB $14,$00,$78,$80,$78,$80,$50,$80 ; #UDG(#PC)
  $CA54 DEFB $50,$80,$14,$80,$14,$80,$78,$00 ; #UDG(#PC)
- $CA5C DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
+ $CA5C DEFB $00,$00                         ; #UDG(#PC)
+; Common zero-axis companion table for the attract-mode X-axis rotation hack.
+@label=Probable_Attract_ZeroAxisCompanionTable
+ $CA5E DEFB $00,$00,$00,$00,$00,$00         ; #UDG(#PC)
  $CA64 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
  $CA6C DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
  $CA74 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
