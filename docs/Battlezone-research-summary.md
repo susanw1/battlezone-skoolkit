@@ -414,6 +414,19 @@ Working summary of verified facts, local source material, and open questions for
   - `AttractModeShowcaseFrame` = `$B55D`
   - `AttractModeEntityShowcase` = `$B587`
   - `AttractModeInstructionPages` = `$B676`
+- The former single `AttractModeTitleSeparationAndFlyoff` block at `$B3FB` now has a more useful internal split:
+  - `AttractModeTitleJointMotionPass` = `$B418`
+  - `AttractModeTitleHoldPass` = `$B43B`
+  - `AttractModeTitleSeparationPass` = `$B451`
+  - `AttractModeTitleFlyoffWithFooter` = `$B4D1`
+  - `AttractModeCreditsFooterText` = `$C5DA`
+- Current best read of those sub-phases:
+  - in the attract title code, `FE5E/FE60/FE62` are now best read as first-word `X/Z/angle`
+  - `FE8E/FE90/FE92` are likewise second-word `X/Z/angle`
+  - `B418`: both words still share `X=0`, while their tumble angles and shared Z offset advance together
+  - `B43B`: short hold/settle pass, still tumbling but with the shared Z offset held steady
+  - `B451`: explicit horizontal separation, with `FE5E += 2` and `FE8E -= 4`
+  - `B4D1`: long flyoff pass with growing shared Z offset, diverging angles, and the `BY BILL WITTS / QUICKSILVA` footer redrawn every frame
 - Current best attract/demo sequence is:
   - stage A: tumbling `QS`
   - stage B: tumbling `BATTLE` / `ZONE`, then title separation / flyoff plus credits/footer
@@ -433,6 +446,33 @@ Working summary of verified facts, local source material, and open questions for
     - supertank: forces `FE6A = 0x40`
     - saucer: waits on `PRSTA` bit `0x20` and seeds `FE94/FE96`
     - missile: primes `FE78/FE70` and watches `FE81`
+- The start-game transition and startup music path are now labeled:
+  - `StartGameTransition` = `$B0BC`
+  - `PlayStartTheme` = `$B0EF`
+  - `StartThemeData` = `$CA94`
+- Current best startup music read:
+  - there are no `CALL` or `JP` targets below `$4000` in the shipped code
+  - every `RST` in the disassembly is `RST $10` for ROM text output
+  - `PlayStartTheme` drives `OUT ($FE),A` directly rather than calling a ROM sound routine
+  - it loads `SP` from `StartThemeData`, sets a 10-phrase count in `FE4E`, and consumes ten four-byte records via `POP HL` / `POP DE`
+  - so the startup theme is current-best read as custom beeper code, not ROM sound
+  - current best record/timing model:
+    - record format = little-endian `[period, repeat_count]`
+    - OUT-to-OUT delay alternates between `4*period+82` and `4*period+87` T-states
+    - one full wave cycle is therefore about `8*period+169` T-states
+    - at 3.5 MHz, `frequency ~= 3500000 / (8*period+169)` Hz
+    - phrase duration is approximately `(repeat_count+1)` full cycles
+  - current best table from `StartThemeData`:
+    - `1982/000B` -> ~66.78 Hz for ~179.7 ms
+    - `1388/000E` -> ~87.13 Hz for ~172.2 ms
+    - `119E/0011` -> ~96.55 Hz for ~186.4 ms
+    - `0FBE/0014` -> ~107.99 Hz for ~194.4 ms
+    - `119E/0011` -> ~96.55 Hz for ~186.4 ms
+    - `1388/000E` -> ~87.13 Hz for ~172.2 ms
+    - `119E/0011` -> ~96.55 Hz for ~186.4 ms
+    - `0FBE/002A` -> ~107.99 Hz for ~398.2 ms
+    - `1388/002A` -> ~87.13 Hz for ~493.5 ms
+    - `1388/0054` -> ~87.13 Hz for ~975.5 ms
 
 ## Ground rules for future updates
 

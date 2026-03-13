@@ -72,6 +72,12 @@ b $AD1B
 c $AD3E KEMPST
 @ $AD3E label=KEMPST
 
+c $B0BC
+@ $B0BC label=StartGameTransition
+
+c $B0EF
+@ $B0EF label=PlayStartTheme
+
 c $B1F4
 @ $B1F4 label=AttractModeTitleSequence
   $B1F4,$05 FLASH: OFF.

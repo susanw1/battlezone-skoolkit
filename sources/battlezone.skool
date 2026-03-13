@@ -7215,6 +7215,7 @@ c$AD3E LD BC,$0000   ;
 ; Multiple raw `S`-key checks in the intro code jump here; this path runs a
 ; short visual/audio transition, restores the score display, and then jumps
 ; into the main game initialisation at #R$956A.
+@label=StartGameTransition
 *$B0BC CALL $B0EF    ;
  $B0BF LD HL,$4000   ;
  $B0C2 LD DE,$4001   ;
@@ -7234,8 +7235,25 @@ c$AD3E LD BC,$0000   ;
  $B0E6 LD HL,$4059   ;
  $B0E9 LD ($94F0),HL ;
  $B0EC JP $956A      ;
+; Current best read: start-game theme player.
+; Evidence:
+; - no non-`RST $10` ROM calls are used here
+; - the routine drives `OUT ($FE),A` directly
+; - `SP` is pointed at the 10-entry record table at `StartThemeData`
+; - each record is consumed as two words (`HL`, `DE`) and used to control one
+;   beeper-tone phrase
+; Current best record format/timing read:
+; - first word (`HL`) = period parameter
+; - second word (`DE`) = repeat count
+; - the OUT-to-OUT delay alternates between `4*HL+82` and `4*HL+87`
+;   T-states, so one full square-wave cycle is approximately `8*HL+169`
+;   T-states
+; - at 3.5 MHz that gives `f ~= 3500000 / (8*HL+169)` Hz
+; - the repeat counter is decremented on every other toggle, so a phrase lasts
+;   roughly `(DE+1)` full cycles
+@label=PlayStartTheme
 *$B0EF LD ($FE00),SP ;
- $B0F3 LD SP,$CA94   ;
+ $B0F3 LD SP,$CA94   ; Current best read: `StartThemeData`.
  $B0F6 LD A,$0A      ;
 *$B0F8 LD ($FE4E),A  ;
  $B0FB POP HL        ;
@@ -7568,15 +7586,15 @@ c$B2F5 DEC (HL)      ;
  $B349 LD ($FE42),HL ;
  $B34C LD HL,$CA5E   ; Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
  $B34F LD ($FE46),HL ;
- $B352 LD HL,($FE5E) ;
+ $B352 LD HL,($FE5E) ; First title word X offset.
  $B355 LD ($FE4A),HL ;
- $B358 LD HL,($FE60) ;
+ $B358 LD HL,($FE60) ; First title word Z offset.
  $B35B LD ($FE4C),HL ;
  $B35E LD HL,$DD06   ;
  $B361 LD ($FE32),HL ;
  $B364 LD HL,$DDB6   ;
  $B367 LD ($FE36),HL ;
- $B36A LD A,($FE62)  ;
+ $B36A LD A,($FE62)  ; First title word angle.
  $B36D LD L,A        ;
  $B36E LD A,$1A      ; Probable attract-mode X-axis rotation hack, part 1:
                      ; feed a non-standard coordinate pair through the normal
@@ -7604,15 +7622,15 @@ c$B2F5 DEC (HL)      ;
  $B39F LD ($FE42),HL ;
  $B3A2 LD HL,$CA5E   ; Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
  $B3A5 LD ($FE46),HL ;
- $B3A8 LD HL,($FE8E) ;
+ $B3A8 LD HL,($FE8E) ; Second title word X offset.
  $B3AB LD ($FE4A),HL ;
- $B3AE LD HL,($FE90) ;
+ $B3AE LD HL,($FE90) ; Second title word Z offset.
  $B3B1 LD ($FE4C),HL ;
  $B3B4 LD HL,$DD00   ;
  $B3B7 LD ($FE32),HL ;
  $B3BA LD HL,$DDB0   ;
  $B3BD LD ($FE36),HL ;
- $B3C0 LD A,($FE92)  ;
+ $B3C0 LD A,($FE92)  ; Second title word angle.
  $B3C3 LD L,A        ;
  $B3C4 LD A,$17      ; Same probable attract-mode Y/Z-rotation hack for the
                      ; second title/logo piece.
@@ -7654,6 +7672,12 @@ c$B2F5 DEC (HL)      ;
  $B410 LD ($FE60),HL ;
  $B413 LD ($FE90),HL ;
  $B416 LD B,$18      ;
+; Current best read: first post-title motion pass.
+; Both title words still share the same horizontal offsets (`FE5E=FE8E=0`),
+; while their tumble angles (`FE62`, `FE92`) and shared Z offset
+; (`FE60=FE90`) are stepped together before each call to
+; `AttractModeDrawBattleAndZone`.
+@label=AttractModeTitleJointMotionPass
 *$B418 LD A,($FE62)  ;
  $B41B ADD A,$10     ;
  $B41D LD ($FE62),A  ;
@@ -7669,6 +7693,10 @@ c$B2F5 DEC (HL)      ;
  $B436 POP BC        ;
  $B437 DJNZ $B418    ;
  $B439 LD B,$08      ;
+; Current best read: short hold/settle pass.
+; The words keep tumbling and their angles still advance, but the shared Z
+; offset is held steady.
+@label=AttractModeTitleHoldPass
 *$B43B LD A,($FE62)  ;
  $B43E ADD A,$10     ;
  $B440 LD ($FE62),A  ;
@@ -7679,6 +7707,10 @@ c$B2F5 DEC (HL)      ;
  $B44C POP BC        ;
  $B44D DJNZ $B43B    ;
  $B44F LD B,$10      ;
+; Current best read: title separation pass.
+; The first word moves right via `FE5E += 2`, the second moves left via
+; `FE8E -= 4`, while both tumble angles continue to advance.
+@label=AttractModeTitleSeparationPass
 *$B451 LD A,($FE62)  ;
  $B454 ADD A,$10     ;
  $B456 LD ($FE62),A  ;
@@ -7709,7 +7741,7 @@ c$B2F5 DEC (HL)      ;
 ; Current best read: attract-mode credits/footer text stage.
 @label=AttractModeCreditsFooter
 *$B48C LD B,$20      ;
- $B48E LD HL,$C5DA   ;
+ $B48E LD HL,$C5DA   ; Current best read: `AttractModeCreditsFooterText`.
 *$B491 LD A,(HL)     ;
  $B492 INC HL        ;
  $B493 PUSH HL       ;
@@ -7740,6 +7772,10 @@ c$B2F5 DEC (HL)      ;
  $B4CA LD BC,$07FF   ;
  $B4CD LDIR          ;
  $B4CF LD B,$48      ;
+; Current best read: long flyoff pass with the credits/footer redrawn each
+; frame over the title words as their shared Z offset grows and their tumble
+; angles diverge further (`FE62 -= 8`, `FE92 += 8` each frame).
+@label=AttractModeTitleFlyoffWithFooter
 *$B4D1 LD HL,($FE60) ;
  $B4D4 LD DE,$00C8   ;
  $B4D7 ADD HL,DE     ;
@@ -8488,7 +8524,9 @@ t$C2B6 DEFB $16,$05,$08                                                         
  $C4F6 DEFM " OTHER BACK, THE TANK CAN BE TURNED ",$AC,"DOUBLE SPEED ON THE   SPOT.",$0D
  $C537 DEFM "(THIS GAME IS KEMPSTON JOYSTICK  COMPATABLE)",$0D,$0D,"USE OBJECTS (CUBES",$C6
  $C578 DEFM "PYRAMIDS)AS SHIELDS,",$C6,"USE THE RADAR TOFIND THE ENEMY. DO ",$C3,"STAY IN "
- $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00,$16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
+ $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00
+@label=AttractModeCreditsFooterText
+ $C5DA DEFM $16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
  $C5FA DEFM $00,$00,$00,$00,$00,$00,$00,$00
 
 ; Probable attract-mode title-word line-data family.
@@ -8678,6 +8716,11 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CA7C DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
  $CA84 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
  $CA8C DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; #UDG(#PC)
+; Current best read: start-game theme data.
+; `PlayStartTheme` consumes 10 records from here via `POP HL` / `POP DE`,
+; i.e. one 4-byte record per phrase.
+; Current best format: `[period_lo, period_hi, repeat_lo, repeat_hi]`.
+@label=StartThemeData
  $CA94 DEFB $82,$19,$0B,$00,$88,$13,$0E,$00 ; #UDG(#PC)
  $CA9C DEFB $9E,$11,$11,$00,$BE,$0F,$14,$00 ; #UDG(#PC)
  $CAA4 DEFB $9E,$11,$11,$00,$88,$13,$0E,$00 ; #UDG(#PC)
@@ -10533,14 +10576,17 @@ g$FE5A DEFW $0000    ; Stack pointer scratch slot 2.
 g$FE5C DEFW $0000
 
 ; Current entity/effect X position used by several transient setup paths.
+; In the attract title code this is reused as the first title word's X offset.
 @label=EntityXPos
 g$FE5E DEFW $0000
 
 ; Current entity/effect Z position used by several transient setup paths.
+; In the attract title code this is reused as the first title word's Z offset.
 @label=EntityZPos
 g$FE60 DEFW $0000
 
 ; Current entity/effect heading/orientation and nearby transient state.
+; In the attract title code this is reused as the first title word's angle.
 @label=EntityHeadingOrOrient
 g$FE62 DEFB $00,$00,$00,$00,$00,$00
 
@@ -10584,6 +10630,8 @@ g$FE68 DEFB $00,$00
 g$FE76 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE7E DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE86 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; In the attract title code, `FE8E/FE90/FE92` are reused as the second title
+; word's X offset, Z offset, and angle.
  $FE8E DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE96 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE9E DEFB $00,$00,$00,$00,$00,$00,$00,$00
