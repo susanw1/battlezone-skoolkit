@@ -7799,6 +7799,12 @@ c$B2F5 DEC (HL)      ;
 ; Routine at B55D
 ;
 ; Used by the routine at #R$B587.
+; Current best read: helper for a single attract-mode showcase frame.
+; It runs one frame of the main loop, redraws the score strip using `NUMBA`,
+; and then prints the `PRESS S TO START` prompt. In the showcase stage, the
+; value written to `FE76` matches the normal score reward for the displayed
+; entity (`1/3/5/2` for tank/supertank/saucer/missile), which makes it a
+; useful anchor for identifying the four sub-stages.
 @label=AttractModeShowcaseFrame
 c$B55D CALL $977E    ; Call #R$977E.
  $B560 LD HL,$50AB   ; {Write #N$50AB to *#R$94EF(#N$94F0).
@@ -7832,6 +7838,13 @@ c$B55D CALL $977E    ; Call #R$977E.
 @label=AttractModeEntityShowcase
 c$B587 LD HL,$00C0   ;
  $B58A LD ($FE62),HL ;
+; Current best read: tank showcase loop.
+; Evidence:
+; - `FE76` is loaded with `1`, matching the normal tank score reward
+; - no explicit major-entity bit is forced here after `0x956A` reset
+; - the reinitialisation path at `0x9644` defaults to bit `0x80` (tank) while
+;   the score/display value in `FE76` is below `5`
+@label=AttractModeShowcaseTank
  $B58D LD HL,$0001   ;
  $B590 LD ($FE76),HL ;
  $B593 CALL $B55D    ;
@@ -7852,6 +7865,11 @@ c$B587 LD HL,$00C0   ;
  $B5BA LD A,$40      ;
  $B5BC LD ($FE66),A  ;
  $B5BF LD ($FE6A),A  ;
+; Current best read: supertank showcase loop.
+; Evidence:
+; - `FE6A` is forced to bit `0x40`
+; - `FE76` is loaded with `3`, matching the normal supertank score reward
+@label=AttractModeShowcaseSupertank
 *$B5C2 LD HL,$0040   ;
  $B5C5 LD ($FE62),HL ;
  $B5C8 LD HL,$0003   ;
@@ -7877,6 +7895,12 @@ c$B587 LD HL,$00C0   ;
  $B5FC LD ($FE60),HL ;
  $B5FF LD HL,$1000   ;
  $B602 LD ($FE8E),HL ;
+; Current best read: saucer showcase loop.
+; Evidence:
+; - `FE76` is loaded with `5`, matching the normal saucer score reward
+; - the loop waits on bit `0x20` in probable `PRSTA`
+; - the extra setup at `FE94/FE96` matches the current saucer-motion path
+@label=AttractModeShowcaseSaucer
 *$B605 LD HL,$0000   ;
  $B608 LD ($FE62),HL ;
  $B60B LD HL,$0005   ;
@@ -7896,6 +7920,12 @@ c$B587 LD HL,$00C0   ;
  $B62E LD ($FE78),A  ;
  $B631 LD HL,$7530   ;
  $B634 LD ($FE70),HL ;
+; Current best read: missile showcase loop.
+; Evidence:
+; - `FE76` is loaded with `2`, matching the normal missile score reward
+; - the loop watches `FE81`, which is already used in the live missile path
+; - `FE78/FE70` are primed instead of forcing a high-bit entity selector
+@label=AttractModeShowcaseMissile
 *$B637 LD HL,$0002   ;
  $B63A LD ($FE76),HL ;
  $B63D CALL $B55D    ;

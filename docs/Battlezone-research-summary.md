@@ -420,6 +420,19 @@ Working summary of verified facts, local source material, and open questions for
   - stage C: forced in-engine entity showcase
   - stage D/E: two instruction pages with timed `S` exits
   - then loop back to stage A unless `S` starts the game via `$B0BC`
+- The entity-showcase stage at `$B587` now has first-pass sub-stage labels:
+  - `AttractModeShowcaseTank` = `$B58D`
+  - `AttractModeShowcaseSupertank` = `$B5C2`
+  - `AttractModeShowcaseSaucer` = `$B605`
+  - `AttractModeShowcaseMissile` = `$B637`
+- Current best evidence for that mapping:
+  - the showcase helper at `$B55D` redraws the score strip from `FE76`
+  - the four values written to `FE76` are `1`, `3`, `5`, `2`
+  - those match the shipped score rewards for tank, supertank, saucer, and missile respectively
+  - the later three loops also line up with their forced state bits / motion variables:
+    - supertank: forces `FE6A = 0x40`
+    - saucer: waits on `PRSTA` bit `0x20` and seeds `FE94/FE96`
+    - missile: primes `FE78/FE70` and watches `FE81`
 
 ## Ground rules for future updates
 

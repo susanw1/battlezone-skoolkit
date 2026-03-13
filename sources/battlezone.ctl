@@ -113,6 +113,10 @@ c $B55D
 
 c $B587
 @ $B587 label=AttractModeEntityShowcase
+@ $B58D label=AttractModeShowcaseTank
+@ $B5C2 label=AttractModeShowcaseSupertank
+@ $B605 label=AttractModeShowcaseSaucer
+@ $B637 label=AttractModeShowcaseMissile
 
   $B663,$06 #HTML(Write <a rel="noopener nofollow" href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a> to *<a rel="noopener nofollow" href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
   $B669,$03 Jump to #R$B676.
