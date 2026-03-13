@@ -2313,6 +2313,10 @@ C $963F,h2
 C $9641,h3
 N $9644
 . This entry point is used by the routines at #R$977E and #R$AD3E.
+. Current best read: entity spawn/reinitialisation dispatcher.
+. Low score forces the tank-family bit in `Probable_EXST1`; higher score uses
+. score thresholds plus `R`-based randomness to choose between tank-family,
+. supertank-family, and missile setup.
 C $9644,h3
 C $9648,h2
 C $964A,h3
@@ -2383,6 +2387,9 @@ C $9723,h3
 C $972B,h3
 N $972E
 . This entry point is used by the routine at #R$977E.
+. Current best read: missile spawn/reset path.
+. Seeds missile state in `FE7C`/`FE80`/`FE86` and sets bit `0x10` in
+. `Probable_EXST1`.
 C $9730,h2
 C $9734,h3
 C $973A,h3
@@ -2439,6 +2446,8 @@ C $97AC,h3
 C $97AF,h2
 . Saucer or missile already active in probable EXST1?
 C $97B1,h3
+. If no visible major entity is active and neither saucer nor missile is
+. already active, seed a fresh saucer here.
 C $97B4,h3
 C $97B7,h2
 C $97BA,h3
@@ -2453,6 +2462,9 @@ C $97CD,h2
 C $97CF,h3
 C $97D3,h3
 C $97D6,h3
+. Current best read: player-fire request path.
+. If `FE54` requests a shot and no player bullet is already active, seed the
+. player-bullet state and set bit `0x08` in `Probable_EXST1`.
 C $97DA,h3
 C $97DE,h3
 C $97E1,h3
@@ -3199,6 +3211,7 @@ C $A145,h2
 C $A147,h3
 C $A14A,h3
 C $A14D,h2
+. Queue the player-bullet deferred/restart bit in `Probable_EXST2`.
 C $A14F,h3
 C $A152,h3
 C $A155,h3
@@ -3293,6 +3306,7 @@ C $A24A,h2
 C $A24C,h3
 C $A24F,h3
 C $A252,h2
+. Queue the hostile-bullet deferred/restart bit in `Probable_EXST2`.
 C $A254,h3
 C $A257,h3
 C $A25A,h3
@@ -3383,6 +3397,7 @@ C $A35F,h2
 C $A361,h3
 C $A364,h3
 C $A367,h2
+. Queue the hostile-bullet deferred/restart bit after a player hit.
 C $A369,h3
 C $A36C,h3
 C $A36F,h3
@@ -7898,16 +7913,21 @@ g $FE68
 . - FE6C: probable EXST2 deferred explosion/respawn state byte
 . - FE6E: probable PRSTA current render/visibility state byte
 . Current best FE6A/FE6C/FE6E bit model:
-. - bit 7: probable tank
-. - bit 6: probable supertank
-. - bit 5: probable saucer
-. - bit 4: probable missile
-. - bit 3: probable player bullet
-. - bit 2: probable hostile bullet
-. - bits 1-0: probable obstacle/object selector
-. Current best FE6E read: high nibble mirrors the visible/drawable subset of
-. FE6A's major-entity bits, while the low bits are reused for obstacle/object
-. view state.
+. - FE6A bit 7: tank active
+. - FE6A bit 6: supertank active
+. - FE6A bit 5: saucer active
+. - FE6A bit 4: missile active
+. - FE6A bit 3: player bullet active
+. - FE6A bit 2: hostile bullet active
+. - FE6A bits 1-0: current obstacle/object selector (`00` none, `01` low
+.   block, `10` cube, `11` pyramid)
+. - FE6C is a deferred restart/effect queue rather than a full mirror:
+.   bits `0x80/0x20/0x10/0x08/0x04` are used, with tank and supertank
+.   collapsing onto the shared `0x80` tank-family bit
+. - FE6E high bits mirror the visible/drawable subset of FE6A:
+.   `0x80/0x40/0x20/0x10/0x08/0x04` = tank/supertank/saucer/missile/player
+.   bullet/hostile bullet visible
+. - FE6E bits 1-0 mirror the currently visible obstacle/object selector
 @ $FE68 label=EntityMoveDelay
 B $FE68,2,h2
 @ $FE6A label=Probable_EXST1

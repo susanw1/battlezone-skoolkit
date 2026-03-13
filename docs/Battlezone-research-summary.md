@@ -228,6 +228,32 @@ Working summary of verified facts, local source material, and open questions for
   - still unresolved:
     - the exact implementation of the `1812` startup theme
     - a clean code separation between general rumble, radar blip, and any bullet-specific clicks
+- Refined `EXST1` / `EXST2` / `PRSTA` model:
+  - `FE6A` (`EXST1`) is now on a stronger footing as the active-entity state byte:
+    - bit `0x80` = tank active
+    - bit `0x40` = supertank active
+    - bit `0x20` = saucer active
+    - bit `0x10` = missile active
+    - bit `0x08` = player bullet active
+    - bit `0x04` = hostile bullet active
+    - bits `0x03` = current obstacle/object selector
+  - the obstacle/object selector now has a code-backed mapping:
+    - `00` = no obstacle selected
+    - `01` = low block family
+    - `10` = cube family (`OB1` / `OB2`)
+    - `11` = pyramid family
+  - `FE6C` (`EXST2`) is better understood as a deferred restart/effect queue, not a full mirror of `FE6A`
+    - used bits are `0x80`, `0x20`, `0x10`, `0x08`, `0x04`
+    - tank and supertank collapse onto the shared deferred `0x80` tank-family bit there
+  - `FE6E` (`PRSTA`) is the current render/visibility byte:
+    - high bits `0x80/0x40/0x20/0x10/0x08/0x04` mirror the visible subset of tank/supertank/saucer/missile/player bullet/hostile bullet
+    - low bits mirror the currently visible obstacle/object selector
+  - `0x9644` is now best read as the entity spawn/reinitialisation dispatcher:
+    - low score forces tank-family respawn
+    - higher score uses thresholds plus `R`-based randomness to choose tank-family / supertank-family / missile setup
+  - `0x972E` is the current best missile spawn/reset path
+  - `0x97B4` is the current best fresh-saucer seeding path when no visible major entity is active
+  - `0x97D6` is the current best player-fire request path
 - `S` key handling is now separated into two clear roles:
   - gameplay hold/release path:
     - at `0xA911..0xA92E`, the game reads the `H` row first

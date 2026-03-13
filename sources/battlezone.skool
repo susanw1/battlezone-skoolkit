@@ -4114,6 +4114,10 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $963F LD A,$0B      ;
  $9641 CALL $948C    ;
 ; This entry point is used by the routines at #R$977E and #R$AD3E.
+; Current best read: entity spawn/reinitialisation dispatcher.
+; Low score forces the tank-family bit in `Probable_EXST1`; higher score uses
+; score thresholds plus `R`-based randomness to choose between tank-family,
+; supertank-family, and missile setup.
 *$9644 LD A,($FE72)  ;
  $9647 INC A         ;
  $9648 CP $1A        ;
@@ -4230,6 +4234,9 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $972A LD L,A        ;
  $972B JP $977E      ;
 ; This entry point is used by the routine at #R$977E.
+; Current best read: missile spawn/reset path.
+; Seeds missile state in `FE7C`/`FE80`/`FE86` and sets bit `0x10` in
+; `Probable_EXST1`.
 *$972E LD A,R        ;
  $9730 AND $0F       ;
  $9732 BIT 0,A       ;
@@ -4292,7 +4299,8 @@ c$977E LD HL,($FE70) ;
  $97A9 JP NZ,$97D6   ;
  $97AC LD A,($FE6A)  ;
  $97AF AND $30       ; Saucer or missile already active in probable EXST1?
- $97B1 JP NZ,$97D6   ;
+ $97B1 JP NZ,$97D6   ; If no visible major entity is active and neither saucer nor missile is
+                     ; already active, seed a fresh saucer here.
  $97B4 LD HL,($FE60) ;
  $97B7 LD D,$80      ;
  $97B9 ADD HL,DE     ;
@@ -4307,7 +4315,9 @@ c$977E LD HL,($FE70) ;
  $97CF LD ($FE6C),A  ;
  $97D2 SUB A         ;
  $97D3 LD ($FE92),A  ;
-*$97D6 LD A,($FE54)  ;
+*$97D6 LD A,($FE54)  ; Current best read: player-fire request path.
+                     ; If `FE54` requests a shot and no player bullet is already active, seed the
+                     ; player-bullet state and set bit `0x08` in `Probable_EXST1`.
  $97D9 AND A         ;
  $97DA JP Z,$986F    ;
  $97DD SUB A         ;
@@ -5398,7 +5408,7 @@ c$977E LD HL,($FE70) ;
  $A145 AND $F7       ;
  $A147 LD ($FE6E),A  ;
  $A14A LD A,($FE6C)  ;
- $A14D OR $08        ;
+ $A14D OR $08        ; Queue the player-bullet deferred/restart bit in `Probable_EXST2`.
  $A14F LD ($FE6C),A  ;
  $A152 JP $A234      ;
 *$A155 LD HL,($FEAC) ;
@@ -5507,7 +5517,7 @@ c$977E LD HL,($FE70) ;
  $A24A AND $FB       ;
  $A24C LD ($FE6A),A  ;
  $A24F LD A,($FE6C)  ;
- $A252 OR $04        ;
+ $A252 OR $04        ; Queue the hostile-bullet deferred/restart bit in `Probable_EXST2`.
  $A254 LD ($FE6C),A  ;
  $A257 JP $A37B      ;
 *$A25A LD HL,($FEB4) ;
@@ -5621,7 +5631,7 @@ c$977E LD HL,($FE70) ;
  $A35F AND $FB       ;
  $A361 LD ($FE6A),A  ;
  $A364 LD A,($FE6C)  ;
- $A367 OR $04        ;
+ $A367 OR $04        ; Queue the hostile-bullet deferred/restart bit after a player hit.
  $A369 LD ($FE6C),A  ;
  $A36C JP $A37B      ;
 *$A36F LD HL,$D488   ; Same probable shared bullet visible-line family.
@@ -11977,16 +11987,21 @@ g$FE62 DEFB $00,$00,$00,$00,$00,$00
 ; - FE6C: probable EXST2 deferred explosion/respawn state byte
 ; - FE6E: probable PRSTA current render/visibility state byte
 ; Current best FE6A/FE6C/FE6E bit model:
-; - bit 7: probable tank
-; - bit 6: probable supertank
-; - bit 5: probable saucer
-; - bit 4: probable missile
-; - bit 3: probable player bullet
-; - bit 2: probable hostile bullet
-; - bits 1-0: probable obstacle/object selector
-; Current best FE6E read: high nibble mirrors the visible/drawable subset of
-; FE6A's major-entity bits, while the low bits are reused for obstacle/object
-; view state.
+; - FE6A bit 7: tank active
+; - FE6A bit 6: supertank active
+; - FE6A bit 5: saucer active
+; - FE6A bit 4: missile active
+; - FE6A bit 3: player bullet active
+; - FE6A bit 2: hostile bullet active
+; - FE6A bits 1-0: current obstacle/object selector (`00` none, `01` low
+;   block, `10` cube, `11` pyramid)
+; - FE6C is a deferred restart/effect queue rather than a full mirror:
+;   bits `0x80/0x20/0x10/0x08/0x04` are used, with tank and supertank
+;   collapsing onto the shared `0x80` tank-family bit
+; - FE6E high bits mirror the visible/drawable subset of FE6A:
+;   `0x80/0x40/0x20/0x10/0x08/0x04` = tank/supertank/saucer/missile/player
+;   bullet/hostile bullet visible
+; - FE6E bits 1-0 mirror the currently visible obstacle/object selector
 @label=EntityMoveDelay
 g$FE68 DEFB $00,$00
 @label=Probable_EXST1
