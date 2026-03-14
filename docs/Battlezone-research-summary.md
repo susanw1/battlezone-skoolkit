@@ -254,6 +254,52 @@ Working summary of verified facts, local source material, and open questions for
   - `0x972E` is the current best missile spawn/reset path
   - `0x97B4` is the current best fresh-saucer seeding path when no visible major entity is active
   - `0x97D6` is the current best player-fire request path
+- First current-best strategy-variable overlays:
+  - tank-family:
+    - `FE5E` = probable `TKX`
+    - `FE60` = probable `TKZ`
+    - `FE62` = probable `TKOR`
+    - `FE64` = probable `TKDIR`
+    - `FE66` = probable `TKSTR`
+      - current best bit model: bit 7 kill/aggressive, bit 6 forward, bit 5 back, bit 4 left, bit 3 right
+      - common values seen in code: `0x40` straight forward, `0x48/0x50` forward plus right/left turn, `0x80` then `0x88/0x90/0xC0` for aggressive attack states
+      - `0x28` is the current-best canned back+right evasive state
+      - that evasive state is now best read as close-obstacle avoidance, not player avoidance
+    - `FE68` = probable `TKMCT`
+    - `0x98F4` = current best `TKSTRAT` core
+    - `0x9644` = current best shipped `TEXST` match: tank-family existence/spawn logic broadened into the main score/random dispatcher, with an inlined `MSET` branch
+      - current best threshold reading:
+        - below 5 points: tank-only
+        - 5-24 points: tank vs missile, matching the page-4 `M=1/4` / `M|M=3/4` style notes depending on whether the missile bit is already active
+        - 25+ points: tank / supertank / missile mix
+    - `FE98..FEA7` = current best obstacle-position block, four packed `(X,Z)` pairs used by:
+      - `0x9A92..0x9AE7` tank close-obstacle evasive checks
+      - `0xA37B..0xA420` obstacle-family selection for render/collision
+      - `0xA695..0xA714` movement masking against nearby obstacles
+    - `FEA8` = current best view/world-turn angle accumulator
+      - initialised to `0x0040`
+      - updated in the obstacle render/turn logic around `0xA442..0xA484`
+      - consumed by the shared `(X,Z)` transform dispatcher entered at `0x91E6`
+    - `0xA774` = straight world-Z scroll pass after forward/back movement
+    - `0xA7D1` = shared world-turn rotation pass over obstacles and active entities
+    - classification fix:
+      - `0x91E6`, `0x924A`, `0x92AE`, and `0x9312` are now promoted from misclassified data to code in the ctl/skool
+      - current best read: `0x91E6` is the shared turn/movement transform dispatcher and the later three are handler variants selected via `TURN`
+      - the residual handler-tail ctl overlap is now fixed too; `0x9358/0x9360/0x9368/0x9370` now emit as code instead of stray `DEFB`s
+  - missile-family:
+    - `FE78` = probable `MISCT`
+    - `FE7A` = probable `MSMCT`
+    - `FE7C` = probable `MISX`
+    - `FE7E` = probable `MISY`
+    - `FE80` = probable `MISZ`
+    - `FE82` = probable `ZIG`
+    - `FE84` = probable `MSTRJ` / `MSTRT`
+    - `FE86` = probable `MSOR`
+    - `0x972E` = current best shipped `MSET` missile-setup branch
+    - `0x9E3D` = current best broader `MISSILES` phase
+    - `0x9E49` = current best `MISSTRAT` core
+  - page 6 uses `MSTRJ` in missile setup, while pages 20-21 use `MSTRT` in the strategy notes
+  - current best code-side reading is that both notebook names refer to the same live missile state byte at `FE84`
 - `S` key handling is now separated into two clear roles:
   - gameplay hold/release path:
     - at `0xA911..0xA92E`, the game reads the `H` row first
@@ -385,8 +431,8 @@ Working summary of verified facts, local source material, and open questions for
   - visible Spectrum buffers are the normal `0x4000` pixel screen and `0x5800` attributes
   - `SDRAW` copies an off-screen top/status strip from `0xDFA0` to `0x40A0`
   - `SDRAW` copies the off-screen main playfield from `0xE700` to `0x4800`
-- Are `MSTRJ` and `MSTRT` the same symbol at different points in the notes, or distinct but related state bytes?
-  - Current direction: Susan is confident `MSTRJ` is the missile action bitfield, so `MSTRT` should be treated as unresolved for now.
+- `MSTRJ` / `MSTRT` now look most likely to be two notebook names for the same missile strategy byte
+  - Current best code-side mapping is `FE84`; confirm only if a later notebook page or code path proves a second distinct missile state byte exists
 - Where in the code are:
   - world transforms,
   - perspective divide,

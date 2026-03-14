@@ -2016,57 +2016,321 @@ B $91C0,8,h8
 B $91C8,8,h8
 B $91D0,8,h8
 B $91D8,8,h8
-B $91E0,8,h8
-B $91E8,8,h8
-B $91F0,8,h8
-B $91F8,8,h8
-B $9200,8,h8
-B $9208,8,h8
-B $9210,8,h8
-B $9218,8,h8
-B $9220,8,h8
-B $9228,8,h8
-B $9230,8,h8
-B $9238,8,h8
-B $9240,8,h8
-B $9248,8,h8
-B $9250,8,h8
-B $9258,8,h8
-B $9260,8,h8
-B $9268,8,h8
-B $9270,8,h8
-B $9278,8,h8
-B $9280,8,h8
-B $9288,8,h8
-B $9290,8,h8
-B $9298,8,h8
-B $92A0,8,h8
-B $92A8,8,h8
-B $92B0,8,h8
-B $92B8,8,h8
-B $92C0,8,h8
-B $92C8,8,h8
-B $92D0,8,h8
-B $92D8,8,h8
-B $92E0,8,h8
-B $92E8,8,h8
-B $92F0,8,h8
-B $92F8,8,h8
-B $9300,8,h8
-B $9308,8,h8
-B $9310,8,h8
-B $9318,8,h8
-B $9320,8,h8
-B $9328,8,h8
-B $9330,8,h8
-B $9338,8,h8
-B $9340,8,h8
-B $9348,8,h8
-B $9350,8,h8
-B $9358,8,h8
-B $9360,8,h8
-B $9368,8,h8
-B $9370,8,h8
+B $91E0,6,h6
+N $91E6
+. Shared turn/movement transform dispatcher.
+. `0xA7D9` and related callers pass an `(X,Z)` pair in `DE/BC`. The routine
+. jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
+. selected movement/turn variant, then returns updated coordinates in `DE/BC`
+. and the updated view-turn angle in `HL`.
+@ $91E6 label=TurnTransformDispatcher
+c $91E6
+C $91E6,1
+C $91E7,h3
+C $91EA,1
+C $91EB,1
+C $91EC,1
+C $91ED,h2
+C $91EF,1
+C $91F0,1
+C $91F1,1
+C $91F2,1
+C $91F3,1
+C $91F4,1
+C $91F5,h3
+C $91F8,1
+C $91F9,1
+C $91FA,h2
+C $91FC,h2
+C $91FE,h2
+C $9200,1
+C $9201,h2
+C $9203,h2
+C $9205,h2
+C $9207,1
+C $9208,1
+C $9209,h2
+C $920B,1
+C $920C,1
+C $920D,h2
+C $920F,h2
+C $9211,1
+C $9212,h3
+C $9215,1
+C $9216,1
+C $9217,h2
+C $9219,1
+C $921A,1
+C $921B,1
+C $921C,1
+C $921D,1
+C $921E,1
+C $921F,h3
+C $9222,1
+C $9223,1
+C $9224,h2
+C $9226,h2
+C $9228,h2
+C $922A,1
+C $922B,h2
+C $922D,h2
+C $922F,h2
+C $9231,1
+C $9232,1
+C $9233,h2
+C $9235,1
+C $9236,1
+C $9237,h2
+C $9239,h2
+C $923B,1
+C $923C,h3
+C $923F,1
+C $9240,1
+C $9241,h2
+C $9243,1
+C $9244,1
+C $9245,1
+C $9246,1
+C $9247,1
+B $9248,2,h2
+N $924A
+. Movement/turn handler variant selected via `TURN`.
+. Current best read: one-step negative turn update before the shared transform.
+@ $924A label=TurnHandlerMinus1
+c $924A
+C $924A,1
+C $924B,1
+C $924C,1
+C $924D,1
+C $924E,h3
+C $9251,h3
+C $9254,1
+C $9255,1
+C $9256,1
+C $9257,1
+C $9258,1
+C $9259,1
+C $925A,h3
+C $925D,1
+C $925E,1
+C $925F,h2
+C $9261,h2
+C $9263,h2
+C $9265,1
+C $9266,h2
+C $9268,h2
+C $926A,h2
+C $926C,1
+C $926D,1
+C $926E,h2
+C $9270,1
+C $9271,1
+C $9272,h2
+C $9274,h2
+C $9276,1
+C $9277,h3
+C $927A,1
+C $927B,1
+C $927C,h2
+C $927E,1
+C $927F,1
+C $9280,1
+C $9281,1
+C $9282,1
+C $9283,1
+C $9284,h3
+C $9287,1
+C $9288,1
+C $9289,h2
+C $928B,h2
+C $928D,h2
+C $928F,1
+C $9290,h2
+C $9292,h2
+C $9294,h2
+C $9296,1
+C $9297,1
+C $9298,h2
+C $929A,1
+C $929B,1
+C $929C,h2
+C $929E,h2
+C $92A0,1
+C $92A1,h3
+C $92A4,1
+C $92A5,1
+C $92A6,h2
+C $92A8,1
+C $92A9,1
+C $92AA,1
+C $92AB,1
+C $92AC,1
+B $92AD,1
+N $92AE
+. Movement/turn handler variant selected via `TURN`.
+. Current best read: two-step positive turn update before the shared transform.
+@ $92AE label=TurnHandlerPlus2
+c $92AE
+C $92AE,1
+C $92AF,1
+C $92B0,1
+C $92B1,h2
+C $92B3,1
+C $92B4,1
+C $92B5,1
+C $92B6,1
+C $92B7,1
+C $92B8,1
+C $92B9,h3
+C $92BC,1
+C $92BD,1
+C $92BE,h2
+C $92C0,h2
+C $92C2,h2
+C $92C4,1
+C $92C5,h2
+C $92C7,h2
+C $92C9,h2
+C $92CB,1
+C $92CC,1
+C $92CD,h2
+C $92CF,1
+C $92D0,1
+C $92D1,1
+C $92D2,h2
+C $92D4,h2
+C $92D6,1
+C $92D7,h3
+C $92DA,1
+C $92DB,1
+C $92DC,h2
+C $92DE,1
+C $92DF,1
+C $92E0,1
+C $92E1,1
+C $92E2,1
+C $92E3,1
+C $92E4,h3
+C $92E7,1
+C $92E8,1
+C $92E9,h2
+C $92EB,h2
+C $92ED,h2
+C $92EF,1
+C $92F0,h2
+C $92F2,h2
+C $92F4,h2
+C $92F6,1
+C $92F7,1
+C $92F8,h2
+C $92FA,1
+C $92FB,1
+C $92FC,1
+C $92FD,h2
+C $92FF,h2
+C $9301,1
+C $9302,h3
+C $9305,1
+C $9306,1
+C $9307,h2
+C $9309,1
+C $930A,1
+C $930B,1
+C $930C,1
+C $930D,1
+B $930E,4,h4
+N $9312
+. Movement/turn handler variant selected via `TURN`.
+. Current best read: two-step negative turn update before the shared transform.
+@ $9312 label=TurnHandlerMinus2
+c $9312
+C $9312,1
+C $9313,1
+C $9314,1
+C $9315,1
+C $9316,1
+C $9317,h3
+C $931A,h2
+C $931C,1
+C $931D,1
+C $931E,1
+C $931F,1
+C $9320,1
+C $9321,1
+C $9322,h3
+C $9325,1
+C $9326,1
+C $9327,h2
+C $9329,h2
+C $932B,h2
+C $932D,1
+C $932E,h2
+C $9330,h2
+C $9332,h2
+C $9334,1
+C $9335,1
+C $9336,h2
+C $9338,1
+C $9339,1
+C $933A,1
+C $933B,h2
+C $933D,h2
+C $933F,1
+C $9340,h3
+C $9343,1
+C $9344,1
+C $9345,h2
+C $9347,1
+C $9348,1
+C $9349,1
+C $934A,1
+C $934B,1
+C $934C,1
+C $934D,h3
+C $9350,1
+C $9351,1
+C $9352,h2
+C $9354,h2
+C $9356,h2
+C $9358,1
+C $9359,h2
+C $935B,h2
+C $935D,h2
+C $935F,1
+C $9360,1
+C $9361,h2
+C $9363,1
+C $9364,1
+C $9365,1
+C $9366,h2
+C $9368,h2
+C $936A,1
+C $936B,h3
+C $936E,1
+C $936F,1
+C $9370,h2
+C $9372,1
+C $9373,1
+C $9374,1
+C $9375,1
+C $9376,1
+B $9377,1
+B $9378,8,h8
+B $9380,8,h8
+B $9388,8,h8
+B $9390,8,h8
+B $9398,8,h8
+B $93A0,8,h8
+B $93A8,8,h8
+B $93B0,8,h8
+B $93B8,8,h8
+B $93C0,8,h8
+B $93C8,8,h8
+B $93D0,8,h8
+B $93D8,8,h8
+B $93E0,8,h8
+B $93E8,8,h8
+B $93F0,8,h8
 B $9378,8,h8
 B $9380,8,h8
 B $9388,8,h8
@@ -2312,11 +2576,20 @@ C $963C,h3
 C $963F,h2
 C $9641,h3
 N $9644
+. TEXST
 . This entry point is used by the routines at #R$977E and #R$AD3E.
-. Current best read: entity spawn/reinitialisation dispatcher.
-. Low score forces the tank-family bit in `Probable_EXST1`; higher score uses
-. score thresholds plus `R`-based randomness to choose between tank-family,
-. supertank-family, and missile setup.
+. Current best read: shipped `TEXST` / tank-family existence-spawn dispatcher.
+. It still does the notebook page-11/12 job of deciding whether the tank-family
+. should exist and seeding `TKX` / `TKZ` / `TKOR` / `TKDIR`, but the shipped
+. code has broadened into a score/random-driven dispatcher with an inlined
+. missile-setup branch at #R$972E.
+. Current best threshold reading:
+. - score below 5: always seed the old-tank family
+. - score 5..24: choose old tank vs missile, matching the page-4 `M = 1/4`
+.   and `M|M = 3/4` style notes depending on whether the missile bit is
+.   already present in `EXST1`
+. - score 25+: choose among old tank, supertank, and missile
+@ $9644 label=TEXST
 C $9644,h3
 C $9648,h2
 C $964A,h3
@@ -2386,10 +2659,12 @@ C $9720,h3
 C $9723,h3
 C $972B,h3
 N $972E
+. MSET
 . This entry point is used by the routine at #R$977E.
-. Current best read: missile spawn/reset path.
-. Seeds missile state in `FE7C`/`FE80`/`FE86` and sets bit `0x10` in
-. `Probable_EXST1`.
+. Current best read: shipped `MSET` missile-setup branch reached from #R$9644.
+. Seeds `MISX` / `MISY` / `MISZ`, derives `ZIG` from `MISCT`, initialises the
+. live missile strategy byte, and sets bit `0x10` in `Probable_EXST1`.
+@ $972E label=MSET
 C $9730,h2
 C $9734,h3
 C $973A,h3
@@ -2557,6 +2832,25 @@ C $98EB,h3
 C $98EE,h3
 C $98F1,h3
 C $98F4,h3
+. Current best read: `TKSTRAT` core.
+. Evidence:
+. - this is where `FE68` countdown/state timing, `FE66` strategy bits,
+.   `FE62` heading, and `FE5E/FE60` tank position are updated together
+. - the logic matches the notebook's `TKMCT`, `TKSTR`, `TKOR`, `TKX`, `TKZ`,
+.   `TKDIR`, `FRAME`, and `PHASE` cluster on page 13
+. Current best `TKSTR` bit reading from this block:
+. - bit 7 = kill/aggressive mode
+. - bit 6 = forward motion
+. - bit 5 = reverse/back motion
+. - bit 4 = left turn
+. - bit 3 = right turn
+. - `0x40` = straight trundle/forward
+. - `0x48` / `0x50` = forward plus right/left turn
+. - `0x80` then `0x88` / `0x90` / `0xC0` = aggressive attack mode with
+.   turn/forward selected from `TKDIR` vs `TKOR`
+. - `0x28` = current best canned evasive state: back + right turn, forced
+.   when the tank gets too close to the player or to one of the obstacle
+.   proximity boxes tested at `0x9A92..0x9AE7`
 C $98F8,h3
 C $98FC,h3
 C $98FF,h3
@@ -2682,6 +2976,10 @@ C $9A87,h3
 C $9A8A,h3
 C $9A8E,h3
 C $9A92,h3
+. Current best read: obstacle-proximity test, not player-proximity.
+. `FE98..FEA7` holds four obstacle `(X,Z)` pairs; this block checks whether the
+. tank's current high-byte position lies inside any obstacle's near box and,
+. if so, forces the canned evasive `TKSTR=0x28` state.
 C $9A96,h2
 C $9A98,h2
 C $9A9A,h3
@@ -2986,6 +3284,12 @@ C $9E44,h2
 . Missile active?
 C $9E46,h3
 C $9E49,h3
+. Current best read: `MISSTRAT` / missile strategy state machine.
+. Evidence:
+. - this block manipulates the live missile strategy byte in `FE84`
+. - it updates the signed missile offset/orientation slot in `FE86`
+. - the `BIT`/`RES`/`SET` pattern matches the notebook `MISSTRAT` page and
+.   its `MSTRT`/`MSTRJ` bitfield notes very closely
 C $9E4E,h3
 C $9E51,h3
 C $9E56,h3
@@ -3769,6 +4073,10 @@ C $A769,h3
 C $A76E,h3
 C $A771,h3
 C $A774,h3
+. Straight world-Z scroll pass after forward/back movement.
+. The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
+. other world-space entity Z positions so the player remains effectively
+. centred while the world moves.
 C $A778,h3
 C $A77B,h3
 C $A77F,h3
@@ -3796,6 +4104,11 @@ C $A7C9,h2
 C $A7CB,h3
 C $A7CE,h3
 C $A7D1,h4
+. Shared world-turn rotation pass.
+. `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn
+. transform to each `(X,Z)` pair, and returns updated coordinates. The pass is
+. used first on the four obstacle pairs, then on tank/saucer/missile/bullet
+. world positions.
 C $A7D5,h4
 C $A7D9,h3
 C $A7DC,h3
@@ -7894,21 +8207,30 @@ W $FE5C,2,h2
 g $FE5E
 . Current entity/effect X position used by several transient setup paths.
 . In the attract title code this is reused as the first title word's X offset.
+. Current best gameplay overlay: tank-family `TKX`.
 @ $FE5E label=EntityXPos
 W $FE5E,2,h2
 g $FE60
 . Current entity/effect Z position used by several transient setup paths.
 . In the attract title code this is reused as the first title word's Z offset.
+. Current best gameplay overlay: tank-family `TKZ`.
 @ $FE60 label=EntityZPos
 W $FE60,2,h2
 g $FE62
 . Current entity/effect heading/orientation and nearby transient state.
 . In the attract title code this is reused as the first title word's angle.
+. Current best gameplay overlays:
+. - `FE62` = probable tank-family `TKOR`
+. - `FE64` = probable `TKDIR` (direction-to-player / desired heading)
+. - `FE66` = probable `TKSTR` strategy/state bits:
+.   bit 7 kill/aggressive, bit 6 forward, bit 5 back, bit 4 left, bit 3
+.   right
 @ $FE62 label=EntityHeadingOrOrient
 B $FE62,6,h6
 g $FE68
 . Mixed transient state:
-. - FE68: movement/effect delay counter
+. - FE68: movement/effect delay counter; current best tank-family overlay:
+.   `TKMCT`
 . - FE6A: probable EXST1 active-entity state byte
 . - FE6C: probable EXST2 deferred explosion/respawn state byte
 . - FE6E: probable PRSTA current render/visibility state byte
@@ -7937,6 +8259,16 @@ B $FE6C,2,h2
 @ $FE6E label=Probable_PRSTA
 B $FE6E,2,h2
 B $FE70,4,h4
+> $FE76 ; Current best missile-family overlays:
+> $FE76 ; - `FE78` = probable `MISCT` (missiles fired so far)
+> $FE76 ; - `FE7A` = probable `MSMCT` manoeuvre/frame counter
+> $FE76 ; - `FE7C` = probable `MISX`
+> $FE76 ; - `FE7E` = probable `MISY`
+> $FE76 ; - `FE80` = probable `MISZ`
+> $FE76 ; - `FE82` = probable `ZIG` / remaining-zig counter derived from `MISCT`
+> $FE76 ; - `FE84` = probable missile strategy/action bitfield; notebook `MSTRJ`
+> $FE76 ;   and `MSTRT` now look like alternate names/usages for this same byte
+> $FE76 ; - `FE86` = probable `MSOR` signed missile offset/orientation register
 > $FE76 ; Probable border/sound latch.
 > $FE76 ; Current best read:
 > $FE76 ; - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
@@ -7955,9 +8287,26 @@ N $FE8E
 . In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 . word's X offset, Z offset, and angle.
 B $FE8E,8,h8
+g $FE96
+. Obstacle world-position workspace, four packed `(X,Z)` pairs:
+. - `FE98/FE9A` = obstacle 1 X/Z
+. - `FE9C/FE9E` = obstacle 2 X/Z
+. - `FEA0/FEA2` = obstacle 3 X/Z
+. - `FEA4/FEA6` = obstacle 4 X/Z
+. The same block is reused by:
+. - `0x9A92..0x9AE7` tank evasive/proximity checks
+. - `0xA37B..0xA420` obstacle-family selection for rendering/collision
+. - `0xA695..0xA714` movement masking against nearby obstacles
 B $FE96,8,h8
 B $FE9E,8,h8
-B $FEA6,8,h8
+B $FEA6,2,h2
+g $FEA8
+. Current view/world-turn angle accumulator.
+. Initialised to `0x0040` at reset and updated by the obstacle render/turn
+. logic around `0xA442..0xA484`; consumed by the shared `(X,Z)` transform pass
+. entered via `0x91E6`.
+@ $FEA8 label=ViewTurnAngle
+B $FEA8,6,h6
 B $FEAE,8,h8
 B $FEB6,8,h8
 B $FEBE,8,h8

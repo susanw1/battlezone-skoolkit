@@ -3726,85 +3726,353 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $91C8 DEFB $50,$C9,$CB,$59,$28,$03,$3E,$60
  $91D0 DEFB $C9,$3E,$90,$C9,$C9,$00,$00,$00
  $91D8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $91E0 DEFB $00,$00,$00,$00,$00,$00,$E5,$2A
- $91E8 DEFB $5C,$FE,$E9,$E1,$23,$CB,$8C,$E5
- $91F0 DEFB $D5,$C5,$48,$78,$A7,$F2,$FA,$91
- $91F8 DEFB $2F,$47,$CB,$38,$CB,$3F,$CB,$38
- $9200 DEFB $80,$CB,$38,$CB,$38,$CB,$38,$80
- $9208 DEFB $6F,$26,$00,$29,$29,$CB,$79,$20
- $9210 DEFB $04,$19,$C3,$19,$92,$A7,$EB,$ED
- $9218 DEFB $52,$D1,$C1,$E5,$48,$78,$A7,$F2
- $9220 DEFB $24,$92,$2F,$47,$CB,$3F,$CB,$38
- $9228 DEFB $CB,$38,$80,$CB,$38,$CB,$38,$CB
- $9230 DEFB $38,$80,$6F,$26,$00,$29,$29,$CB
- $9238 DEFB $79,$28,$04,$19,$C3,$43,$92,$A7
- $9240 DEFB $EB,$ED,$52,$44,$4D,$D1,$E1,$C9
- $9248 DEFB $00,$00,$E1,$2B,$7C,$A7,$F2,$54
- $9250 DEFB $92,$21,$FF,$01,$E5,$D5,$C5,$48
- $9258 DEFB $78,$A7,$F2,$5F,$92,$2F,$47,$CB
- $9260 DEFB $38,$CB,$3F,$CB,$38,$80,$CB,$38
- $9268 DEFB $CB,$38,$CB,$38,$80,$6F,$26,$00
- $9270 DEFB $29,$29,$CB,$79,$28,$04,$19,$C3
- $9278 DEFB $7E,$92,$A7,$EB,$ED,$52,$D1,$C1
- $9280 DEFB $E5,$48,$78,$A7,$F2,$89,$92,$2F
- $9288 DEFB $47,$CB,$3F,$CB,$38,$CB,$38,$80
- $9290 DEFB $CB,$38,$CB,$38,$CB,$38,$80,$6F
- $9298 DEFB $26,$00,$29,$29,$CB,$79,$20,$04
- $92A0 DEFB $19,$C3,$A8,$92,$A7,$EB,$ED,$52
- $92A8 DEFB $44,$4D,$D1,$E1,$C9,$00,$E1,$23
- $92B0 DEFB $23,$CB,$8C,$E5,$D5,$C5,$48,$78
- $92B8 DEFB $A7,$F2,$BE,$92,$2F,$47,$CB,$38
- $92C0 DEFB $CB,$3F,$CB,$38,$80,$CB,$38,$CB
- $92C8 DEFB $38,$CB,$38,$80,$6F,$26,$00,$29
- $92D0 DEFB $29,$29,$CB,$79,$20,$04,$19,$C3
- $92D8 DEFB $DE,$92,$A7,$EB,$ED,$52,$D1,$C1
- $92E0 DEFB $E5,$48,$78,$A7,$F2,$E9,$92,$2F
- $92E8 DEFB $47,$CB,$3F,$CB,$38,$CB,$38,$80
- $92F0 DEFB $CB,$38,$CB,$38,$CB,$38,$80,$6F
- $92F8 DEFB $26,$00,$29,$29,$29,$CB,$79,$28
- $9300 DEFB $04,$19,$C3,$09,$93,$A7,$EB,$ED
- $9308 DEFB $52,$44,$4D,$D1,$E1,$C9,$00,$00
- $9310 DEFB $00,$00,$E1,$2B,$2B,$7C,$A7,$F2
- $9318 DEFB $1C,$93,$26,$01,$E5,$D5,$C5,$48
- $9320 DEFB $78,$A7,$F2,$27,$93,$2F,$47,$CB
- $9328 DEFB $38,$CB,$3F,$CB,$38,$80,$CB,$38
- $9330 DEFB $CB,$38,$CB,$38,$80,$6F,$26,$00
- $9338 DEFB $29,$29,$29,$CB,$79,$28,$04,$19
- $9340 DEFB $C3,$47,$93,$A7,$EB,$ED,$52,$D1
- $9348 DEFB $C1,$E5,$48,$78,$A7,$F2,$52,$93
- $9350 DEFB $2F,$47,$CB,$3F,$CB,$38,$CB,$38
- $9358 DEFB $80,$CB,$38,$CB,$38,$CB,$38,$80
- $9360 DEFB $6F,$26,$00,$29,$29,$29,$CB,$79
- $9368 DEFB $20,$04,$19,$C3,$72,$93,$A7,$EB
- $9370 DEFB $ED,$52,$44,$4D,$D1,$E1,$C9,$00
- $9378 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9380 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9388 DEFB $00,$00,$7C,$06,$00,$A7,$F2,$9A
- $9390 DEFB $93,$44,$4D,$21,$00,$00,$ED,$42
- $9398 DEFB $06,$80,$29,$E5,$7A,$A7,$F2,$A9
- $93A0 DEFB $93,$21,$00,$00,$ED,$52,$CB,$F0
- $93A8 DEFB $EB,$CB,$23,$CB,$12,$08,$78,$08
- $93B0 DEFB $C1,$D5,$EB,$A7,$ED,$42,$D1,$DA
- $93B8 DEFB $C3,$93,$69,$60,$EB,$4D,$44,$08
- $93C0 DEFB $F6,$20,$08,$26,$00,$7A,$CB,$24
- $93C8 DEFB $17,$38,$03,$B8,$38,$02,$90,$24
- $93D0 DEFB $CB,$24,$17,$38,$03,$B8,$38,$02
- $93D8 DEFB $90,$24,$CB,$24,$17,$38,$03,$B8
- $93E0 DEFB $38,$02,$90,$24,$CB,$24,$17,$38
- $93E8 DEFB $03,$B8,$38,$02,$90,$24,$CB,$24
- $93F0 DEFB $17,$38,$03,$B8,$38,$02,$90,$24
- $93F8 DEFB $CB,$24,$17,$38,$03,$B8,$38,$02
- $9400 DEFB $90,$24,$CB,$24,$17,$38,$03,$B8
- $9408 DEFB $38,$02,$90,$24,$CB,$24,$17,$38
- $9410 DEFB $03,$B8,$38,$02,$90,$24,$6C,$26
- $9418 DEFB $7B,$7E,$08,$47,$08,$CB,$68,$C2
- $9420 DEFB $25,$94,$3E,$40,$96,$4F,$CB,$70
- $9428 DEFB $CA,$37,$94,$CB,$78,$CA,$33,$94
- $9430 DEFB $C6,$80,$C9,$3E,$80,$91,$C9,$CB
- $9438 DEFB $78,$C8,$ED,$44,$C9,$00,$00,$00
- $9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9450 DEFB $00,$00
+ $91E0 DEFB $00,$00,$00,$00,$00,$00
+
+; Routine at 91E6
+;
+; Used by the routine at #R$977E.
+;
+; .
+;
+; Shared turn/movement transform dispatcher.
+; `0xA7D9` and related callers pass an `(X,Z)` pair in `DE/BC`. The routine
+; jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
+; selected movement/turn variant, then returns updated coordinates in `DE/BC`
+; and the updated view-turn angle in `HL`.
+@label=TurnTransformDispatcher
+c$91E6 PUSH HL       ;
+ $91E7 LD HL,($FE5C) ;
+ $91EA JP (HL)       ;
+ $91EB POP HL        ;
+ $91EC INC HL        ;
+ $91ED RES 1,H       ;
+ $91EF PUSH HL       ;
+ $91F0 PUSH DE       ;
+ $91F1 PUSH BC       ;
+ $91F2 LD C,B        ;
+ $91F3 LD A,B        ;
+ $91F4 AND A         ;
+ $91F5 JP P,$91FA    ;
+ $91F8 CPL           ;
+ $91F9 LD B,A        ;
+*$91FA SRL B         ;
+ $91FC SRL A         ;
+ $91FE SRL B         ;
+ $9200 ADD A,B       ;
+ $9201 SRL B         ;
+ $9203 SRL B         ;
+ $9205 SRL B         ;
+ $9207 ADD A,B       ;
+ $9208 LD L,A        ;
+ $9209 LD H,$00      ;
+ $920B ADD HL,HL     ;
+ $920C ADD HL,HL     ;
+ $920D BIT 7,C       ;
+ $920F JR NZ,$9215   ;
+ $9211 ADD HL,DE     ;
+ $9212 JP $9219      ;
+*$9215 AND A         ;
+ $9216 EX DE,HL      ;
+ $9217 SBC HL,DE     ;
+*$9219 POP DE        ;
+ $921A POP BC        ;
+ $921B PUSH HL       ;
+ $921C LD C,B        ;
+ $921D LD A,B        ;
+ $921E AND A         ;
+ $921F JP P,$9224    ;
+ $9222 CPL           ;
+ $9223 LD B,A        ;
+*$9224 SRL A         ;
+ $9226 SRL B         ;
+ $9228 SRL B         ;
+ $922A ADD A,B       ;
+ $922B SRL B         ;
+ $922D SRL B         ;
+ $922F SRL B         ;
+ $9231 ADD A,B       ;
+ $9232 LD L,A        ;
+ $9233 LD H,$00      ;
+ $9235 ADD HL,HL     ;
+ $9236 ADD HL,HL     ;
+ $9237 BIT 7,C       ;
+ $9239 JR Z,$923F    ;
+ $923B ADD HL,DE     ;
+ $923C JP $9243      ;
+*$923F AND A         ;
+ $9240 EX DE,HL      ;
+ $9241 SBC HL,DE     ;
+*$9243 LD B,H        ;
+ $9244 LD C,L        ;
+ $9245 POP DE        ;
+ $9246 POP HL        ;
+ $9247 RET           ;
+ $9248 DEFB $00,$00  ;
+
+; Routine at 924A
+;
+; .
+;
+; .
+;
+; Movement/turn handler variant selected via `TURN`.
+; Current best read: one-step negative turn update before the shared transform.
+@label=TurnHandlerMinus1
+c$924A POP HL        ;
+ $924B DEC HL        ;
+ $924C LD A,H        ;
+ $924D AND A         ;
+ $924E JP P,$9254    ;
+ $9251 LD HL,$01FF   ;
+*$9254 PUSH HL       ;
+ $9255 PUSH DE       ;
+ $9256 PUSH BC       ;
+ $9257 LD C,B        ;
+ $9258 LD A,B        ;
+ $9259 AND A         ;
+ $925A JP P,$925F    ;
+ $925D CPL           ;
+ $925E LD B,A        ;
+*$925F SRL B         ;
+ $9261 SRL A         ;
+ $9263 SRL B         ;
+ $9265 ADD A,B       ;
+ $9266 SRL B         ;
+ $9268 SRL B         ;
+ $926A SRL B         ;
+ $926C ADD A,B       ;
+ $926D LD L,A        ;
+ $926E LD H,$00      ;
+ $9270 ADD HL,HL     ;
+ $9271 ADD HL,HL     ;
+ $9272 BIT 7,C       ;
+ $9274 JR Z,$927A    ;
+ $9276 ADD HL,DE     ;
+ $9277 JP $927E      ;
+*$927A AND A         ;
+ $927B EX DE,HL      ;
+ $927C SBC HL,DE     ;
+*$927E POP DE        ;
+ $927F POP BC        ;
+ $9280 PUSH HL       ;
+ $9281 LD C,B        ;
+ $9282 LD A,B        ;
+ $9283 AND A         ;
+ $9284 JP P,$9289    ;
+ $9287 CPL           ;
+ $9288 LD B,A        ;
+*$9289 SRL A         ;
+ $928B SRL B         ;
+ $928D SRL B         ;
+ $928F ADD A,B       ;
+ $9290 SRL B         ;
+ $9292 SRL B         ;
+ $9294 SRL B         ;
+ $9296 ADD A,B       ;
+ $9297 LD L,A        ;
+ $9298 LD H,$00      ;
+ $929A ADD HL,HL     ;
+ $929B ADD HL,HL     ;
+ $929C BIT 7,C       ;
+ $929E JR NZ,$92A4   ;
+ $92A0 ADD HL,DE     ;
+ $92A1 JP $92A8      ;
+*$92A4 AND A         ;
+ $92A5 EX DE,HL      ;
+ $92A6 SBC HL,DE     ;
+*$92A8 LD B,H        ;
+ $92A9 LD C,L        ;
+ $92AA POP DE        ;
+ $92AB POP HL        ;
+ $92AC RET           ;
+ $92AD DEFB $00      ;
+
+; Routine at 92AE
+;
+; .
+;
+; .
+;
+; Movement/turn handler variant selected via `TURN`.
+; Current best read: two-step positive turn update before the shared transform.
+@label=TurnHandlerPlus2
+c$92AE POP HL               ;
+ $92AF INC HL               ;
+ $92B0 INC HL               ;
+ $92B1 RES 1,H              ;
+ $92B3 PUSH HL              ;
+ $92B4 PUSH DE              ;
+ $92B5 PUSH BC              ;
+ $92B6 LD C,B               ;
+ $92B7 LD A,B               ;
+ $92B8 AND A                ;
+ $92B9 JP P,$92BE           ;
+ $92BC CPL                  ;
+ $92BD LD B,A               ;
+*$92BE SRL B                ;
+ $92C0 SRL A                ;
+ $92C2 SRL B                ;
+ $92C4 ADD A,B              ;
+ $92C5 SRL B                ;
+ $92C7 SRL B                ;
+ $92C9 SRL B                ;
+ $92CB ADD A,B              ;
+ $92CC LD L,A               ;
+ $92CD LD H,$00             ;
+ $92CF ADD HL,HL            ;
+ $92D0 ADD HL,HL            ;
+ $92D1 ADD HL,HL            ;
+ $92D2 BIT 7,C              ;
+ $92D4 JR NZ,$92DA          ;
+ $92D6 ADD HL,DE            ;
+ $92D7 JP $92DE             ;
+*$92DA AND A                ;
+ $92DB EX DE,HL             ;
+ $92DC SBC HL,DE            ;
+*$92DE POP DE               ;
+ $92DF POP BC               ;
+ $92E0 PUSH HL              ;
+ $92E1 LD C,B               ;
+ $92E2 LD A,B               ;
+ $92E3 AND A                ;
+ $92E4 JP P,$92E9           ;
+ $92E7 CPL                  ;
+ $92E8 LD B,A               ;
+*$92E9 SRL A                ;
+ $92EB SRL B                ;
+ $92ED SRL B                ;
+ $92EF ADD A,B              ;
+ $92F0 SRL B                ;
+ $92F2 SRL B                ;
+ $92F4 SRL B                ;
+ $92F6 ADD A,B              ;
+ $92F7 LD L,A               ;
+ $92F8 LD H,$00             ;
+ $92FA ADD HL,HL            ;
+ $92FB ADD HL,HL            ;
+ $92FC ADD HL,HL            ;
+ $92FD BIT 7,C              ;
+ $92FF JR Z,$9305           ;
+ $9301 ADD HL,DE            ;
+ $9302 JP $9309             ;
+*$9305 AND A                ;
+ $9306 EX DE,HL             ;
+ $9307 SBC HL,DE            ;
+*$9309 LD B,H               ;
+ $930A LD C,L               ;
+ $930B POP DE               ;
+ $930C POP HL               ;
+ $930D RET                  ;
+ $930E DEFB $00,$00,$00,$00 ;
+
+; Routine at 9312
+;
+; .
+;
+; .
+;
+; Movement/turn handler variant selected via `TURN`.
+; Current best read: two-step negative turn update before the shared transform.
+@label=TurnHandlerMinus2
+c$9312 POP HL                               ;
+ $9313 DEC HL                               ;
+ $9314 DEC HL                               ;
+ $9315 LD A,H                               ;
+ $9316 AND A                                ;
+ $9317 JP P,$931C                           ;
+ $931A LD H,$01                             ;
+*$931C PUSH HL                              ;
+ $931D PUSH DE                              ;
+ $931E PUSH BC                              ;
+ $931F LD C,B                               ;
+ $9320 LD A,B                               ;
+ $9321 AND A                                ;
+ $9322 JP P,$9327                           ;
+ $9325 CPL                                  ;
+ $9326 LD B,A                               ;
+*$9327 SRL B                                ;
+ $9329 SRL A                                ;
+ $932B SRL B                                ;
+ $932D ADD A,B                              ;
+ $932E SRL B                                ;
+ $9330 SRL B                                ;
+ $9332 SRL B                                ;
+ $9334 ADD A,B                              ;
+ $9335 LD L,A                               ;
+ $9336 LD H,$00                             ;
+ $9338 ADD HL,HL                            ;
+ $9339 ADD HL,HL                            ;
+ $933A ADD HL,HL                            ;
+ $933B BIT 7,C                              ;
+ $933D JR Z,$9343                           ;
+ $933F ADD HL,DE                            ;
+ $9340 JP $9347                             ;
+*$9343 AND A                                ;
+ $9344 EX DE,HL                             ;
+ $9345 SBC HL,DE                            ;
+*$9347 POP DE                               ;
+ $9348 POP BC                               ;
+ $9349 PUSH HL                              ;
+ $934A LD C,B                               ;
+ $934B LD A,B                               ;
+ $934C AND A                                ;
+ $934D JP P,$9352                           ;
+ $9350 CPL                                  ;
+ $9351 LD B,A                               ;
+*$9352 SRL A                                ;
+ $9354 SRL B                                ;
+ $9356 SRL B                                ;
+ $9358 ADD A,B                              ;
+ $9359 SRL B                                ;
+ $935B SRL B                                ;
+ $935D SRL B                                ;
+ $935F ADD A,B                              ;
+ $9360 LD L,A                               ;
+ $9361 LD H,$00                             ;
+ $9363 ADD HL,HL                            ;
+ $9364 ADD HL,HL                            ;
+ $9365 ADD HL,HL                            ;
+ $9366 BIT 7,C                              ;
+ $9368 JR NZ,$936E                          ;
+ $936A ADD HL,DE                            ;
+ $936B JP $9372                             ;
+*$936E AND A                                ;
+ $936F EX DE,HL                             ;
+ $9370 SBC HL,DE                            ;
+*$9372 LD B,H                               ;
+ $9373 LD C,L                               ;
+ $9374 POP DE                               ;
+ $9375 POP HL                               ;
+ $9376 RET                                  ;
+ $9377 DEFB $00                             ;
+ $9378 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
+ $9380 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
+ $9388 DEFB $00,$00,$7C,$06,$00,$A7,$F2,$9A ;
+ $9390 DEFB $93,$44,$4D,$21,$00,$00,$ED,$42 ;
+ $9398 DEFB $06,$80,$29,$E5,$7A,$A7,$F2,$A9 ;
+ $93A0 DEFB $93,$21,$00,$00,$ED,$52,$CB,$F0 ;
+ $93A8 DEFB $EB,$CB,$23,$CB,$12,$08,$78,$08 ;
+ $93B0 DEFB $C1,$D5,$EB,$A7,$ED,$42,$D1,$DA ;
+ $93B8 DEFB $C3,$93,$69,$60,$EB,$4D,$44,$08 ;
+ $93C0 DEFB $F6,$20,$08,$26,$00,$7A,$CB,$24 ;
+ $93C8 DEFB $17,$38,$03,$B8,$38,$02,$90,$24 ;
+ $93D0 DEFB $CB,$24,$17,$38,$03,$B8,$38,$02 ;
+ $93D8 DEFB $90,$24,$CB,$24,$17,$38,$03,$B8 ;
+ $93E0 DEFB $38,$02,$90,$24,$CB,$24,$17,$38 ;
+ $93E8 DEFB $03,$B8,$38,$02,$90,$24,$CB,$24 ;
+ $93F0 DEFB $17,$38,$03,$B8,$38,$02,$90,$24 ;
+ $93F8 DEFB $CB,$24,$17,$38,$03,$B8,$38,$02 ;
+ $9400 DEFB $90,$24,$CB,$24,$17,$38,$03,$B8 ;
+ $9408 DEFB $38,$02,$90,$24,$CB,$24,$17,$38 ;
+ $9410 DEFB $03,$B8,$38,$02,$90,$24,$6C,$26 ;
+ $9418 DEFB $7B,$7E,$08,$47,$08,$CB,$68,$C2 ;
+ $9420 DEFB $25,$94,$3E,$40,$96,$4F,$CB,$70 ;
+ $9428 DEFB $CA,$37,$94,$CB,$78,$CA,$33,$94 ;
+ $9430 DEFB $C6,$80,$C9,$3E,$80,$91,$C9,$CB ;
+ $9438 DEFB $78,$C8,$ED,$44,$C9,$00,$00,$00 ;
+ $9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
+ $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
+ $9450 DEFB $00,$00                         ;
 
 ; MESPR
 ;
@@ -4113,11 +4381,20 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $963C CALL $948C    ;
  $963F LD A,$0B      ;
  $9641 CALL $948C    ;
+; TEXST
 ; This entry point is used by the routines at #R$977E and #R$AD3E.
-; Current best read: entity spawn/reinitialisation dispatcher.
-; Low score forces the tank-family bit in `Probable_EXST1`; higher score uses
-; score thresholds plus `R`-based randomness to choose between tank-family,
-; supertank-family, and missile setup.
+; Current best read: shipped `TEXST` / tank-family existence-spawn dispatcher.
+; It still does the notebook page-11/12 job of deciding whether the tank-family
+; should exist and seeding `TKX` / `TKZ` / `TKOR` / `TKDIR`, but the shipped
+; code has broadened into a score/random-driven dispatcher with an inlined
+; missile-setup branch at #R$972E.
+; Current best threshold reading:
+; - score below 5: always seed the old-tank family
+; - score 5..24: choose old tank vs missile, matching the page-4 `M = 1/4`
+;   and `M|M = 3/4` style notes depending on whether the missile bit is
+;   already present in `EXST1`
+; - score 25+: choose among old tank, supertank, and missile
+@label=TEXST
 *$9644 LD A,($FE72)  ;
  $9647 INC A         ;
  $9648 CP $1A        ;
@@ -4233,10 +4510,12 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9729 ADD A,L       ;
  $972A LD L,A        ;
  $972B JP $977E      ;
+; MSET
 ; This entry point is used by the routine at #R$977E.
-; Current best read: missile spawn/reset path.
-; Seeds missile state in `FE7C`/`FE80`/`FE86` and sets bit `0x10` in
-; `Probable_EXST1`.
+; Current best read: shipped `MSET` missile-setup branch reached from #R$9644.
+; Seeds `MISX` / `MISY` / `MISZ`, derives `ZIG` from `MISCT`, initialises the
+; live missile strategy byte, and sets bit `0x10` in `Probable_EXST1`.
+@label=MSET
 *$972E LD A,R        ;
  $9730 AND $0F       ;
  $9732 BIT 0,A       ;
@@ -4434,7 +4713,25 @@ c$977E LD HL,($FE70) ;
 *$98EB LD HL,$0000   ;
  $98EE LD DE,$07D0   ;
  $98F1 CALL $90BA    ;
-*$98F4 LD A,($FE68)  ;
+*$98F4 LD A,($FE68)  ; Current best read: `TKSTRAT` core.
+                     ; Evidence:
+                     ; - this is where `FE68` countdown/state timing, `FE66` strategy bits,
+                     ;   `FE62` heading, and `FE5E/FE60` tank position are updated together
+                     ; - the logic matches the notebook's `TKMCT`, `TKSTR`, `TKOR`, `TKX`, `TKZ`,
+                     ;   `TKDIR`, `FRAME`, and `PHASE` cluster on page 13
+                     ; Current best `TKSTR` bit reading from this block:
+                     ; - bit 7 = kill/aggressive mode
+                     ; - bit 6 = forward motion
+                     ; - bit 5 = reverse/back motion
+                     ; - bit 4 = left turn
+                     ; - bit 3 = right turn
+                     ; - `0x40` = straight trundle/forward
+                     ; - `0x48` / `0x50` = forward plus right/left turn
+                     ; - `0x80` then `0x88` / `0x90` / `0xC0` = aggressive attack mode with
+                     ;   turn/forward selected from `TKDIR` vs `TKOR`
+                     ; - `0x28` = current best canned evasive state: back + right turn, forced
+                     ;   when the tank gets too close to the player or to one of the obstacle
+                     ;   proximity boxes tested at `0x9A92..0x9AE7`
  $98F7 AND A         ;
  $98F8 JP Z,$99A5    ;
  $98FB DEC A         ;
@@ -4617,7 +4914,10 @@ c$977E LD HL,($FE70) ;
  $9A8D LD B,A        ;
  $9A8E LD A,($FE61)  ;
  $9A91 LD C,A        ;
- $9A92 LD A,($FE9B)  ;
+ $9A92 LD A,($FE9B)  ; Current best read: obstacle-proximity test, not player-proximity.
+                     ; `FE98..FEA7` holds four obstacle `(X,Z)` pairs; this block checks whether the
+                     ; tank's current high-byte position lies inside any obstacle's near box and,
+                     ; if so, forces the canned evasive `TKSTR=0x28` state.
  $9A95 SUB C         ;
  $9A96 ADD A,$04     ;
  $9A98 SUB $08       ;
@@ -5029,7 +5329,12 @@ c$977E LD HL,($FE70) ;
  $9E41 LD A,($FE6A)  ;
  $9E44 AND $10       ; Missile active?
  $9E46 JP Z,$A122    ;
- $9E49 LD A,($FE84)  ;
+ $9E49 LD A,($FE84)  ; Current best read: `MISSTRAT` / missile strategy state machine.
+                     ; Evidence:
+                     ; - this block manipulates the live missile strategy byte in `FE84`
+                     ; - it updates the signed missile offset/orientation slot in `FE86`
+                     ; - the `BIT`/`RES`/`SET` pattern matches the notebook `MISSTRAT` page and
+                     ;   its `MSTRT`/`MSTRJ` bitfield notes very closely
  $9E4C LD C,A        ;
  $9E4D AND A         ;
  $9E4E JP P,$9E68    ;
@@ -6094,7 +6399,10 @@ c$977E LD HL,($FE70) ;
 *$A76C BIT 6,C       ;
  $A76E JP Z,$A7C8    ;
  $A771 LD DE,$0080   ;
-*$A774 LD HL,($FE9A) ;
+*$A774 LD HL,($FE9A) ; Straight world-Z scroll pass after forward/back movement.
+                     ; The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
+                     ; other world-space entity Z positions so the player remains effectively
+                     ; centred while the world moves.
  $A777 ADD HL,DE     ;
  $A778 LD ($FE9A),HL ;
  $A77B LD HL,($FE9E) ;
@@ -6134,7 +6442,11 @@ c$977E LD HL,($FE70) ;
  $A7C9 AND $3F       ;
  $A7CB JP Z,$A911    ;
  $A7CE LD HL,($FEA8) ;
- $A7D1 LD DE,($FE98) ;
+ $A7D1 LD DE,($FE98) ; Shared world-turn rotation pass.
+                     ; `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn
+                     ; transform to each `(X,Z)` pair, and returns updated coordinates. The pass is
+                     ; used first on the four obstacle pairs, then on tank/saucer/missile/bullet
+                     ; world positions.
  $A7D5 LD BC,($FE9A) ;
  $A7D9 CALL $91E6    ;
  $A7DC LD ($FEA8),HL ;
@@ -11968,21 +12280,30 @@ g$FE5C DEFW $0000
 
 ; Current entity/effect X position used by several transient setup paths.
 ; In the attract title code this is reused as the first title word's X offset.
+; Current best gameplay overlay: tank-family `TKX`.
 @label=EntityXPos
 g$FE5E DEFW $0000
 
 ; Current entity/effect Z position used by several transient setup paths.
 ; In the attract title code this is reused as the first title word's Z offset.
+; Current best gameplay overlay: tank-family `TKZ`.
 @label=EntityZPos
 g$FE60 DEFW $0000
 
 ; Current entity/effect heading/orientation and nearby transient state.
 ; In the attract title code this is reused as the first title word's angle.
+; Current best gameplay overlays:
+; - `FE62` = probable tank-family `TKOR`
+; - `FE64` = probable `TKDIR` (direction-to-player / desired heading)
+; - `FE66` = probable `TKSTR` strategy/state bits:
+;   bit 7 kill/aggressive, bit 6 forward, bit 5 back, bit 4 left, bit 3
+;   right
 @label=EntityHeadingOrOrient
 g$FE62 DEFB $00,$00,$00,$00,$00,$00
 
 ; Mixed transient state:
-; - FE68: movement/effect delay counter
+; - FE68: movement/effect delay counter; current best tank-family overlay:
+;   `TKMCT`
 ; - FE6A: probable EXST1 active-entity state byte
 ; - FE6C: probable EXST2 deferred explosion/respawn state byte
 ; - FE6E: probable PRSTA current render/visibility state byte
@@ -12013,6 +12334,16 @@ g$FE68 DEFB $00,$00
  $FE70 DEFB $00,$00,$00,$00
  $FE74 DEFB $00,$00
 
+; Current best missile-family overlays:
+; - `FE78` = probable `MISCT` (missiles fired so far)
+; - `FE7A` = probable `MSMCT` manoeuvre/frame counter
+; - `FE7C` = probable `MISX`
+; - `FE7E` = probable `MISY`
+; - `FE80` = probable `MISZ`
+; - `FE82` = probable `ZIG` / remaining-zig counter derived from `MISCT`
+; - `FE84` = probable missile strategy/action bitfield; notebook `MSTRJ`
+;   and `MSTRT` now look like alternate names/usages for this same byte
+; - `FE86` = probable `MSOR` signed missile offset/orientation register
 ; Probable border/sound latch.
 ; Current best read:
 ; - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
@@ -12030,9 +12361,26 @@ g$FE76 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 ; word's X offset, Z offset, and angle.
  $FE8E DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FE96 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Obstacle world-position workspace, four packed `(X,Z)` pairs:
+; - `FE98/FE9A` = obstacle 1 X/Z
+; - `FE9C/FE9E` = obstacle 2 X/Z
+; - `FEA0/FEA2` = obstacle 3 X/Z
+; - `FEA4/FEA6` = obstacle 4 X/Z
+; The same block is reused by:
+; - `0x9A92..0x9AE7` tank evasive/proximity checks
+; - `0xA37B..0xA420` obstacle-family selection for rendering/collision
+; - `0xA695..0xA714` movement masking against nearby obstacles
+g$FE96 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FE9E DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $FEA6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $FEA6 DEFB $00,$00
+
+; Current view/world-turn angle accumulator.
+; Initialised to `0x0040` at reset and updated by the obstacle render/turn
+; logic around `0xA442..0xA484`; consumed by the shared `(X,Z)` transform pass
+; entered via `0x91E6`.
+@label=ViewTurnAngle
+g$FEA8 DEFB $00,$00,$00,$00,$00,$00
  $FEAE DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FEB6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FEBE DEFB $00,$00,$00,$00,$00,$00,$00,$00
