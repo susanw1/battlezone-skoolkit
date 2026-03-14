@@ -2493,9 +2493,15 @@ c$805C LD HL,($FE02) ;
  $865E NOP           ;
  $865F NOP           ;
 
-; Routine at 8660
+; PERSP
 ;
 ; Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+; Current best notebook match: `PERSP`.
+; Shared perspective / clip stage. It consumes transformed coordinate tables,
+; writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
+; visible X limits, and returns status in `C` for caller-side draw/visibility
+; decisions.
+@label=PERSP
 c$8660 LD ($FE00),SP ;
  $8664 LD ($FE40),A  ;
  $8667 LD SP,($FE38) ;
@@ -2504,6 +2510,7 @@ c$8660 LD ($FE00),SP ;
  $866F LD DE,($FE36) ;
  $8673 LD B,$84      ;
  $8675 EXX           ;
+@label=PERSPProjectPrimary
 *$8676 EXX           ;
 *$8677 LD A,(DE)     ;
  $8678 INC DE        ;
@@ -2676,6 +2683,7 @@ c$8660 LD ($FE00),SP ;
  $8772 JP M,$877B    ;
  $8775 JP NZ,$8677   ;
  $8778 JP $87E1      ;
+@label=PERSPTrackVisibleRange
 *$877B AND $7F       ;
  $877D EXX           ;
  $877E CP $03        ;
@@ -2716,6 +2724,7 @@ c$8660 LD ($FE00),SP ;
  $87D8 RET           ;
  $87D9 LD ($FE00),SP ;
  $87DD LD SP,($FE5A) ;
+@label=PERSPProjectSecondary
 *$87E1 LD ($FE38),SP ;
  $87E5 LD SP,($FE3A) ;
  $87E9 LD A,($FE40)  ;
@@ -2899,9 +2908,14 @@ c$8660 LD ($FE00),SP ;
  $88E8 NOP           ;
  $88E9 NOP           ;
 
-; Routine at 88EA
+; Shared X/Z rotation transform
 ;
 ; Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+; Current best read: reusable table-driven X/Z rotation stage.
+; It consumes source coordinate lists plus angle-dependent tables and writes
+; rotated coordinate lists for later perspective projection. The attract-mode
+; title tumble reuses the same block by feeding it a non-standard Y/Z pair.
+@label=RotateXZLists
 c$88EA LD ($FE00),SP ;
  $88EE LD ($FE4E),A  ;
  $88F1 LD H,$00      ;
@@ -2932,6 +2946,7 @@ c$88EA LD ($FE00),SP ;
 *$8920 RES 7,B       ;
  $8922 EXX           ;
  $8923 LD C,$80      ;
+@label=RotateXZPrimaryPass
 *$8925 LD A,(DE)     ;
  $8926 INC DE        ;
  $8927 EX AF,AF'     ;
@@ -3035,6 +3050,7 @@ c$88EA LD ($FE00),SP ;
  $89BF EXX           ;
  $89C0 DEC B         ;
  $89C1 JP NZ,$8925   ;
+@label=RotateXZSecondaryPass
 *$89C4 LD A,($FE4E)  ;
  $89C7 LD B,A        ;
  $89C8 LD DE,($FE46) ;
@@ -3147,6 +3163,7 @@ c$88EA LD ($FE00),SP ;
  $8A73 EXX           ;
  $8A74 DEC B         ;
  $8A75 JP NZ,$89D6   ;
+@label=RotateXZFinalPass
 *$8A78 LD DE,($FE46) ;
  $8A7C LD A,($FE4E)  ;
  $8A7F LD B,A        ;
@@ -3689,22 +3706,97 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $90A0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $90A8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $90B0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $90B8 DEFB $00,$00,$E5,$D5,$2A,$50,$FE,$36
- $90C0 DEFB $00,$ED,$73,$00,$FE,$ED,$7B,$52
- $90C8 DEFB $FE,$C1,$97,$D1,$E1,$12,$10,$FB
- $90D0 DEFB $ED,$73,$52,$FE,$C1,$B0,$C2,$E1
- $90D8 DEFB $90,$31,$00,$63,$ED,$73,$52,$FE
- $90E0 DEFB $C1,$E1,$D1,$72,$10,$FB,$ED,$7B
- $90E8 DEFB $00,$FE,$E1,$7C,$C6,$6E,$E6,$FC
- $90F0 DEFB $1F,$1F,$1F,$6F,$A7,$1F,$85,$C6
- $90F8 DEFB $98,$6F,$26,$7C,$29,$7E,$D6,$9F
- $9100 DEFB $57,$23,$5E,$E1,$7C,$C6,$6E,$E6
- $9108 DEFB $FC,$1F,$1F,$1F,$6F,$A7,$1F,$85
- $9110 DEFB $C6,$6C,$6F,$26,$7D,$29,$7E,$B3
- $9118 DEFB $5F,$23,$7E,$EB,$B6,$77,$22,$50
- $9120 DEFB $FE,$77,$C9,$00,$00,$00,$00,$00
- $9128 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9130 DEFB $00,$00
+ $90B8 DEFB $00,$00
+
+; RADAR
+;
+; Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
+; Current best notebook match: `RADAR`.
+; Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
+; radar/status workspace between `FE50` and `FE52`, converts the coordinate
+; pair into a radar cell/bit position, and plots the blip into the status
+; buffer.
+;
+; .
+;
+@label=RADAR
+c$90BA PUSH HL                              ;
+ $90BB PUSH DE                              ;
+@label=RADARClearWorkspace
+ $90BC LD HL,($FE50)                        ;
+ $90BF LD (HL),$00                          ;
+ $90C1 LD ($FE00),SP                        ;
+ $90C5 LD SP,($FE52)                        ;
+ $90C9 POP BC                               ;
+ $90CA SUB A                                ;
+*$90CB POP DE                               ;
+ $90CC POP HL                               ;
+ $90CD LD (DE),A                            ;
+ $90CE DJNZ $90CB                           ;
+ $90D0 LD ($FE52),SP                        ;
+ $90D4 POP BC                               ;
+ $90D5 OR B                                 ;
+ $90D6 JP NZ,$90E1                          ;
+ $90D9 LD SP,$6300                          ;
+ $90DC LD ($FE52),SP                        ;
+ $90E0 POP BC                               ;
+*$90E1 POP HL                               ;
+ $90E2 POP DE                               ;
+ $90E3 LD (HL),D                            ;
+ $90E4 DJNZ $90E1                           ;
+ $90E6 LD SP,($FE00)                        ;
+ $90EA POP HL                               ;
+@label=RADARMapX
+ $90EB LD A,H                               ;
+ $90EC ADD A,$6E                            ;
+ $90EE AND $FC                              ;
+ $90F0 RRA                                  ;
+ $90F1 RRA                                  ;
+ $90F2 RRA                                  ;
+ $90F3 LD L,A                               ;
+ $90F4 AND A                                ;
+ $90F5 RRA                                  ;
+ $90F6 ADD A,L                              ;
+ $90F7 ADD A,$98                            ;
+ $90F9 LD L,A                               ;
+ $90FA LD H,$7C                             ;
+ $90FC ADD HL,HL                            ;
+ $90FD LD A,(HL)                            ;
+ $90FE SUB $9F                              ;
+ $9100 LD D,A                               ;
+ $9101 INC HL                               ;
+ $9102 LD E,(HL)                            ;
+ $9103 POP HL                               ;
+@label=RADARMapZ
+ $9104 LD A,H                               ;
+ $9105 ADD A,$6E                            ;
+ $9107 AND $FC                              ;
+ $9109 RRA                                  ;
+ $910A RRA                                  ;
+ $910B RRA                                  ;
+ $910C LD L,A                               ;
+ $910D AND A                                ;
+ $910E RRA                                  ;
+ $910F ADD A,L                              ;
+ $9110 ADD A,$6C                            ;
+ $9112 LD L,A                               ;
+ $9113 LD H,$7D                             ;
+ $9115 ADD HL,HL                            ;
+ $9116 LD A,(HL)                            ;
+ $9117 OR E                                 ;
+ $9118 LD E,A                               ;
+@label=RADARPlotBlip
+ $9119 INC HL                               ;
+ $911A LD A,(HL)                            ;
+ $911B EX DE,HL                             ;
+ $911C OR (HL)                              ;
+ $911D LD (HL),A                            ;
+ $911E LD ($FE50),HL                        ;
+ $9121 LD (HL),A                            ;
+ $9122 DEFB $C9,$00,$00,$00,$00,$00,$00,$00 ;
+ $912A DEFB $00,$00,$00,$00,$00,$00         ;
+ $9130 NOP                                  ;
+ $9131 NOP                                  ;
 
 ; Routine at 9132
 ;

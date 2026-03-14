@@ -334,6 +334,25 @@ Working summary of verified facts, local source material, and open questions for
   - actual start-game path:
     - the attract/title/instructions code contains several raw `S` checks on the `A S D F G` row (`0xB1E5`, `0xB2A6`, `0xB2E7`, `0xB596`, `0xB5D1`, `0xB614`, `0xB640`)
     - all of them jump to the common transition at `0xB0BC`
+- High-level structure scan strongly supports Susan's development recollection:
+  - large `NOP` runs look like deliberate growth padding between separately assembled chunks
+  - round starts such as `0x8660`, `0x88EA`, `0x8C3C`, `0x9132`, `0x956A`, `0xAD0C`, `0xB1F4`, `0xB2F5`, `0xB55D`, `0xB587`, and `0xB676` behave like genuine module starts
+  - a dedicated working note is now maintained in `docs/Code-structure-notes.md`
+  - previously unresolved notebook names now have stronger current-best mappings:
+    - `PERSP` = `0x8660`
+    - `RADAR` = `0x90BA`
+    - `MATOLT` / `MATRT1` may both belong to the shared X/Z rotation block at `0x88EA`, but that part is still provisional
+  - first-pass internal anchors now exist inside those core helpers:
+    - `PERSPProjectPrimary` at `0x8676`
+    - `PERSPTrackVisibleRange` at `0x877B`
+    - `PERSPProjectSecondary` at `0x87E1`
+    - `RotateXZPrimaryPass` at `0x8925`
+    - `RotateXZSecondaryPass` at `0x89C4`
+    - `RotateXZFinalPass` at `0x8A78`
+    - `RADARClearWorkspace` at `0x90BC`
+    - `RADARMapX` at `0x90EB`
+    - `RADARMapZ` at `0x9104`
+    - `RADARPlotBlip` at `0x9119`
     - `0xB0BC` then runs a short transition and jumps into the real game initialisation at `0x956A`, which eventually feeds the main loop at `0x977E`
 - Attract/demo structure now looks much more like Susan's staged recollection than a single static title screen:
   - `0xB1F4..0xB343` is the best current match for the earlier title/logo attract stages

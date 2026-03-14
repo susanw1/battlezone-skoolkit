@@ -1533,10 +1533,17 @@ C $8635,h3
 C $8638,h3
 C $863B,h4
 c $8660
-. Routine at 8660
+. PERSP
 D $8660
 . Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+. Current best notebook match: `PERSP`.
+. Shared perspective / clip stage. It consumes transformed coordinate tables,
+. writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
+. visible X limits, and returns status in `C` for caller-side draw/visibility
+. decisions.
+@ $8660 label=PERSP
 C $8660,h4
+@ $8676 label=PERSPProjectPrimary
 C $8664,h3
 C $8667,h4
 C $866C,h3
@@ -1591,6 +1598,7 @@ C $8767,h3
 C $8772,h3
 C $8775,h3
 C $8778,h3
+@ $877B label=PERSPTrackVisibleRange
 C $877B,h2
 C $877E,h2
 C $8780,h2
@@ -1619,6 +1627,7 @@ C $87D0,h4
 C $87D4,h4
 C $87D9,h4
 C $87DD,h4
+@ $87E1 label=PERSPProjectSecondary
 C $87E1,h4
 C $87E5,h4
 C $87E9,h3
@@ -1665,10 +1674,16 @@ C $88CE,h4
 C $88D2,h4
 C $88D6,h2
 c $88EA
-. Routine at 88EA
+. Shared X/Z rotation transform
 D $88EA
 . Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+. Current best read: reusable table-driven X/Z rotation stage.
+. It consumes source coordinate lists plus angle-dependent tables and writes
+. rotated coordinate lists for later perspective projection. The attract-mode
+. title tumble reuses the same block by feeding it a non-standard Y/Z pair.
+@ $88EA label=RotateXZLists
 C $88EA,h4
+@ $8925 label=RotateXZPrimaryPass
 C $88EE,h3
 C $88F1,h2
 C $88F7,h4
@@ -1703,6 +1718,7 @@ C $89AC,h3
 C $89B7,h3
 C $89BA,h3
 C $89C1,h3
+@ $89C4 label=RotateXZSecondaryPass
 C $89C4,h3
 C $89C8,h4
 C $89CD,h4
@@ -1728,6 +1744,7 @@ C $8A60,h3
 C $8A6B,h3
 C $8A6E,h3
 C $8A75,h3
+@ $8A78 label=RotateXZFinalPass
 C $8A78,h4
 C $8A7C,h3
 C $8A81,h3
@@ -1979,22 +1996,25 @@ B $9098,8,h8
 B $90A0,8,h8
 B $90A8,8,h8
 B $90B0,8,h8
-B $90B8,8,h8
-B $90C0,8,h8
-B $90C8,8,h8
-B $90D0,8,h8
-B $90D8,8,h8
-B $90E0,8,h8
-B $90E8,8,h8
-B $90F0,8,h8
-B $90F8,8,h8
-B $9100,8,h8
-B $9108,8,h8
-B $9110,8,h8
-B $9118,8,h8
-B $9120,8,h8
-B $9128,8,h8
-B $9130,2,h2
+B $90B8,2,h2
+c $90BA
+. RADAR
+D $90BA
+. Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
+. Current best notebook match: `RADAR`.
+. Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
+. radar/status workspace between `FE50` and `FE52`, converts the coordinate
+. pair into a radar cell/bit position, and plots the blip into the status
+. buffer.
+@ $90BA label=RADAR
+N $90BA
+@ $90BC label=RADARClearWorkspace
+@ $90EB label=RADARMapX
+@ $9104 label=RADARMapZ
+@ $9119 label=RADARPlotBlip
+N $9122
+B $9122,8,h8
+B $912A,6,h6
 N $9132
 . Keyboard movement/button decode helper.
 . Called from gameplay input handling and the start/demo code. It scans the
