@@ -1249,6 +1249,8 @@ C $805C,h3
 C $8060,h3
 C $8064,h3
 C $8067,h4
+N $806B
+@ $806B label=LNLPTLoadLineRecord
 C $806B,h4
 C $806F,h3
 C $8072,h2
@@ -1283,6 +1285,8 @@ C $80FD,h3
 C $8102,h2
 C $8106,h3
 C $8109,h2
+N $810E
+@ $810E label=LNLPTPreparePositiveDelta
 C $810B,h3
 C $810E,h3
 C $8111,h3
@@ -1295,6 +1299,8 @@ C $812D,h3
 C $8130,h4
 C $8137,h3
 C $813A,h3
+N $813D
+@ $813D label=LNLPTPrepareNegativeDelta
 C $813D,h4
 C $8141,h3
 C $8147,h3
@@ -1309,6 +1315,8 @@ C $8169,h3
 C $816C,h4
 C $8173,h3
 C $8176,h3
+N $8179
+@ $8179 label=LNLPTDrawPositiveShallow
 C $8179,h3
 C $817E,h2
 C $8184,h2
@@ -1358,6 +1366,8 @@ C $8270,h3
 C $8278,h2
 C $8285,h2
 C $8287,h3
+N $828A
+@ $828A label=LNLPTDrawNegativeShallow
 C $828A,h3
 C $828F,h2
 C $8295,h2
@@ -1407,6 +1417,8 @@ C $8383,h3
 C $838B,h2
 C $8398,h2
 C $839A,h3
+N $839D
+@ $839D label=LNLPTDrawPositiveSteep
 C $839D,h3
 C $83A3,h2
 C $83A9,h2
@@ -1456,6 +1468,8 @@ C $849D,h3
 C $84A2,h2
 C $84AE,h2
 C $84B0,h3
+N $84B3
+@ $84B3 label=LNLPTDrawNegativeSteep
 C $84B3,h3
 C $84B9,h2
 C $84BF,h2
@@ -1505,6 +1519,8 @@ C $85B1,h3
 C $85B6,h2
 C $85C2,h2
 C $85C4,h3
+N $85C7
+@ $85C7 label=LNLPTDrawZeroDelta
 C $85C7,h3
 C $85CA,h3
 C $85D0,h3
@@ -1528,6 +1544,8 @@ C $8615,h2
 C $8620,h2
 C $862A,h2
 C $862C,h3
+N $8631
+@ $8631 label=LNLPTNextLine
 C $8631,h3
 C $8635,h3
 C $8638,h3

@@ -1492,6 +1492,7 @@ c$805C LD HL,($FE02) ;
  $8063 INC HL        ;
  $8064 LD ($FE02),HL ;
  $8067 LD ($FE00),SP ;
+@label=LNLPTLoadLineRecord
 *$806B LD SP,($FE02) ;
  $806F LD A,($FE74)  ;
  $8072 OUT ($FE),A   ;
@@ -1576,6 +1577,7 @@ c$805C LD HL,($FE02) ;
  $8106 JP Z,$85C7    ;
  $8109 JR $810E      ;
 *$810B JP M,$813D    ;
+@label=LNLPTPreparePositiveDelta
 *$810E LD DE,$0080   ;
  $8111 LD HL,($FE08) ;
  $8114 ADD HL,DE     ;
@@ -1599,6 +1601,7 @@ c$805C LD HL,($FE02) ;
  $8135 SBC HL,DE     ;
  $8137 JP P,$839D    ;
  $813A JP $8179      ;
+@label=LNLPTPrepareNegativeDelta
 *$813D LD DE,($FE0C) ;
  $8141 LD HL,$0000   ;
  $8144 AND A         ;
@@ -1627,6 +1630,7 @@ c$805C LD HL,($FE02) ;
  $8171 SBC HL,DE     ;
  $8173 JP P,$84B3    ;
  $8176 JP $828A      ;
+@label=LNLPTDrawPositiveShallow
 *$8179 LD HL,($FE0C) ;
  $817C LD A,H        ;
  $817D OR D          ;
@@ -1817,6 +1821,7 @@ c$805C LD HL,($FE02) ;
  $8284 EXX           ;
  $8285 DJNZ $8255    ;
  $8287 JP $862F      ;
+@label=LNLPTDrawNegativeShallow
 *$828A LD HL,($FE0C) ;
  $828D LD A,H        ;
  $828E OR D          ;
@@ -2009,6 +2014,7 @@ c$805C LD HL,($FE02) ;
  $8397 EXX           ;
  $8398 DJNZ $8368    ;
  $839A JP $862F      ;
+@label=LNLPTDrawPositiveSteep
 *$839D LD HL,($FE0C) ;
  $83A0 EX DE,HL      ;
  $83A1 LD A,H        ;
@@ -2202,6 +2208,7 @@ c$805C LD HL,($FE02) ;
  $84AD EXX           ;
  $84AE DJNZ $8482    ;
  $84B0 JP $862F      ;
+@label=LNLPTDrawNegativeSteep
 *$84B3 LD HL,($FE0C) ;
  $84B6 EX DE,HL      ;
  $84B7 LD A,H        ;
@@ -2395,6 +2402,7 @@ c$805C LD HL,($FE02) ;
  $85C1 EXX           ;
  $85C2 DJNZ $8596    ;
  $85C4 JP $862F      ;
+@label=LNLPTDrawZeroDelta
 *$85C7 LD DE,$0080   ;
  $85CA LD HL,($FE08) ;
  $85CD ADD HL,DE     ;
@@ -2454,6 +2462,7 @@ c$805C LD HL,($FE02) ;
  $862C JP $8631      ;
 *$862F EXX           ;
 *$8630 EX AF,AF'     ;
+@label=LNLPTNextLine
 *$8631 LD A,($FE04)  ;
  $8634 DEC A         ;
  $8635 LD ($FE04),A  ;

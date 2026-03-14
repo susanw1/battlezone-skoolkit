@@ -218,6 +218,22 @@ Working summary of verified facts, local source material, and open questions for
     - 1 byte line count
     - then one record per line
     - each line record is four 16-bit pointers into the current projected-coordinate buffers
+  - first-pass internal structure is now named:
+    - `LNLPTLoadLineRecord` at `0x806B`
+    - `LNLPTPreparePositiveDelta` at `0x810E`
+    - `LNLPTPrepareNegativeDelta` at `0x813D`
+    - `LNLPTDrawPositiveShallow` at `0x8179`
+    - `LNLPTDrawNegativeShallow` at `0x828A`
+    - `LNLPTDrawPositiveSteep` at `0x839D`
+    - `LNLPTDrawNegativeSteep` at `0x84B3`
+    - `LNLPTDrawZeroDelta` at `0x85C7`
+    - `LNLPTNextLine` at `0x8631`
+  - current best structural reading:
+    - one line record is loaded and normalised at `0x806B..0x80D1`
+    - the secondary delta sign is split by the preparation stages at `0x810E` / `0x813D`
+    - the main raster work then falls into four shallow/steep branches for the two delta signs
+    - `0x85C7` is a separate zero-delta short-path
+    - all branches rejoin at `LNLPTNextLine`, which decrements the line count and loops to `0x806B`
 - `SHIPS` in the notebook now looks very likely to be the runtime lives counter at `0xFEE4`
   - the shipped death/game-over machinery at `0xADD4` is still the best code match for notebook `CRASH`, but it looks like a later expanded implementation rather than a close textual match to page 17
   - initialised to `3` at `0x958B..0x958E`
