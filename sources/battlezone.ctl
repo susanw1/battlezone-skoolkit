@@ -1994,28 +1994,128 @@ B $9110,8,h8
 B $9118,8,h8
 B $9120,8,h8
 B $9128,8,h8
-B $9130,8,h8
-B $9138,8,h8
-B $9140,8,h8
-B $9148,8,h8
-B $9150,8,h8
-B $9158,8,h8
-B $9160,8,h8
-B $9168,8,h8
-B $9170,8,h8
-B $9178,8,h8
-B $9180,8,h8
-B $9188,8,h8
-B $9190,8,h8
-B $9198,8,h8
-B $91A0,8,h8
-B $91A8,8,h8
-B $91B0,8,h8
-B $91B8,8,h8
-B $91C0,8,h8
-B $91C8,8,h8
-B $91D0,8,h8
-B $91D8,8,h8
+B $9130,2,h2
+N $9132
+. Keyboard movement/button decode helper.
+. Called from gameplay input handling and the start/demo code. It scans the
+. keyboard matrix rows, normalises contradictory directions, latches the fire
+. request in `FE54`, and returns the same compact `KMOV` code in `A` as the
+. Kempston routine at `0xAD3E`.
+. Current best `KMOV` code table:
+. - `0x00` idle
+. - `0x80` forward
+. - `0x40` back
+. - `0xA0` forward+left
+. - `0x90` forward+right
+. - `0x60` back+left
+. - `0x50` back+right
+. - `0x08` left on the spot
+. - `0x04` right on the spot
+@ $9132 label=KeyboardMovementDecode
+c $9132
+C $9132,h2
+C $9134,h2
+C $9136,1
+C $9137,h2
+C $9139,1
+C $913A,1
+C $913B,h2
+C $913D,h2
+C $913F,1
+C $9140,1
+C $9141,h2
+C $9143,h2
+C $9145,h2
+C $9147,h2
+C $9149,1
+C $914A,1
+C $914B,h2
+C $914D,h2
+C $914F,1
+C $9150,1
+C $9151,h2
+C $9153,h2
+C $9155,h2
+C $9157,h2
+C $9159,1
+C $915A,1
+C $915B,h2
+C $915D,h2
+C $915F,1
+C $9160,1
+C $9161,h2
+C $9163,h2
+C $9165,h2
+C $9167,h2
+C $9169,1
+C $916A,1
+C $916B,h2
+C $916D,h2
+C $916F,1
+C $9170,h2
+C $9172,1
+C $9173,h2
+C $9175,h2
+C $9177,h2
+C $9179,1
+C $917A,h2
+C $917C,h2
+C $917E,1
+C $917F,1
+C $9180,1
+C $9181,h2
+C $9183,h2
+C $9185,h2
+C $9187,1
+C $9188,1
+C $9189,1
+C $918A,1
+C $918B,h2
+C $918D,h2
+C $918F,h2
+C $9191,1
+C $9192,1
+C $9193,1
+C $9194,1
+C $9195,h2
+C $9197,h2
+C $9199,h3
+C $919C,h2
+C $919E,1
+C $919F,1
+C $91A0,h2
+C $91A2,1
+C $91A3,1
+C $91A4,h2
+C $91A6,h2
+C $91A8,h2
+C $91AA,h2
+C $91AC,h2
+C $91AE,1
+C $91AF,h2
+C $91B1,h2
+C $91B3,1
+C $91B4,h2
+C $91B6,1
+C $91B7,h2
+C $91B9,h2
+C $91BB,h2
+C $91BD,h2
+C $91BF,h2
+C $91C1,1
+C $91C2,h2
+C $91C4,h2
+C $91C6,1
+C $91C7,h2
+C $91C9,1
+C $91CA,h2
+C $91CC,h2
+C $91CE,h2
+C $91D0,1
+C $91D1,h2
+C $91D3,1
+C $91D4,1
+B $91D5,11,h11
 B $91E0,6,h6
 N $91E6
 . Shared turn/movement transform dispatcher.
@@ -2028,6 +2128,7 @@ c $91E6
 C $91E6,1
 C $91E7,h3
 C $91EA,1
+@ $91EB label=TurnHandlerLeft1
 C $91EB,1
 C $91EC,1
 C $91ED,h2
@@ -2095,8 +2196,8 @@ C $9247,1
 B $9248,2,h2
 N $924A
 . Movement/turn handler variant selected via `TURN`.
-. Current best read: one-step negative turn update before the shared transform.
-@ $924A label=TurnHandlerMinus1
+. Current best read: single-speed right turn before the shared transform.
+@ $924A label=TurnHandlerRight1
 c $924A
 C $924A,1
 C $924B,1
@@ -2168,8 +2269,8 @@ C $92AC,1
 B $92AD,1
 N $92AE
 . Movement/turn handler variant selected via `TURN`.
-. Current best read: two-step positive turn update before the shared transform.
-@ $92AE label=TurnHandlerPlus2
+. Current best read: double-speed left turn before the shared transform.
+@ $92AE label=TurnHandlerLeft2
 c $92AE
 C $92AE,1
 C $92AF,1
@@ -2241,8 +2342,8 @@ C $930D,1
 B $930E,4,h4
 N $9312
 . Movement/turn handler variant selected via `TURN`.
-. Current best read: two-step negative turn update before the shared transform.
-@ $9312 label=TurnHandlerMinus2
+. Current best read: double-speed right turn before the shared transform.
+@ $9312 label=TurnHandlerRight2
 c $9312
 C $9312,1
 C $9313,1
@@ -4042,7 +4143,14 @@ C $A709,h3
 C $A70C,h3
 C $A710,h3
 C $A714,h3
-. Apply the surviving movement bits.
+. Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
+. delta that matches the chosen turn rate/direction.
+. Bits 5/4/3/2 select the turn handler and turn step:
+. - bit 5 -> `0x91EB` single-speed left turn
+. - bit 4 -> `0x924A` single-speed right turn
+. - bit 3 -> `0x92AE` double-speed left turn
+. - bit 2 -> `0x9312` double-speed right turn
+. - no turn bits -> no explicit turn handler selected here
 C $A718,h3
 C $A71D,h3
 C $A720,h2
@@ -4059,7 +4167,8 @@ C $A740,h3
 C $A743,h3
 C $A746,h3
 C $A74A,h4
-. TURN
+. Store the selected turn-handler entry in `TURN` and clamp the hill pointer
+. before the later forward/back world-Z scroll and shared world-turn transform.
 C $A750,h2
 C $A752,h3
 C $A755,h2
@@ -8193,6 +8302,10 @@ g $FE54
 W $FE54,2,h2
 g $FE56
 @ $FE56 label=KMOV
+. Current best decoded movement-state byte:
+. `0x00` idle, `0x80` forward, `0x40` back, `0xA0` forward+left, `0x90`
+. forward+right, `0x60` back+left, `0x50` back+right, `0x08` left on the
+. spot, `0x04` right on the spot.
 W $FE56,2,h2
 g $FE58
 @ $FE58 label=SIGHT

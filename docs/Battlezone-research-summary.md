@@ -148,8 +148,24 @@ Working summary of verified facts, local source material, and open questions for
   - `NUMBA` at `0x94EC`: packed-BCD score display routine, reached directly or by falling through from `SCOPR`
 - Added `NumberGlyphs` label at `0xCD80`.
 - Added a confident joystick-input mapping:
-  - `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield
-  - the `0xA685..0xA75E` block now has notebook-backed comments as the `KEYIN` / keyboard-interpretation path that merges input, applies obstacle masking, and sets up `KMOV` / `TURN`
+- `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield
+- the `0xA685..0xA75E` block now has notebook-backed comments as the `KEYIN` / keyboard-interpretation path that merges input, applies obstacle masking, and sets up `KMOV` / `TURN`
+- `KeyboardMovementDecode` at `0x9132` and `KEMPST` at `0xAD3E` now agree on a concrete `KMOV` code table:
+  - `0x00` idle
+  - `0x80` forward
+  - `0x40` back
+  - `0xA0` / `0x90` = forward+left / forward+right
+  - `0x60` / `0x50` = back+left / back+right
+  - `0x08` / `0x04` = left / right on the spot
+  - these then split in two:
+    - `0xA714..0xA74A` decodes the turn component and matching hill-pointer delta:
+      - bit 5 = `0x91EB` single-speed left turn
+      - bit 4 = `0x924A` single-speed right turn
+      - bit 3 = `0x92AE` double-speed left turn
+      - bit 2 = `0x9312` double-speed right turn
+    - `0xA761..0xA771` separately decodes forward/back world-Z scroll:
+      - bit 7 = `DE=$FF80`
+      - bit 6 = `DE=$0080`
 - Added a first-pass main-loop and screen-pipeline mapping:
   - `MainGameLoop` at `0x977E`: current best match for Susan's recollected giant shallow-call frame loop, returning via `JP 0x977E` from `0xA931`
   - `SDRAW` at `0x8C3C`: presents the off-screen buffers to the Spectrum display and clears them for the next frame
@@ -283,6 +299,8 @@ Working summary of verified facts, local source material, and open questions for
     - `0xA774` = straight world-Z scroll pass after forward/back movement
     - `0xA7D1` = shared world-turn rotation pass over obstacles and active entities
     - classification fix:
+      - `0x9132` is now also promoted from misclassified data to code
+      - current best read: keyboard movement/button decode helper; scans the keyboard matrix, normalises contradictory directions, latches fire into `FE54`, and returns a compact movement/turn code in `A`
       - `0x91E6`, `0x924A`, `0x92AE`, and `0x9312` are now promoted from misclassified data to code in the ctl/skool
       - current best read: `0x91E6` is the shared turn/movement transform dispatcher and the later three are handler variants selected via `TURN`
       - the residual handler-tail ctl overlap is now fixed too; `0x9358/0x9360/0x9368/0x9370` now emit as code instead of stray `DEFB`s

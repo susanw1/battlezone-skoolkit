@@ -3704,29 +3704,134 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $9118 DEFB $5F,$23,$7E,$EB,$B6,$77,$22,$50
  $9120 DEFB $FE,$77,$C9,$00,$00,$00,$00,$00
  $9128 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9130 DEFB $00,$00,$16,$00,$0E,$FE,$41,$ED
- $9138 DEFB $78,$2F,$5F,$06,$FD,$ED,$78,$2F
- $9140 DEFB $B3,$28,$02,$CB,$DA,$06,$FB,$ED
- $9148 DEFB $78,$2F,$5F,$06,$F7,$ED,$78,$2F
- $9150 DEFB $B3,$28,$02,$CB,$E2,$06,$BF,$ED
- $9158 DEFB $78,$2F,$5F,$06,$7F,$ED,$78,$2F
- $9160 DEFB $B3,$28,$02,$CB,$D2,$06,$DF,$ED
- $9168 DEFB $78,$2F,$5F,$06,$EF,$ED,$78,$2F
- $9170 DEFB $E6,$FE,$B3,$28,$02,$CB,$CA,$ED
- $9178 DEFB $78,$2F,$E6,$01,$28,$01,$14,$4A
- $9180 DEFB $79,$E6,$06,$FE,$06,$20,$03,$2F
- $9188 DEFB $A1,$4F,$79,$E6,$18,$FE,$18,$20
- $9190 DEFB $03,$2F,$A1,$4F,$79,$E6,$01,$28
- $9198 DEFB $05,$32,$54,$FE,$CB,$81,$79,$A7
- $91A0 DEFB $20,$02,$97,$C9,$CB,$49,$28,$0F
- $91A8 DEFB $CB,$59,$28,$03,$3E,$08,$C9,$3E
- $91B0 DEFB $80,$CB,$61,$C0,$3E,$A0,$C9,$CB
- $91B8 DEFB $51,$28,$0F,$CB,$61,$28,$03,$3E
- $91C0 DEFB $04,$C9,$3E,$40,$CB,$59,$C0,$3E
- $91C8 DEFB $50,$C9,$CB,$59,$28,$03,$3E,$60
- $91D0 DEFB $C9,$3E,$90,$C9,$C9,$00,$00,$00
- $91D8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $91E0 DEFB $00,$00,$00,$00,$00,$00
+ $9130 DEFB $00,$00
+
+; Routine at 9132
+;
+; Used by the routines at #R$977E and #R$AD3E.
+;
+; .
+;
+; Keyboard movement/button decode helper.
+; Called from gameplay input handling and the start/demo code. It scans the
+; keyboard matrix rows, normalises contradictory directions, latches the fire
+; request in `FE54`, and returns the same compact `KMOV` code in `A` as the
+; Kempston routine at `0xAD3E`.
+; Current best `KMOV` code table:
+; - `0x00` idle
+; - `0x80` forward
+; - `0x40` back
+; - `0xA0` forward+left
+; - `0x90` forward+right
+; - `0x60` back+left
+; - `0x50` back+right
+; - `0x08` left on the spot
+; - `0x04` right on the spot
+@label=KeyboardMovementDecode
+c$9132 LD D,$00                                         ;
+ $9134 LD C,$FE                                         ;
+ $9136 LD B,C                                           ;
+ $9137 IN A,(C)                                         ;
+ $9139 CPL                                              ;
+ $913A LD E,A                                           ;
+ $913B LD B,$FD                                         ;
+ $913D IN A,(C)                                         ;
+ $913F CPL                                              ;
+ $9140 OR E                                             ;
+ $9141 JR Z,$9145                                       ;
+ $9143 SET 3,D                                          ;
+*$9145 LD B,$FB                                         ;
+ $9147 IN A,(C)                                         ;
+ $9149 CPL                                              ;
+ $914A LD E,A                                           ;
+ $914B LD B,$F7                                         ;
+ $914D IN A,(C)                                         ;
+ $914F CPL                                              ;
+ $9150 OR E                                             ;
+ $9151 JR Z,$9155                                       ;
+ $9153 SET 4,D                                          ;
+*$9155 LD B,$BF                                         ;
+ $9157 IN A,(C)                                         ;
+ $9159 CPL                                              ;
+ $915A LD E,A                                           ;
+ $915B LD B,$7F                                         ;
+ $915D IN A,(C)                                         ;
+ $915F CPL                                              ;
+ $9160 OR E                                             ;
+ $9161 JR Z,$9165                                       ;
+ $9163 SET 2,D                                          ;
+*$9165 LD B,$DF                                         ;
+ $9167 IN A,(C)                                         ;
+ $9169 CPL                                              ;
+ $916A LD E,A                                           ;
+ $916B LD B,$EF                                         ;
+ $916D IN A,(C)                                         ;
+ $916F CPL                                              ;
+ $9170 AND $FE                                          ;
+ $9172 OR E                                             ;
+ $9173 JR Z,$9177                                       ;
+ $9175 SET 1,D                                          ;
+*$9177 IN A,(C)                                         ;
+ $9179 CPL                                              ;
+ $917A AND $01                                          ;
+ $917C JR Z,$917F                                       ;
+ $917E INC D                                            ;
+*$917F LD C,D                                           ;
+ $9180 LD A,C                                           ;
+ $9181 AND $06                                          ;
+ $9183 CP $06                                           ;
+ $9185 JR NZ,$918A                                      ;
+ $9187 CPL                                              ;
+ $9188 AND C                                            ;
+ $9189 LD C,A                                           ;
+*$918A LD A,C                                           ;
+ $918B AND $18                                          ;
+ $918D CP $18                                           ;
+ $918F JR NZ,$9194                                      ;
+ $9191 CPL                                              ;
+ $9192 AND C                                            ;
+ $9193 LD C,A                                           ;
+*$9194 LD A,C                                           ;
+ $9195 AND $01                                          ;
+ $9197 JR Z,$919E                                       ;
+ $9199 LD ($FE54),A                                     ;
+ $919C RES 0,C                                          ;
+*$919E LD A,C                                           ;
+ $919F AND A                                            ;
+ $91A0 JR NZ,$91A4                                      ;
+ $91A2 SUB A                                            ;
+ $91A3 RET                                              ;
+*$91A4 BIT 1,C                                          ;
+ $91A6 JR Z,$91B7                                       ;
+ $91A8 BIT 3,C                                          ;
+ $91AA JR Z,$91AF                                       ;
+ $91AC LD A,$08                                         ;
+ $91AE RET                                              ;
+*$91AF LD A,$80                                         ;
+ $91B1 BIT 4,C                                          ;
+ $91B3 RET NZ                                           ;
+ $91B4 LD A,$A0                                         ;
+ $91B6 RET                                              ;
+*$91B7 BIT 2,C                                          ;
+ $91B9 JR Z,$91CA                                       ;
+ $91BB BIT 4,C                                          ;
+ $91BD JR Z,$91C2                                       ;
+ $91BF LD A,$04                                         ;
+ $91C1 RET                                              ;
+*$91C2 LD A,$40                                         ;
+ $91C4 BIT 3,C                                          ;
+ $91C6 RET NZ                                           ;
+ $91C7 LD A,$50                                         ;
+ $91C9 RET                                              ;
+*$91CA BIT 3,C                                          ;
+ $91CC JR Z,$91D1                                       ;
+ $91CE LD A,$60                                         ;
+ $91D0 RET                                              ;
+*$91D1 LD A,$90                                         ;
+ $91D3 RET                                              ;
+ $91D4 RET                                              ;
+ $91D5 DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ;
+ $91E0 DEFB $00,$00,$00,$00,$00,$00                     ;
 
 ; Routine at 91E6
 ;
@@ -3743,6 +3848,7 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 c$91E6 PUSH HL       ;
  $91E7 LD HL,($FE5C) ;
  $91EA JP (HL)       ;
+@label=TurnHandlerLeft1
  $91EB POP HL        ;
  $91EC INC HL        ;
  $91ED RES 1,H       ;
@@ -3816,8 +3922,8 @@ c$91E6 PUSH HL       ;
 ; .
 ;
 ; Movement/turn handler variant selected via `TURN`.
-; Current best read: one-step negative turn update before the shared transform.
-@label=TurnHandlerMinus1
+; Current best read: single-speed right turn before the shared transform.
+@label=TurnHandlerRight1
 c$924A POP HL        ;
  $924B DEC HL        ;
  $924C LD A,H        ;
@@ -3894,8 +4000,8 @@ c$924A POP HL        ;
 ; .
 ;
 ; Movement/turn handler variant selected via `TURN`.
-; Current best read: two-step positive turn update before the shared transform.
-@label=TurnHandlerPlus2
+; Current best read: double-speed left turn before the shared transform.
+@label=TurnHandlerLeft2
 c$92AE POP HL               ;
  $92AF INC HL               ;
  $92B0 INC HL               ;
@@ -3972,8 +4078,8 @@ c$92AE POP HL               ;
 ; .
 ;
 ; Movement/turn handler variant selected via `TURN`.
-; Current best read: two-step negative turn update before the shared transform.
-@label=TurnHandlerMinus2
+; Current best read: double-speed right turn before the shared transform.
+@label=TurnHandlerRight2
 c$9312 POP HL                               ;
  $9313 DEC HL                               ;
  $9314 DEC HL                               ;
@@ -6360,7 +6466,14 @@ c$977E LD HL,($FE70) ;
  $A70F PUSH BC       ;
  $A710 CALL $9452    ;
  $A713 POP BC        ;
-*$A714 LD A,($FE56)  ; Apply the surviving movement bits.
+*$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
+                     ; delta that matches the chosen turn rate/direction.
+                     ; Bits 5/4/3/2 select the turn handler and turn step:
+                     ; - bit 5 -> `0x91EB` single-speed left turn
+                     ; - bit 4 -> `0x924A` single-speed right turn
+                     ; - bit 3 -> `0x92AE` double-speed left turn
+                     ; - bit 2 -> `0x9312` double-speed right turn
+                     ; - no turn bits -> no explicit turn handler selected here
  $A717 AND C         ;
  $A718 LD ($FE56),A  ;
  $A71B BIT 5,A       ;
@@ -6382,7 +6495,8 @@ c$977E LD HL,($FE70) ;
  $A743 LD DE,$0020   ;
 *$A746 LD HL,($FE2C) ;
  $A749 ADD HL,DE     ;
- $A74A LD ($FE5C),BC ; TURN
+ $A74A LD ($FE5C),BC ; Store the selected turn-handler entry in `TURN` and clamp the hill pointer
+                     ; before the later forward/back world-Z scroll and shared world-turn transform.
  $A74E LD C,A        ;
  $A74F LD A,H        ;
  $A750 CP $79        ;
@@ -12262,7 +12376,10 @@ g$FE52 DEFW $0000
 @label=TRIGA
 g$FE54 DEFW $0000
 
-; Game status buffer entry at FE56
+; Current best decoded movement-state byte:
+; `0x00` idle, `0x80` forward, `0x40` back, `0xA0` forward+left, `0x90`
+; forward+right, `0x60` back+left, `0x50` back+right, `0x08` left on the
+; spot, `0x04` right on the spot.
 @label=KMOV
 g$FE56 DEFW $0000
 
