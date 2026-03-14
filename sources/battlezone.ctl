@@ -4142,6 +4142,7 @@ C $A707,h2
 C $A709,h3
 C $A70C,h3
 C $A710,h3
+@ $A714 label=KMOVTurnDecode
 C $A714,h3
 . Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
 . delta that matches the chosen turn rate/direction.
@@ -4181,6 +4182,7 @@ C $A766,h3
 C $A769,h3
 C $A76E,h3
 C $A771,h3
+@ $A774 label=WorldZScroll
 C $A774,h3
 . Straight world-Z scroll pass after forward/back movement.
 . The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
@@ -4209,9 +4211,12 @@ C $A7BA,h3
 C $A7BE,h3
 C $A7C1,h3
 C $A7C5,h3
+@ $A7C8 label=WorldTurnGate
 C $A7C9,h2
 C $A7CB,h3
+. Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
 C $A7CE,h3
+@ $A7D1 label=SharedWorldTurnPass
 C $A7D1,h4
 . Shared world-turn rotation pass.
 . `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn
@@ -4244,7 +4249,9 @@ C $A825,h2
 C $A827,h3
 C $A82A,h2
 C $A82C,h3
+@ $A82F label=SharedTurnTankFamily
 C $A82F,h4
+. Transform the active tank/supertank world `(X,Z,orientation)` tuple.
 C $A833,h4
 C $A837,h3
 C $A83A,h3
@@ -4253,7 +4260,9 @@ C $A840,h4
 C $A844,h4
 C $A848,h3
 C $A84D,h3
+@ $A850 label=SharedTurnMissile
 C $A850,h4
+. Transform the active missile world position and signed lateral/orientation slot.
 C $A854,h4
 C $A85A,h3
 C $A85D,h3
@@ -4264,7 +4273,9 @@ C $A86A,h4
 C $A86E,h3
 C $A871,h2
 C $A873,h3
+@ $A876 label=SharedTurnSaucer
 C $A876,h4
+. Transform the active saucer world `(X,Z)` pair.
 C $A87A,h4
 C $A87E,h3
 C $A881,h4
@@ -4272,7 +4283,9 @@ C $A885,h4
 C $A889,h3
 C $A88C,h2
 C $A88E,h3
+@ $A891 label=SharedTurnPlayerBullet
 C $A891,h4
+. Transform the active player-bullet world position and heading delta.
 C $A895,h3
 C $A89B,h4
 C $A89F,h3
@@ -4286,7 +4299,9 @@ C $A8BD,h3
 C $A8C0,h3
 C $A8C3,h2
 C $A8C5,h3
+@ $A8C8 label=SharedTurnHostileBullet
 C $A8C8,h4
+. Transform the active hostile-bullet world position and heading delta.
 C $A8CC,h3
 C $A8D2,h4
 C $A8D6,h3
@@ -4299,11 +4314,14 @@ C $A8EF,h3
 C $A8F4,h3
 C $A8F7,h3
 C $A8FB,h3
+@ $A8FE label=SharedTurnDeferredEffect
 C $A8FE,h4
+. Transform the queued deferred effect/explosion `(X,Z)` pair in `FECC/FED0`.
 C $A902,h4
 C $A906,h3
 C $A909,h4
 C $A90D,h4
+@ $A911 label=GameplayHoldLoop
 C $A911,h3
 . Read the `ENTER L K J H` keyboard row.
 C $A916,h2

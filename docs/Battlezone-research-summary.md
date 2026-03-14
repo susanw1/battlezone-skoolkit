@@ -158,7 +158,7 @@ Working summary of verified facts, local source material, and open questions for
   - `0x60` / `0x50` = back+left / back+right
   - `0x08` / `0x04` = left / right on the spot
   - these then split in two:
-    - `0xA714..0xA74A` decodes the turn component and matching hill-pointer delta:
+    - `KMOVTurnDecode` at `0xA714` decodes the turn component and matching hill-pointer delta:
       - bit 5 = `0x91EB` single-speed left turn
       - bit 4 = `0x924A` single-speed right turn
       - bit 3 = `0x92AE` double-speed left turn
@@ -296,8 +296,15 @@ Working summary of verified facts, local source material, and open questions for
       - initialised to `0x0040`
       - updated in the obstacle render/turn logic around `0xA442..0xA484`
       - consumed by the shared `(X,Z)` transform dispatcher entered at `0x91E6`
-    - `0xA774` = straight world-Z scroll pass after forward/back movement
-    - `0xA7D1` = shared world-turn rotation pass over obstacles and active entities
+    - `WorldZScroll` at `0xA774` = straight world-Z scroll pass after forward/back movement
+    - `WorldTurnGate` at `0xA7C8` = skips the turn-transform phase when no non-scroll movement bits remain
+    - `SharedWorldTurnPass` at `0xA7D1` = shared world-turn rotation pass over obstacles and active entities
+      - `SharedTurnTankFamily` at `0xA82F`
+      - `SharedTurnMissile` at `0xA850`
+      - `SharedTurnSaucer` at `0xA876`
+      - `SharedTurnPlayerBullet` at `0xA891`
+      - `SharedTurnHostileBullet` at `0xA8C8`
+      - `SharedTurnDeferredEffect` at `0xA8FE`
     - classification fix:
       - `0x9132` is now also promoted from misclassified data to code
       - current best read: keyboard movement/button decode helper; scans the keyboard matrix, normalises contradictory directions, latches fire into `FE54`, and returns a compact movement/turn code in `A`
@@ -320,7 +327,7 @@ Working summary of verified facts, local source material, and open questions for
   - current best code-side reading is that both notebook names refer to the same live missile state byte at `FE84`
 - `S` key handling is now separated into two clear roles:
   - gameplay hold/release path:
-    - at `0xA911..0xA92E`, the game reads the `H` row first
+    - `GameplayHoldLoop` at `0xA911` reads the `H` row first
     - if `H` is not pressed, it falls straight through back to `0x977E`
     - if `H` is pressed, `Caps Shift+H` aborts back to the title/instructions flow at `0xB1F4`
     - otherwise it loops on the `A S D F G` row until `S` is pressed, then resumes the main loop at `0x977E`

@@ -6466,6 +6466,7 @@ c$977E LD HL,($FE70) ;
  $A70F PUSH BC       ;
  $A710 CALL $9452    ;
  $A713 POP BC        ;
+@label=KMOVTurnDecode
 *$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
                      ; delta that matches the chosen turn rate/direction.
                      ; Bits 5/4/3/2 select the turn handler and turn step:
@@ -6513,6 +6514,7 @@ c$977E LD HL,($FE70) ;
 *$A76C BIT 6,C       ;
  $A76E JP Z,$A7C8    ;
  $A771 LD DE,$0080   ;
+@label=WorldZScroll
 *$A774 LD HL,($FE9A) ; Straight world-Z scroll pass after forward/back movement.
                      ; The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
                      ; other world-space entity Z positions so the player remains effectively
@@ -6552,10 +6554,12 @@ c$977E LD HL,($FE70) ;
  $A7C1 LD HL,($FEB6) ;
  $A7C4 ADD HL,DE     ;
  $A7C5 LD ($FEB6),HL ;
+@label=WorldTurnGate
 *$A7C8 LD A,C        ;
  $A7C9 AND $3F       ;
- $A7CB JP Z,$A911    ;
+ $A7CB JP Z,$A911    ; Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
  $A7CE LD HL,($FEA8) ;
+@label=SharedWorldTurnPass
  $A7D1 LD DE,($FE98) ; Shared world-turn rotation pass.
                      ; `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn
                      ; transform to each `(X,Z)` pair, and returns updated coordinates. The pass is
@@ -6588,7 +6592,8 @@ c$977E LD HL,($FE70) ;
  $A827 LD A,($FE6A)  ;
  $A82A AND $C0       ;
  $A82C JP Z,$A848    ;
- $A82F LD DE,($FE5E) ;
+@label=SharedTurnTankFamily
+ $A82F LD DE,($FE5E) ; Transform the active tank/supertank world `(X,Z,orientation)` tuple.
  $A833 LD BC,($FE60) ;
  $A837 LD HL,($FE62) ;
  $A83A CALL $91E6    ;
@@ -6598,7 +6603,8 @@ c$977E LD HL,($FE70) ;
 *$A848 LD A,($FE6A)  ;
  $A84B BIT 4,A       ;
  $A84D JP Z,$A871    ;
- $A850 LD DE,($DD0A) ;
+@label=SharedTurnMissile
+ $A850 LD DE,($DD0A) ; Transform the active missile world position and signed lateral/orientation slot.
  $A854 LD BC,($DDBA) ;
  $A858 BIT 7,B       ;
  $A85A JP NZ,$A889   ;
@@ -6610,7 +6616,8 @@ c$977E LD HL,($FE70) ;
  $A86E JP $A889      ;
 *$A871 AND $20       ;
  $A873 JP Z,$A889    ;
- $A876 LD DE,($FE8E) ;
+@label=SharedTurnSaucer
+ $A876 LD DE,($FE8E) ; Transform the active saucer world `(X,Z)` pair.
  $A87A LD BC,($FE90) ;
  $A87E CALL $91E6    ;
  $A881 LD ($FE8E),DE ;
@@ -6618,7 +6625,8 @@ c$977E LD HL,($FE70) ;
 *$A889 LD A,($FE6A)  ;
  $A88C AND $08       ;
  $A88E JP Z,$A8C0    ;
- $A891 LD DE,($DD1A) ;
+@label=SharedTurnPlayerBullet
+ $A891 LD DE,($DD1A) ; Transform the active player-bullet world position and heading delta.
  $A895 LD HL,($FEAC) ;
  $A898 SBC HL,DE     ;
  $A89A PUSH HL       ;
@@ -6640,7 +6648,8 @@ c$977E LD HL,($FE70) ;
 *$A8C0 LD A,($FE6A)  ;
  $A8C3 AND $04       ;
  $A8C5 JP Z,$A8F7    ;
- $A8C8 LD DE,($DD22) ;
+@label=SharedTurnHostileBullet
+ $A8C8 LD DE,($DD22) ; Transform the active hostile-bullet world position and heading delta.
  $A8CC LD HL,($FEB4) ;
  $A8CF SBC HL,DE     ;
  $A8D1 PUSH HL       ;
@@ -6662,11 +6671,13 @@ c$977E LD HL,($FE70) ;
 *$A8F7 LD A,($FE6C)  ;
  $A8FA AND A         ;
  $A8FB JP Z,$A911    ;
- $A8FE LD DE,($FECC) ;
+@label=SharedTurnDeferredEffect
+ $A8FE LD DE,($FECC) ; Transform the queued deferred effect/explosion `(X,Z)` pair in `FECC/FED0`.
  $A902 LD BC,($FED0) ;
  $A906 CALL $91E6    ;
  $A909 LD ($FECC),DE ;
  $A90D LD ($FED0),BC ;
+@label=GameplayHoldLoop
 *$A911 LD BC,$BFFE   ; Read the `ENTER L K J H` keyboard row.
  $A914 IN A,(C)      ;
  $A916 AND $10       ; `H` pressed?
