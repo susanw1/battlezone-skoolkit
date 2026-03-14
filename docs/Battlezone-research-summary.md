@@ -392,10 +392,18 @@ Working summary of verified facts, local source material, and open questions for
 - The `HL=0`, `DE=0`, `BC=<count>`, `LDIR` sequences in this area are very likely intentional delay loops rather than meaningful copies
   - examples: `0xAE00..0xAE09`, `0xAE23..0xAE2C`, `0xAF56..0xAF5F`
 - Added a cautious first-pass explosion / crash `LINCDS` mapping:
-  - `0xD6B8` is the current best `TKEXV` family, used by the tank / supertank explosion path
-  - `0xD7CC` is the current best `SAEXV` family, used by the saucer explosion path
-  - `0xD8B0` is the current best `MSEXV` family, used by the missile explosion path
+  - `TankExplosionSetup` at `0xA9AC` seeds the tank / supertank `TKEXV` path using line-data family `0xD6B8`
+  - `SaucerExplosionSetup` at `0xA934` seeds the saucer `SAEXV` path using line-data family `0xD7CC`
+  - `MissileExplosionSetup` at `0xAA0B` seeds the missile `MSEXV` path using line-data family `0xD8B0`
   - `0xD95C` is the current best `EXBLT` family, used by the later bullet-impact / bullet-explosion path
+  - `BulletImpactEffectSetup` at `0xAC22` selects player-bullet vs hostile-bullet impact coordinates and falls into the shared bullet-impact effect setup
+  - `DeferredEffectAnimator` at `0xAA5D` is the shared animated continuation used by those setup routines
+    - `DeferredEffectAdvanceState` at `0xAA6B`
+    - `DeferredEffectPhaseSetup` at `0xAAD1`
+    - `DeferredEffectRewriteGeometry` at `0xAB13`
+    - `DeferredEffectDraw` at `0xABDE`
+  - `DeferredEffectComplete` at `0xAC01` ends the animation and decides whether a deferred major-entity bit should be restored
+  - `DeferredEffectRespawn` at `0xAC12` ORs the queued high bit from `FE6C` back into `FE6A` and jumps to `TEXST` at `0x9644`
   - `0xD392`, `0xD3DC`, and `0xD43E` were originally tagged as `CRAVU`, but current code reading shows they are a better match for page-21 `MISS`
   - current best read:
     - the selector at `0xA080` sits inside the missile render path, not the player-crash path

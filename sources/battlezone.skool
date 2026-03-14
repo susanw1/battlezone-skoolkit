@@ -6697,6 +6697,7 @@ c$977E LD HL,($FE70) ;
 ; - seeds the later animated explosion path with the line-data family at
 ;   $D7CC and companion geometry families at $DA1E/$DB12/$DC06
 ; - current best notebook match: `SAEXV`
+@label=SaucerExplosionSetup
 *$A934 LD A,($FE6A)  ;
  $A937 AND $D7       ; Clear the active saucer and player-bullet bits.
  $A939 LD ($FE6A),A  ;
@@ -6745,6 +6746,7 @@ c$977E LD HL,($FE70) ;
 ; - seeds the later animated explosion path with the line-data family at
 ;   $D6B8 and companion geometry families at $D9E6/$DADA/$DBCE
 ; - current best notebook match: `TKEXV`
+@label=TankExplosionSetup
 *$A9AC LD A,($FE6A)  ;
  $A9AF AND $C0       ;
  $A9B1 JP Z,$A36F    ;
@@ -6779,6 +6781,7 @@ c$977E LD HL,($FE70) ;
  $AA02 LD HL,($FE62) ;
  $AA05 LD ($FED4),HL ;
  $AA08 JP $A97A      ;
+@label=MissileExplosionSetup
 *$AA0B LD A,($FE6A)  ;
  $AA0E AND $E7       ; Clear the active missile and player-bullet bits.
  $AA10 LD ($FE6A),A  ;
@@ -6813,13 +6816,15 @@ c$977E LD HL,($FE70) ;
 ; - seeds the later animated explosion path with the line-data family at
 ;   $D8B0 and companion geometry families at $DA46/$DB3A/$DC2E
 ; - current best notebook match: `MSEXV`
+@label=DeferredEffectAnimator
 *$AA5D AND $0C       ;
- $AA5F CALL NZ,$AC22 ;
+ $AA5F CALL NZ,$AC22 ; If the active source was a bullet, refresh the shared impact-effect seed first.
  $AA62 LD A,$18      ;
  $AA64 OUT ($FE),A   ;
  $AA66 LD A,($FE6C)  ;
  $AA69 AND A         ;
  $AA6A RET Z         ;
+@label=DeferredEffectAdvanceState
  $AA6B LD DE,$0050   ;
  $AA6E LD HL,($FEC6) ;
  $AA71 ADD HL,DE     ;
@@ -6860,6 +6865,7 @@ c$977E LD HL,($FE70) ;
  $AACA DEC A         ;
  $AACB LD ($FED6),A  ;
  $AACE JP Z,$AC01    ;
+@label=DeferredEffectPhaseSetup
  $AAD1 LD HL,($FED4) ;
  $AAD4 LD DE,$0034   ;
  $AAD7 ADD HL,DE     ;
@@ -6887,6 +6893,7 @@ c$977E LD HL,($FE70) ;
  $AB0D CALL $90BA    ;
  $AB10 SUB A         ;
  $AB11 OUT ($FE),A   ;
+@label=DeferredEffectRewriteGeometry
 *$AB13 LD HL,$DEC8   ; YPERS
  $AB16 LD ($FE38),HL ;
  $AB19 LD HL,$DF00   ;
@@ -6998,6 +7005,7 @@ c$977E LD HL,($FE70) ;
  $ABD5 EXX           ;
  $ABD6 LD ($FE34),SP ;
  $ABDA LD SP,($FE00) ;
+@label=DeferredEffectDraw
  $ABDE LD HL,($FEDC) ;
  $ABE1 LD ($FE02),HL ;
  $ABE4 LD HL,($FED8) ;
@@ -7017,6 +7025,7 @@ c$977E LD HL,($FE70) ;
  $ABFD SUB A         ;
  $ABFE OUT ($FE),A   ;
  $AC00 RET           ;
+@label=DeferredEffectComplete
 *$AC01 SUB A         ;
  $AC02 LD ($FED6),A  ;
  $AC05 LD A,($FE6C)  ;
@@ -7025,6 +7034,7 @@ c$977E LD HL,($FE70) ;
  $AC0D SUB A         ;
  $AC0E LD ($FE6C),A  ;
  $AC11 RET           ;
+@label=DeferredEffectRespawn
 *$AC12 LD C,A        ;
  $AC13 LD A,($FE6A)  ;
  $AC16 OR C          ; Restore the deferred major-entity bit to probable EXST1
@@ -7033,8 +7043,11 @@ c$977E LD HL,($FE70) ;
  $AC1B LD ($FE6C),A  ;
  $AC1E POP HL        ;
  $AC1F JP $9644      ;
+@label=BulletImpactEffectSetup
 *$AC22 AND $08       ;
 ; Probable bullet-impact / bullet-explosion setup.
+; Entry at `0xAC22` selects player-bullet vs hostile-bullet source coordinates
+; and then falls into this shared setup.
  $AC24 JP Z,$AC48    ;
  $AC27 LD A,($FE6A)  ;
  $AC2A AND $F7       ;

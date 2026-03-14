@@ -4349,6 +4349,7 @@ N $A934
 . - seeds the later animated explosion path with the line-data family at
 .   $D7CC and companion geometry families at $DA1E/$DB12/$DC06
 . - current best notebook match: `SAEXV`
+@ $A934 label=SaucerExplosionSetup
 C $A934,h3
 C $A937,h2
 . Clear the active saucer and player-bullet bits.
@@ -4399,6 +4400,7 @@ N $A9AC
 . - seeds the later animated explosion path with the line-data family at
 .   $D6B8 and companion geometry families at $D9E6/$DADA/$DBCE
 . - current best notebook match: `TKEXV`
+@ $A9AC label=TankExplosionSetup
 C $A9AC,h3
 C $A9AF,h2
 C $A9B1,h3
@@ -4435,6 +4437,7 @@ C $A9FF,h3
 C $AA02,h3
 C $AA05,h3
 C $AA08,h3
+@ $AA0B label=MissileExplosionSetup
 C $AA0B,h3
 C $AA0E,h2
 . Clear the active missile and player-bullet bits.
@@ -4472,12 +4475,17 @@ N $AA5D
 . - seeds the later animated explosion path with the line-data family at
 .   $D8B0 and companion geometry families at $DA46/$DB3A/$DC2E
 . - current best notebook match: `MSEXV`
+@ $AA5D label=DeferredEffectAnimator
 C $AA5D,h2
 C $AA5F,h3
+. If the active source was a bullet, refresh the shared impact-effect seed first.
 C $AA62,h2
 C $AA64,h2
 C $AA66,h3
+@ $AA6B label=DeferredEffectAdvanceState
 C $AA6B,h3
+C $AA6E,h3
+. Advance the per-frame explosion offsets, counters, and line/table pointers.
 C $AA6E,h3
 C $AA72,h3
 C $AA75,h3
@@ -4510,7 +4518,11 @@ C $AAC4,h3
 C $AAC7,h3
 C $AACB,h3
 C $AACE,h3
+@ $AAD1 label=DeferredEffectPhaseSetup
 C $AAD1,h3
+C $AAD4,h3
+. Seed the current effect phase: advance the spin/orientation term, install
+. source `(X,Z)` plus geometry pointers, and run the shared transform helper.
 C $AAD4,h3
 C $AAD8,h3
 C $AADB,h4
@@ -4529,6 +4541,7 @@ C $AB07,h3
 C $AB0A,h3
 C $AB0D,h3
 C $AB11,h2
+@ $AB13 label=DeferredEffectRewriteGeometry
 C $AB13,h3
 . YPERS
 C $AB16,h3
@@ -4572,7 +4585,11 @@ C $ABC3,h4
 C $ABD3,h2
 C $ABD6,h4
 C $ABDA,h4
+@ $ABDE label=DeferredEffectDraw
 C $ABDE,h3
+C $ABE1,h3
+. Install the line-data pointer, run perspective/line draw, and present the
+. current explosion frame.
 C $ABE1,h3
 C $ABE4,h3
 C $ABE7,h2
@@ -4582,11 +4599,13 @@ C $ABF2,h2
 C $ABF4,h3
 C $ABFA,h3
 C $ABFE,h2
+@ $AC01 label=DeferredEffectComplete
 C $AC02,h3
 C $AC05,h3
 C $AC08,h2
 C $AC0A,h3
 C $AC0E,h3
+@ $AC12 label=DeferredEffectRespawn
 C $AC13,h3
 C $AC16,1
 . Restore the deferred major-entity bit to probable EXST1
@@ -4594,9 +4613,12 @@ C $AC17,h3
 . before jumping into the reinitialisation path at #R$9644.
 C $AC1B,h3
 C $AC1F,h3
+@ $AC22 label=BulletImpactEffectSetup
 C $AC22,h2
 N $AC24
 . Probable bullet-impact / bullet-explosion setup.
+. Entry at `0xAC22` selects player-bullet vs hostile-bullet source coordinates
+. and then falls into this shared setup.
 C $AC24,h3
 C $AC27,h3
 C $AC2A,h2
