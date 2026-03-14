@@ -1072,6 +1072,14 @@ B $7BE0,8,h8
 B $7BE8,8,h8
 B $7BF0,8,h8
 B $7BF8,8,h8
+N $7C00
+D $7C00
+. Current best interpretation: precomputed 16-bit fixed-point lookup tables
+. with strong sine/cosine structure. `LNLPT` indexes page `0x7C` as a
+. shared primary-step family and pages `0x7D` / `0x7E` as companion
+. positive/negative-slope families; page `0x7F` appears to be the remaining
+. quadrant of the same lookup block.
+@ $7C00 label=FixedPointTrigTables
 B $7C00,8,h8
 B $7C08,8,h8
 B $7C10,8,h8
@@ -1201,10 +1209,21 @@ B $7FE8,8,h8
 B $7FF0,8,h8
 B $7FF8,8,h8
 c $8000
-. Routine at 8000
+. InitLineHelperTables
 D $8000
 . Used by the routines at #R$94EC and #R$B1F4.
+. Current best interpretation:
+. - fills `F800..F97F` with 192 little-endian off-screen row addresses in
+.   Spectrum display order
+. - fills `FA00..FBFF` with 256 `(byte-offset,left-mask)`-style pairs
+. - fills `FC00..FDFF` with 256 mirrored `(right-mask,byte-offset)`-style
+.   pairs
+. This looks like the runtime screen/Y and X helper-table setup that later
+. line/status plotting code relies on.
+@ $8000 label=InitLineHelperTables
 C $8000,h3
+. Start at the end of #R$F800 so the 192-entry row-address table can be filled
+. backwards down to `F800`.
 C $8003,h2
 C $8005,h2
 C $8007,h2
@@ -1242,6 +1261,18 @@ D $805C
 . On return, `FE02` is updated from SP at $80D1, so consecutive line-data
 . blocks can be chained in memory and consumed one after another by repeated
 . calls.
+. Current best internal workspace read:
+. - `FE0E` / `FE10` = sorted projected X endpoints
+. - `FE12` = X delta
+. - `FE08` / `FE0A` = projected Y endpoints
+. - `FE0C` = Y delta
+. The `0x7C00..0x7FFF` block used later in the routine is now best read as a
+. precomputed fixed-point trig/slope lookup family, not as raw pixel-mask
+. tables. The four major draw branches therefore look more like octant-style
+. angle/slope raster paths than simple left/right mask variants.
+. The repeated 8-step shift/compare/subtract segments inside the four major
+. branches are current-best matches for unrolled slope-division / gradient
+. setup code.
 R $805C
 . Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
 @ $805C label=LNLPT
@@ -1316,7 +1347,12 @@ C $816C,h4
 C $8173,h3
 C $8176,h3
 N $8179
-@ $8179 label=LNLPTDrawPositiveShallow
+@ $8179 label=LNLPTDrawPositiveXMajor
+. Current best correction: this is the positive-slope X-major branch.
+. The first loaded/sorted endpoint pair now looks like X, and `0x8135`
+. reaches `0x8179` only when the Y delta is smaller than the X delta.
+. This branch also contains the 8-step unrolled shift/compare/subtract block
+. that now looks like the positive-slope gradient divide.
 C $8179,h3
 C $817E,h2
 C $8184,h2
@@ -1367,7 +1403,12 @@ C $8278,h2
 C $8285,h2
 C $8287,h3
 N $828A
-@ $828A label=LNLPTDrawNegativeShallow
+@ $828A label=LNLPTDrawNegativeXMajor
+. Current best correction: this is the negative-slope X-major branch.
+. The first loaded/sorted endpoint pair now looks like X, and `0x8171`
+. reaches `0x828A` only when the Y delta is smaller than the X delta.
+. Companion branch with the same 8-step unrolled gradient-divide pattern for
+. the negative-slope X-major case.
 C $828A,h3
 C $828F,h2
 C $8295,h2
@@ -1418,7 +1459,12 @@ C $838B,h2
 C $8398,h2
 C $839A,h3
 N $839D
-@ $839D label=LNLPTDrawPositiveSteep
+@ $839D label=LNLPTDrawPositiveYMajor
+. Current best correction: this is the positive-slope Y-major branch.
+. The first loaded/sorted endpoint pair now looks like X, and `0x8135`
+. reaches `0x839D` when the Y delta is greater than or equal to the X delta.
+. Companion branch with the same 8-step unrolled gradient-divide pattern for
+. the positive-slope Y-major case.
 C $839D,h3
 C $83A3,h2
 C $83A9,h2
@@ -1469,7 +1515,12 @@ C $84A2,h2
 C $84AE,h2
 C $84B0,h3
 N $84B3
-@ $84B3 label=LNLPTDrawNegativeSteep
+@ $84B3 label=LNLPTDrawNegativeYMajor
+. Current best correction: this is the negative-slope Y-major branch.
+. The first loaded/sorted endpoint pair now looks like X, and `0x8171`
+. reaches `0x84B3` when the Y delta is greater than or equal to the X delta.
+. Companion branch with the same 8-step unrolled gradient-divide pattern for
+. the negative-slope Y-major case.
 C $84B3,h3
 C $84B9,h2
 C $84BF,h2
@@ -1520,7 +1571,10 @@ C $85B6,h2
 C $85C2,h2
 C $85C4,h3
 N $85C7
-@ $85C7 label=LNLPTDrawZeroDelta
+@ $85C7 label=LNLPTDrawHorizontal
+. Current best interpretation: horizontal-line fast path reached when the Y
+. delta in `FE0C` is zero. Holds the Y-derived row side constant and walks the
+. X endpoint range through the row/mask helper families.
 C $85C7,h3
 C $85CA,h3
 C $85D0,h3
@@ -2679,12 +2733,16 @@ C $95CC,h2
 C $95CE,h2
 C $95D0,h2
 C $95D2,h3
+. Start from the end of #R$F800 and copy the low-bit marker into the
+. precomputed row-address table.
 C $95D7,h2
 C $95DB,h2
 C $95E1,h2
 C $95E3,h2
 C $95E5,h2
 C $95E7,h3
+. Start from the end of #R$F800 again and copy the high-bit marker into the
+. same precomputed row-address table.
 C $95EB,h2
 C $95F1,h2
 C $95F6,h2
@@ -8077,7 +8135,13 @@ B $F8A0,8,h8
 B $F8A8,8,h8
 B $F8B0,8,h8
 B $F8B8,8,h8
-B $F8C0,8,h8
+N $F800
+D $F800
+. Runtime-filled off-screen row-address lookup table.
+. `InitLineHelperTables` populates `F800..F97F` with 192 little-endian row
+. addresses in Spectrum display order for the off-screen playfield buffer.
+@ $F800 label=OffscreenRowAddressTable
+B $F800,8,h8
 B $F8C8,8,h8
 B $F8D0,8,h8
 B $F8D8,8,h8
@@ -8117,6 +8181,13 @@ B $F9E0,8,h8
 B $F9E8,8,h8
 B $F9F0,8,h8
 B $F9F8,8,h8
+N $FA00
+D $FA00
+. Runtime-filled 32-entry X helper table.
+. Runtime-filled 256-entry X helper family.
+. Current best interpretation: one two-byte `(byte-offset,left-mask)` pair per
+. X position, built by `InitLineHelperTables`.
+@ $FA00 label=LeftPixelMaskTable
 B $FA00,8,h8
 B $FA08,8,h8
 B $FA10,8,h8
@@ -8181,6 +8252,13 @@ B $FBE0,8,h8
 B $FBE8,8,h8
 B $FBF0,8,h8
 B $FBF8,8,h8
+N $FC00
+D $FC00
+. Runtime-filled 256-entry companion X helper family.
+. Current best interpretation: one two-byte mirrored
+. `(right-mask,byte-offset)` pair per X position, built by
+. `InitLineHelperTables`.
+@ $FC00 label=RightPixelMaskTable
 B $FC00,8,h8
 B $FC08,8,h8
 B $FC10,8,h8

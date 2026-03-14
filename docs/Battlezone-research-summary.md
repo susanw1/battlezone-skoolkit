@@ -222,18 +222,41 @@ Working summary of verified facts, local source material, and open questions for
     - `LNLPTLoadLineRecord` at `0x806B`
     - `LNLPTPreparePositiveDelta` at `0x810E`
     - `LNLPTPrepareNegativeDelta` at `0x813D`
-    - `LNLPTDrawPositiveShallow` at `0x8179`
-    - `LNLPTDrawNegativeShallow` at `0x828A`
-    - `LNLPTDrawPositiveSteep` at `0x839D`
-    - `LNLPTDrawNegativeSteep` at `0x84B3`
-    - `LNLPTDrawZeroDelta` at `0x85C7`
+    - `LNLPTDrawPositiveXMajor` at `0x8179`
+    - `LNLPTDrawNegativeXMajor` at `0x828A`
+    - `LNLPTDrawPositiveYMajor` at `0x839D`
+    - `LNLPTDrawNegativeYMajor` at `0x84B3`
+    - `LNLPTDrawHorizontal` at `0x85C7`
     - `LNLPTNextLine` at `0x8631`
   - current best structural reading:
     - one line record is loaded and normalised at `0x806B..0x80D1`
+    - current best workspace mapping inside `LNLPT` is:
+      - `FE0E` / `FE10` = sorted X endpoints
+      - `FE12` = X delta
+      - `FE08` / `FE0A` = Y endpoints
+      - `FE0C` = Y delta
     - the secondary delta sign is split by the preparation stages at `0x810E` / `0x813D`
-    - the main raster work then falls into four shallow/steep branches for the two delta signs
-    - `0x85C7` is a separate zero-delta short-path
+    - the main raster work then falls into four X-major / Y-major branches for the two delta signs
+    - `0x85C7` is now best read as a horizontal-line fast path reached when the Y delta is zero
     - all branches rejoin at `LNLPTNextLine`, which decrements the line count and loops to `0x806B`
+  - branch-name correction:
+    - the earlier `Shallow/Steep` names, and then the first `XMajor/YMajor` correction, were both based on the wrong assumption that the first loaded/sorted pointer pair was `Y`
+    - `0x80D9..0x80F9` clips the first sorted pair against a `-86..+65` style horizontal window, so it now looks like `X`
+    - `0x8135` / `0x8171` therefore compare `Y delta` against `X delta`
+    - current best read is therefore:
+      - `0x8179` / `0x828A` = X-major
+      - `0x839D` / `0x84B3` = Y-major
+  - important correction:
+    - the `0x7C00..0x7FFF` family used by `LNLPT` is now best read as precomputed 16-bit fixed-point trig/slope lookup data, not as raw pixel-mask tables
+    - `0x7C00` starts with a clear `7FFF,0000 / 7FF5,0324 / 7FD7,0647 ...` sinusoidal pattern
+    - `LNLPT` therefore looks more like an octant-style angle/slope rasteriser using those lookup pages than a simple mask-table blitter
+  - further support for Susan's recollection:
+    - each of the four main branches contains an 8-step repeated shift/compare/subtract sequence, now best read as an unrolled slope-division / gradient setup block
+    - the small setup routine at `0x8000`, now labeled `InitLineHelperTables`, builds runtime plotting helpers:
+      - `OffscreenRowAddressTable` at `F800..F97F`: 192 little-endian off-screen row addresses in Spectrum display order
+      - `LeftPixelMaskTable` at `FA00..FBFF`: current best read is 256 `(byte-offset,left-mask)` pairs, one per X position
+      - `RightPixelMaskTable` at `FC00..FDFF`: current best read is the mirrored 256-entry companion table
+    - this is strong evidence that the shipped code still uses a precomputed Y-to-Spectrum-row mapping plus X mask helpers, just against the off-screen buffer rather than the visible screen
 - `SHIPS` in the notebook now looks very likely to be the runtime lives counter at `0xFEE4`
   - the shipped death/game-over machinery at `0xADD4` is still the best code match for notebook `CRASH`, but it looks like a later expanded implementation rather than a close textual match to page 17
   - initialised to `3` at `0x958B..0x958E`

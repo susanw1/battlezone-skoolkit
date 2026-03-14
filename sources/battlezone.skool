@@ -1279,6 +1279,7 @@ b$4000 DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,
  $7BE8 DEFB $1D,$1E,$1E,$1E,$1E,$1E,$1E,$1E
  $7BF0 DEFB $1E,$1E,$1E,$1E,$1F,$1F,$1F,$1F
  $7BF8 DEFB $1F,$1F,$1F,$1F,$1F,$1F,$1F,$1F
+@label=FixedPointTrigTables
  $7C00 DEFB $FF,$7F,$00,$00,$F5,$7F,$24,$03
  $7C08 DEFB $D7,$7F,$47,$06,$A6,$7F,$6A,$09
  $7C10 DEFB $61,$7F,$8B,$0C,$08,$7F,$AB,$0F
@@ -1408,10 +1409,20 @@ b$4000 DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,
  $7FF0 DEFB $61,$7F,$8B,$8C,$A6,$7F,$6A,$89
  $7FF8 DEFB $D7,$7F,$47,$86,$F5,$7F,$24,$83
 
-; Routine at 8000
+; InitLineHelperTables
 ;
 ; Used by the routines at #R$94EC and #R$B1F4.
-c$8000 LD HL,$F97F   ;
+; Current best interpretation:
+; - fills `F800..F97F` with 192 little-endian off-screen row addresses in
+;   Spectrum display order
+; - fills `FA00..FBFF` with 256 `(byte-offset,left-mask)`-style pairs
+; - fills `FC00..FDFF` with 256 mirrored `(right-mask,byte-offset)`-style
+;   pairs
+; This looks like the runtime screen/Y and X helper-table setup that later
+; line/status plotting code relies on.
+@label=InitLineHelperTables
+c$8000 LD HL,$F97F   ; Start at the end of #R$F800 so the 192-entry row-address table can be filled
+                     ; backwards down to `F800`.
  $8003 LD B,$00      ;
 *$8005 LD D,$00      ;
 *$8007 LD C,$00      ;
@@ -1483,6 +1494,18 @@ c$8000 LD HL,$F97F   ;
 ; On return, `FE02` is updated from SP at $80D1, so consecutive line-data
 ; blocks can be chained in memory and consumed one after another by repeated
 ; calls.
+; Current best internal workspace read:
+; - `FE0E` / `FE10` = sorted projected X endpoints
+; - `FE12` = X delta
+; - `FE08` / `FE0A` = projected Y endpoints
+; - `FE0C` = Y delta
+; The `0x7C00..0x7FFF` block used later in the routine is now best read as a
+; precomputed fixed-point trig/slope lookup family, not as raw pixel-mask
+; tables. The four major draw branches therefore look more like octant-style
+; angle/slope raster paths than simple left/right mask variants.
+; The repeated 8-step shift/compare/subtract segments inside the four major
+; branches are current-best matches for unrolled slope-division / gradient
+; setup code.
 ;
 ; Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
 @label=LNLPT
@@ -1630,7 +1653,12 @@ c$805C LD HL,($FE02) ;
  $8171 SBC HL,DE     ;
  $8173 JP P,$84B3    ;
  $8176 JP $828A      ;
-@label=LNLPTDrawPositiveShallow
+; Current best correction: this is the positive-slope X-major branch.
+; The first loaded/sorted endpoint pair now looks like X, and `0x8135`
+; reaches `0x8179` only when the Y delta is smaller than the X delta.
+; This branch also contains the 8-step unrolled shift/compare/subtract block
+; that now looks like the positive-slope gradient divide.
+@label=LNLPTDrawPositiveXMajor
 *$8179 LD HL,($FE0C) ;
  $817C LD A,H        ;
  $817D OR D          ;
@@ -1821,7 +1849,12 @@ c$805C LD HL,($FE02) ;
  $8284 EXX           ;
  $8285 DJNZ $8255    ;
  $8287 JP $862F      ;
-@label=LNLPTDrawNegativeShallow
+; Current best correction: this is the negative-slope X-major branch.
+; The first loaded/sorted endpoint pair now looks like X, and `0x8171`
+; reaches `0x828A` only when the Y delta is smaller than the X delta.
+; Companion branch with the same 8-step unrolled gradient-divide pattern for
+; the negative-slope X-major case.
+@label=LNLPTDrawNegativeXMajor
 *$828A LD HL,($FE0C) ;
  $828D LD A,H        ;
  $828E OR D          ;
@@ -2014,7 +2047,12 @@ c$805C LD HL,($FE02) ;
  $8397 EXX           ;
  $8398 DJNZ $8368    ;
  $839A JP $862F      ;
-@label=LNLPTDrawPositiveSteep
+; Current best correction: this is the positive-slope Y-major branch.
+; The first loaded/sorted endpoint pair now looks like X, and `0x8135`
+; reaches `0x839D` when the Y delta is greater than or equal to the X delta.
+; Companion branch with the same 8-step unrolled gradient-divide pattern for
+; the positive-slope Y-major case.
+@label=LNLPTDrawPositiveYMajor
 *$839D LD HL,($FE0C) ;
  $83A0 EX DE,HL      ;
  $83A1 LD A,H        ;
@@ -2208,7 +2246,12 @@ c$805C LD HL,($FE02) ;
  $84AD EXX           ;
  $84AE DJNZ $8482    ;
  $84B0 JP $862F      ;
-@label=LNLPTDrawNegativeSteep
+; Current best correction: this is the negative-slope Y-major branch.
+; The first loaded/sorted endpoint pair now looks like X, and `0x8171`
+; reaches `0x84B3` when the Y delta is greater than or equal to the X delta.
+; Companion branch with the same 8-step unrolled gradient-divide pattern for
+; the negative-slope Y-major case.
+@label=LNLPTDrawNegativeYMajor
 *$84B3 LD HL,($FE0C) ;
  $84B6 EX DE,HL      ;
  $84B7 LD A,H        ;
@@ -2402,7 +2445,10 @@ c$805C LD HL,($FE02) ;
  $85C1 EXX           ;
  $85C2 DJNZ $8596    ;
  $85C4 JP $862F      ;
-@label=LNLPTDrawZeroDelta
+; Current best interpretation: horizontal-line fast path reached when the Y
+; delta in `FE0C` is zero. Holds the Y-derived row side constant and walks the
+; X endpoint range through the row/mask helper families.
+@label=LNLPTDrawHorizontal
 *$85C7 LD DE,$0080   ;
  $85CA LD HL,($FE08) ;
  $85CD ADD HL,DE     ;
@@ -4531,7 +4577,8 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $95CC OUT ($FE),A   ;
  $95CE LD B,$27      ;
  $95D0 LD C,$01      ;
- $95D2 LD HL,$F97F   ;
+ $95D2 LD HL,$F97F   ; Start from the end of #R$F800 and copy the low-bit marker into the
+                     ; precomputed row-address table.
 *$95D5 LD A,(HL)     ;
  $95D6 DEC HL        ;
  $95D7 ADD A,$0C     ;
@@ -4545,7 +4592,8 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $95E1 DJNZ $95D5    ;
  $95E3 LD B,$27      ;
  $95E5 LD C,$80      ;
- $95E7 LD HL,$F97F   ;
+ $95E7 LD HL,$F97F   ; Start from the end of #R$F800 again and copy the high-bit marker into the
+                     ; same precomputed row-address table.
 *$95EA LD A,(HL)     ;
  $95EB ADD A,$13     ;
  $95ED LD E,A        ;
@@ -12135,6 +12183,7 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F7E8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F7F0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F7F8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@label=OffscreenRowAddressTable
  $F800 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F808 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F810 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -12199,6 +12248,7 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F9E8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F9F0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F9F8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@label=LeftPixelMaskTable
  $FA00 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FA08 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FA10 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -12263,6 +12313,7 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FBE8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FBF0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FBF8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@label=RightPixelMaskTable
  $FC00 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FC08 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FC10 DEFB $00,$00,$00,$00,$00,$00,$00,$00
