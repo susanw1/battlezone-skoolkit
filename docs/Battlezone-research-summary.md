@@ -238,6 +238,9 @@ Working summary of verified facts, local source material, and open questions for
       - `FE12` = absolute Y delta
       - `FE08` / `FE0A` = corresponding X endpoints
       - `FE0C` = signed X delta
+      - notebook labels `X1/X2/XD` and `Y1/Y2/YD` are still being preserved in
+        the workspace map, but shipped `LNLPT` usage currently appears swapped
+        relative to those names
     - the secondary delta sign is split by the preparation stages at `0x810E` / `0x813D`
     - the main raster work then falls into four X-major / Y-major branches for the two delta signs
     - `0x85C7` is now best read as a vertical-line fast path reached when the X delta is zero
@@ -267,13 +270,34 @@ Working summary of verified facts, local source material, and open questions for
 - Hill pipeline reclassification:
   - `MHLC` at `0x8D68`, `SHLC` at `0x8E08`, `MHLPT` at `0x8E38`, and `SHLPT` at `0x8F53` are now emitted as real code instead of anonymous `DEFB`
   - current best read:
-    - `MHLC` converts the current object-edge limits at `FE1C/FE1E/FE20/FE22` into clipped hill-column bounds in `FE24/FE26`
+    - `FE1C/FE1E` and `FE20/FE22` are now best read as the two raw outer X-limit pairs feeding hill/object suppression:
+      - `FE1C/FE1E` = major-entity outer X limits
+      - `FE20/FE22` = active obstacle/object outer X limits
+    - `MHLC` converts those raw outer limits into clipped hill-column bounds in `FE24/FE26`
     - `SHLC` derives the inner/infill pair in `FE28/FE2A` from those primary limits
     - `MHLPT` uses `SP` as a stream pointer via `FE2C`, copies hill row data into the off-screen `E700` playfield buffer for the outer regions, then fills the span in `E8A0..E8BF` with `0xAA`
     - `SHLPT` reuses the same stream but only writes into still-empty bytes of the off-screen buffer, matching Susan's recollection of the infill pass inside the object limits
     - notebook name `HLCNT` at `FE2C` is now suspicious or at least misleading: in shipped code it behaves as a hill-data stream pointer, not a simple count
     - likewise, notebook `SHCNT` at `FE2E` currently looks more like the moving inner-row stream pointer used by `SHLPTStepUpRow` than a simple count
     - `FE30` currently looks like a temporary inner-width / limit pair used by `SHLPT` while stepping through the infill region
+  - notebook names `XLOC/YLOC/ZLOC` are also being preserved, but shipped behaviour is now clearer:
+    - `FE32` = current X source-coordinate list pointer
+    - `FE34` = current Y source-coordinate list pointer
+    - `FE36` = current Z source-coordinate list pointer
+    - attract mode repoints `FE32/FE34/FE36` aggressively, including the title tumble hack that reuses a rotated output list as the effective Y input
+  - projection/transform workspace is now clearer too:
+    - `FE38/FE3A` = X/Y perspective output end-pointers into the `XPERS` / `YPERS` buffers
+    - `FE3C/FE3E` = visible projected X upper/lower limits maintained by `PERSP`
+    - `FE40` = `PERSP` point-count / pass-control slot
+    - `FE42/FE46` = active X/Z rotation-table pointers used by `RotateXZLists`
+    - `FE48` = rotate-pass scratch pointer carried between transform phases
+    - `FE4A/FE4C` = current X/Z displacement or world-offset pair fed into the shared transform
+    - `FE44` (`YTAB`) still has no confident direct shipped-code role isolated
+  - `FE50..FE58` is now less opaque:
+    - `FE50` = last radar/status blip destination byte, cleared on the next radar update
+    - `FE52` = persistent radar/status scratch-stack pointer used by `RADARClearWorkspace`; exact higher-level meaning still cautious
+    - `FE54` = fire-request latch used by keyboard/Kempston decode and consumed by the player-fire path at `0x97D6`
+    - `FE58` = one-frame sight/targeting cue latch consumed by the later screen-overlay phase
   - first-pass internal anchors now exist too:
     - `MHLPTWriteOuterLeft` at `0x8E47`
     - `MHLPTAdvanceToOuterRight` at `0x8E7D`

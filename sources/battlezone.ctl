@@ -8308,6 +8308,9 @@ W $FE06,2,h2
 g $FE08
 @ $FE08 label=X1
 W $FE08,2,h2
+. Notebook names preserved. Current best shipped `LNLPT` read is that
+. `FE08/FE0A/FE0C` carry the current X endpoints and signed X delta, while
+. `FE0E/FE10/FE12` carry the vertically sorted Y endpoints and Y delta.
 g $FE0A
 @ $FE0A label=X2
 W $FE0A,2,h2
@@ -8338,86 +8341,137 @@ W $FE1A,2,h2
 g $FE1C
 @ $FE1C label=MAX1
 W $FE1C,2,h2
+. Notebook name preserved. Current shipped read: first raw outer X-limit word
+. used by the hill/object suppression path. Visible major-entity passes seed
+. `FE1C/FE1E` from `XMAX/XMIN`; invisible cases park them at `$84D0/$84CF`.
 g $FE1E
 @ $FE1E label=MIN1
 W $FE1E,2,h2
+. Companion raw outer X-limit word for `FE1C`.
 g $FE20
 @ $FE20 label=MAX2
 W $FE20,2,h2
+. Notebook name preserved. Current shipped read: second raw outer X-limit word
+. used by the hill/object suppression path, chiefly for the active obstacle /
+. object family selected at `0xA37B`.
 g $FE22
 @ $FE22 label=MIN2
 W $FE22,2,h2
+. Companion raw outer X-limit word for `FE20`.
 g $FE24
 @ $FE24 label=LIM1
 W $FE24,2,h2
+. Current shipped read: primary hill-clipped outer limit pair derived by
+. `MHLC` from `FE1C/FE1E/FE20/FE22`.
 g $FE26
 @ $FE26 label=LIM2
 W $FE26,2,h2
+. Companion primary hill-clipped outer limit word for `FE24`.
 g $FE28
 @ $FE28 label=LIM3
 W $FE28,2,h2
+. Current shipped read: secondary / inner hill-limit pair derived by `SHLC`
+. for the interior infill pass.
 g $FE2A
 @ $FE2A label=LIM4
 W $FE2A,2,h2
-. Notebook name says `HLCNT`, but current shipped-behaviour reading is that
-. this word is a live hill-data stream pointer. Initialised to `$6900` and
-. adjusted by the player turn/motion path before `MHLPT` / `SHLPT` consume it
-. via `SP`.
+. Companion secondary / inner hill-limit word for `FE28`.
 g $FE2C
 @ $FE2C label=HLCNT
 W $FE2C,2,h2
-. Notebook name says `SHCNT`, but in shipped code this word behaves as the
-. moving inner-row stream pointer used by `SHLPTStepUpRow`.
+. Notebook name preserved. Current shipped-behaviour read: live hill-data
+. stream pointer. Initialised to `$6900` and adjusted by the player
+. turn/motion path before `MHLPT` / `SHLPT` consume it via `SP`.
 g $FE2E
 @ $FE2E label=SHCNT
 W $FE2E,2,h2
-. Current best read: temporary inner-width / limit pair used by `SHLPT` while
-. stepping through the infill region.
+. Notebook name preserved. In shipped code this word behaves as the moving
+. inner-row stream pointer used by `SHLPTStepUpRow`.
 g $FE30
 @ $FE30 label=LIM
 W $FE30,2,h2
+. Current best shipped read: temporary inner-width / limit pair used by
+. `SHLPT` while stepping through the infill region.
 g $FE32
 @ $FE32 label=XLOC
 W $FE32,2,h2
+. Notebook name preserved. Current shipped read: pointer to the current X
+. source-coordinate list for shared transform/perspective passes. In attract
+. mode this is repointed to fixed title/logo X tables.
 g $FE34
 @ $FE34 label=YLOC
 W $FE34,2,h2
+. Notebook name preserved. Current shipped read: pointer to the current Y
+. source-coordinate list. In the attract title tumble hack this is repointed
+. to the first rotated output table so the normal pipeline sees a fake Y axis.
 g $FE36
 @ $FE36 label=ZLOC
 W $FE36,2,h2
+. Notebook name preserved. Current shipped read: pointer to the current Z
+. source-coordinate list for shared transform/perspective passes.
 g $FE38
 @ $FE38 label=XPERS
 W $FE38,2,h2
+. Notebook name preserved. Current shipped read: workspace end-pointer into the
+. X perspective output buffer (`XPERS` base around `$DE90`). `PERSP` writes
+. downward via `SP`/`PUSH`, so callers often seed this with an interior address
+. such as `$DE98` or `$DEC4`.
 g $FE3A
 @ $FE3A label=YPERS
 W $FE3A,2,h2
+. Companion workspace end-pointer into the Y perspective output buffer
+. (`YPERS` base around `$DEC8`), again typically seeded with an interior
+. address before the descending `SP`-based write pass.
 g $FE3C
 @ $FE3C label=XMAX
 W $FE3C,2,h2
+. Notebook name preserved. Current shipped read: visible/projected X upper
+. limit tracked by `PERSPTrackVisibleRange` and then reused by caller-side
+. visibility / hill-suppression logic.
 g $FE3E
 @ $FE3E label=XMIN
 W $FE3E,2,h2
+. Companion visible/projected X lower limit tracked by `PERSPTrackVisibleRange`.
 g $FE40
 @ $FE40 label=DYCNT
 W $FE40,2,h2
+. Current shipped read: `PERSP` point-count / pass-control slot. Seeded from
+. `A` on entry, then reused to control the secondary projection pass.
 g $FE42
 @ $FE42 label=XTAB
 W $FE42,2,h2
+. Notebook name preserved. Current shipped read: pointer to the active X-side
+. rotation/step table family for `RotateXZLists`. Often seeded from `XTAB`
+. (`$D9D0`) or object-specific interior offsets.
 g $FE44
 @ $FE44 label=YTAB
 W $FE44,2,h2
+. Notebook name preserved. No confident direct shipped-code role is isolated
+. yet; current transform/projection paths appear to use `YLOC`/`FE34` rather
+. than this slot directly.
 g $FE46
 @ $FE46 label=ZTAB
 W $FE46,2,h2
+. Notebook name preserved. Current shipped read: pointer to the active Z-side
+. rotation/step table family for `RotateXZLists`. Often seeded from `ZTAB`
+. (`$DAC4`) or object-specific interior offsets.
 g $FE48
 @ $FE48 label=MMAT
 W $FE48,2,h2
+. Current shipped read: scratch pointer preserved between `RotateXZLists`
+. passes, carrying the saved source-list continuation from the first phase into
+. the later transform phases.
 g $FE4A
 @ $FE4A label=XDIS
 W $FE4A,2,h2
+. Notebook name preserved. Current shipped read: current X displacement /
+. world-offset word fed into `RotateXZLists` for the active entity/effect or
+. obstacle/object.
 g $FE4C
 @ $FE4C label=ZDIS
 W $FE4C,2,h2
+. Companion current Z displacement / world-offset word fed into
+. `RotateXZLists`.
 g $FE4E
 @ $FE4E label=MUCNT
 W $FE4E,2,h2
@@ -8426,12 +8480,21 @@ W $FE4E,2,h2
 g $FE50
 @ $FE50 label=EXBLP
 W $FE50,2,h2
+. Notebook name preserved. Current shipped read: pointer to the last radar /
+. status blip byte. `RADARClearWorkspace` clears the previously plotted byte via
+. this slot before `RADARPlotBlip` updates it to the new destination.
 g $FE52
 @ $FE52 label=EXSCN
 W $FE52,2,h2
+. Notebook name preserved. Current shipped read is still cautious: persistent
+. radar/status scratch-stack pointer used by `RADARClearWorkspace` to erase and
+. rebuild transient blip workspace, and later sampled by some entity logic.
 g $FE54
 @ $FE54 label=TRIGA
 W $FE54,2,h2
+. Notebook name preserved, but shipped behaviour is now clear: fire-request
+. latch. Keyboard/Kempston decode ORs fire into this slot, and the player-fire
+. path at `0x97D6` consumes and clears it.
 g $FE56
 @ $FE56 label=KMOV
 . Current best decoded movement-state byte:
@@ -8442,6 +8505,10 @@ W $FE56,2,h2
 g $FE58
 @ $FE58 label=SIGHT
 W $FE58,2,h2
+. Notebook name preserved. Current shipped read: one-frame sight / targeting
+. cue latch. Tank, supertank, and missile visibility/setup paths set it to
+. `$80`, and the later screen-overlay phase consumes and clears it while
+. drawing the extra sight marker.
 g $FE5A
 @ $FE5A label=SP2
 W $FE5A,2,h2
