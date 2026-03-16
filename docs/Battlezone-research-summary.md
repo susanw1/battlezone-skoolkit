@@ -275,6 +275,19 @@ Working summary of verified facts, local source material, and open questions for
   - the live tank/supertank state is now directly anchorable in the generated skool via `TankX`, `TankZ`, `TankOrientation`, `TankDesiredHeading`, `TankStrategy`, and `TankMoveCountdown`
   - the missile strategy comments now likewise use `MissileStrategy`, `MissileOrientation`, `MissileManoeuvreCounter`, `MissileX/Y/Z`, `MissileZigCount`, and `MissilePhaseSign` instead of raw `FE7A..FE88` references where practical
   - the saucer path now likewise uses `SaucerX`, `SaucerZ`, `SaucerPhase`, `SaucerDriftCountdown`, and `SaucerDriftStep` instead of raw `FE8E..FE96` references where practical
+  - `R`-register audit:
+    - the shipped code reads `R` at `0x965E`, `0x96EC`, `0x9701`, `0x9726`, `0x972E`, `0x97BD`, `0x99AA`, `0x9D58`, and `0x9EE0`
+    - current best read is that `R` is the program's main pseudo-random source
+    - all of the non-oddball `LD A,R` sites now have explicit ctl/skool comments at the read itself
+    - firm/near-firm uses:
+      - `0x965E`: tank-family vs missile spawn choice inside `TEXST`
+      - `0x96EC` / `0x9701`: signed tank X/Z seeding
+      - `0x972E`: signed missile X-offset seeding in `MSET`
+      - `0x97BD` then `0x9D58`: saucer drift-step reseeding
+      - `0x99AA`: tank/supertank next-state variation in `TKSTRAT`
+      - `0x9EE0`: missile zig-trigger threshold in `MISSTRAT`
+    - one oddball remains unresolved:
+      - `0x9726` perturbs `L` from `R` just before the jump into `MainGameLoop`, but no immediate stored consumer is obvious
   - exact rendered companion location-table anchors now exposed in the generated skool:
     - `HBLXLC` at `0xDD20`
     - `OBXLC` at `0xDD28`

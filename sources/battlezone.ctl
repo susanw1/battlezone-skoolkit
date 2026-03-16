@@ -2757,6 +2757,8 @@ C $9651,h3
 C $9654,h3
 C $9657,h3
 C $965A,h3
+C $965E,h2
+. Read `R` as a pseudo-random source for the tank-family vs missile spawn choice.
 C $9660,h2
 C $9663,h3
 C $9666,h3
@@ -2802,10 +2804,13 @@ C $96E3,h2
 C $96E5,h2
 C $96E9,h3
 C $96EE,h2
+. Read `R` as a pseudo-random source for the signed tank X seed.
 C $96F1,h2
 C $96F3,h2
 C $96F8,h3
 C $96FE,h3
+C $9701,h2
+. Read `R` as a pseudo-random source for the signed tank Z seed.
 C $9703,h2
 C $9706,h2
 C $9708,h2
@@ -2816,6 +2821,9 @@ C $9719,h3
 C $971D,h2
 C $9720,h3
 C $9723,h3
+C $9726,h2
+. Odd current-best read: perturb `L` from `R` just before the jump into the main
+. loop. No immediate stored consumer is obvious, so this remains unresolved.
 C $972B,h3
 N $972E
 . MSET
@@ -2824,6 +2832,8 @@ N $972E
 . Seeds `MISX` / `MISY` / `MISZ`, derives `ZIG` from `MISCT`, initialises the
 . live missile strategy byte, and sets bit `0x10` in `Probable_EXST1`.
 @ $972E label=MSET
+C $972E,h2
+. Read `R` as a pseudo-random source for the initial signed missile X offset seed.
 C $9730,h2
 C $9734,h3
 C $973A,h3
@@ -2885,6 +2895,8 @@ C $97B1,h3
 C $97B4,h3
 C $97B7,h2
 C $97BA,h3
+C $97BD,h2
+. Stash `R` for later use in the saucer drift-step derivation at `0x9D58`.
 C $97BF,h3
 C $97C2,h3
 C $97C5,h2
@@ -2943,6 +2955,8 @@ C $9866,h3
 C $9869,h3
 C $986C,h3
 C $986F,h3
+. Hostile bullet setup then reuses the current tank heading/desired-heading pair; no
+. direct `R` read happens here.
 C $9872,2
 . Hostile-bullet active?
 C $9874,h3
@@ -3016,6 +3030,7 @@ C $98F4,h3
 . - `0x9919` / `0x992C` = left/right heading update
 . - `0x9948` = forward/reverse movement step
 . - `0x99A5` = choose next state when the manoeuvre timer expires
+. - `0x99AA` = reads `R` as the main pseudo-random variation source for that choice
 . - `0x9A04` = aggressive aim/attack steering choice from `TKDIR` vs `TKOR`
 . - `0x9A3B` = close-range cue / HUD message logic
 . - `0x9A76` = refresh desired heading to player
@@ -3078,6 +3093,9 @@ C $99A2,h3
 C $99A7,h3
 . Manoeuvre timer expired. Choose trundle/passive/aggressive state and reseed
 . `TKMCT` from the slower variation counter in `FE72`.
+C $99AA,h2
+. Read `R` as the main pseudo-random variation source for the next
+. tank/supertank strategy choice.
 C $99AC,h2
 C $99AF,h3
 C $99B4,h3
@@ -3417,6 +3435,8 @@ C $9D4D,h3
 C $9D50,h3
 C $9D53,h2
 C $9D55,h3
+C $9D58,h2
+. Read `R` as the pseudo-random source for reseeding `SaucerDriftStep`.
 C $9D5C,h2
 C $9D60,h2
 C $9D63,h3
@@ -3563,6 +3583,8 @@ C $9ECD,h3
 C $9ED0,h2
 C $9ED3,h2
 C $9ED9,h3
+C $9EE0,h2
+. Read `R` as the pseudo-random threshold source for the next missile zig trigger.
 C $9EE2,h2
 . Randomly trigger the next zig direction when no hop is active and the remaining-zig
 . counter in `MissileZigCount` still allows another manoeuvre.

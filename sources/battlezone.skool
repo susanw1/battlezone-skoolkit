@@ -5229,7 +5229,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9657 LD ($FE68),HL ;
  $965A LD A,($FE6A)  ;
  $965D LD C,A        ;
- $965E LD A,R        ;
+ $965E LD A,R        ; Read `R` as a pseudo-random source for the tank-family vs missile spawn choice.
  $9660 AND $7F       ;
  $9662 LD B,A        ;
  $9663 LD HL,($FE76) ;
@@ -5300,7 +5300,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $96E8 OR D          ;
  $96E9 LD ($FE6A),A  ;
  $96EC LD A,R        ;
- $96EE AND $7F       ;
+ $96EE AND $7F       ; Read `R` as a pseudo-random source for the signed tank X seed.
  $96F0 LD B,A        ;
  $96F1 AND $3F       ;
  $96F3 OR $10        ;
@@ -5310,7 +5310,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $96FB NEG           ;
 *$96FD LD H,A        ;
  $96FE LD ($FE5E),HL ;
- $9701 LD A,R        ;
+ $9701 LD A,R        ; Read `R` as a pseudo-random source for the signed tank Z seed.
  $9703 AND $7F       ;
  $9705 LD B,A        ;
  $9706 AND $3F       ;
@@ -5328,7 +5328,8 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $971F ADD HL,HL     ;
  $9720 LD ($FE64),HL ;
  $9723 LD HL,($FE62) ;
- $9726 LD A,R        ;
+ $9726 LD A,R        ; Odd current-best read: perturb `L` from `R` just before the jump into the main
+                     ; loop. No immediate stored consumer is obvious, so this remains unresolved.
  $9728 RLCA          ;
  $9729 ADD A,L       ;
  $972A LD L,A        ;
@@ -5339,7 +5340,7 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
 ; Seeds `MISX` / `MISY` / `MISZ`, derives `ZIG` from `MISCT`, initialises the
 ; live missile strategy byte, and sets bit `0x10` in `Probable_EXST1`.
 @label=MSET
-*$972E LD A,R        ;
+*$972E LD A,R        ; Read `R` as a pseudo-random source for the initial signed missile X offset seed.
  $9730 AND $0F       ;
  $9732 BIT 0,A       ;
  $9734 JP Z,$9739    ;
@@ -5407,7 +5408,7 @@ c$977E LD HL,($FE70) ;
  $97B7 LD D,$80      ;
  $97B9 ADD HL,DE     ;
  $97BA LD ($FE90),HL ;
- $97BD LD A,R        ;
+ $97BD LD A,R        ; Stash `R` for later use in the saucer drift-step derivation at `0x9D58`.
  $97BF LD ($FE8F),A  ;
  $97C2 LD A,($FE6A)  ;
  $97C5 OR $20        ; Set the probable saucer-exists bit.
@@ -5484,7 +5485,8 @@ c$977E LD HL,($FE70) ;
  $9866 LD HL,$0180   ;
  $9869 LD ($FEB0),HL ;
  $986C CALL $A0B0    ;
-*$986F LD A,($FE6A)  ;
+*$986F LD A,($FE6A)  ; Hostile bullet setup then reuses the current tank heading/desired-heading pair; no
+                     ; direct `R` read happens here.
  $9872 BIT 2,A       ; Hostile-bullet active?
  $9874 JP NZ,$98C6   ;
  $9877 AND $C0       ; Need an active tank or supertank before firing.
@@ -5561,6 +5563,7 @@ c$977E LD HL,($FE70) ;
                      ; - `0x9919` / `0x992C` = left/right heading update
                      ; - `0x9948` = forward/reverse movement step
                      ; - `0x99A5` = choose next state when the manoeuvre timer expires
+                     ; - `0x99AA` = reads `R` as the main pseudo-random variation source for that choice
                      ; - `0x9A04` = aggressive aim/attack steering choice from `TKDIR` vs `TKOR`
                      ; - `0x9A3B` = close-range cue / HUD message logic
                      ; - `0x9A76` = refresh desired heading to player
@@ -5651,7 +5654,8 @@ c$977E LD HL,($FE70) ;
 *$99A5 BIT 7,C       ;
  $99A7 JP NZ,$9A04   ; Manoeuvre timer expired. Choose trundle/passive/aggressive state and reseed
                      ; `TKMCT` from the slower variation counter in `FE72`.
- $99AA LD A,R        ;
+ $99AA LD A,R        ; Read `R` as the main pseudo-random variation source for the next
+                     ; tank/supertank strategy choice.
  $99AC AND $3F       ;
  $99AE LD C,A        ;
  $99AF LD HL,($FE70) ;
@@ -6059,7 +6063,7 @@ c$977E LD HL,($FE70) ;
  $9D50 JP $9D75      ;
 *$9D53 LD A,$50      ;
  $9D55 LD ($FE94),A  ;
- $9D58 LD A,R        ;
+ $9D58 LD A,R        ; Read `R` as the pseudo-random source for reseeding `SaucerDriftStep`.
  $9D5A LD C,A        ;
  $9D5B RRA           ;
  $9D5C AND $7F       ;
@@ -6269,7 +6273,7 @@ c$977E LD HL,($FE70) ;
  $9ED9 LD ($FE86),HL ;
  $9EDC RES 5,C       ;
  $9EDE RES 3,C       ;
-*$9EE0 LD A,R        ;
+*$9EE0 LD A,R        ; Read `R` as the pseudo-random threshold source for the next missile zig trigger.
 @label=MissileRandomZigTrigger
  $9EE2 CP $60        ; Randomly trigger the next zig direction when no hop is active and the remaining-zig
                      ; counter in `MissileZigCount` still allows another manoeuvre.
