@@ -143,8 +143,8 @@ Working summary of verified facts, local source material, and open questions for
 - Added first-pass notebook-driven routine labels in the `94xx` UI/score block:
   - `MESPR` at `0x9452`: rectangle/message blitter driven by a descriptor containing destination, height, width, then data
   - `MESER` at `0x9476`: rectangle eraser using the same descriptor format
-  - `PlotNumberGlyph` at `0x948C`: draws one 7-row numeral/symbol glyph from `NumberGlyphs`
-  - `SCOPR` at `0x94AC`: packed-BCD score increment routine with extra-life threshold handling
+  - `PlotNumberGlyph` at `0x948C`: generic 7-row status-strip glyph renderer used by `NUMBA`, life-strip redraws, and some attract/title overlays
+  - `SCOPR` at `0x94AC`: packed-BCD score increment routine with inlined extra-life threshold handling; awards a life, redraws one life-symbol pair, then falls through into `NUMBA`
   - `NUMBA` at `0x94EC`: packed-BCD score display routine, reached directly or by falling through from `SCOPR`
 - Added `NumberGlyphs` label at `0xCD80`.
 - Added a confident joystick-input mapping:
@@ -640,6 +640,15 @@ Working summary of verified facts, local source material, and open questions for
   - `0x938A` is now promoted from misclassified data to code as `HeadingFromXZ`
     - current best read: shared `(X,Z) -> 8-bit heading/bearing` helper
     - used by tank desired-heading refresh, tank/missile initial heading setup, and missile proximity/orientation logic
+  - `NUMBA` is now documented more explicitly as a generic packed-BCD print helper with a patched destination immediate at `0x94EF`
+    - `0x4059` = normal gameplay score strip
+    - `0x4099` = temporary start-transition heading position
+    - `0x50AB` = attract/showcase score strip
+    - `0xB1C0` computes per-entry attract numeric destinations and patches the same immediate before each call
+  - `MESPR` / `MESER` are now documented more explicitly as a matched rectangle blit/erase pair
+    - `MESPR` copies row-major rectangle data from a descriptor (`dest`, `height`, `width`, data...)
+    - `MESER` uses the same header format but zero-fills the target rectangle
+    - both advance by the Spectrum character-row stride (`+0x20`) between rows
     - `0xB0BC` then runs a short transition and jumps into the real game initialisation at `0x956A`, which eventually feeds the main loop at `0x977E`
 - Attract/demo structure now looks much more like Susan's staged recollection than a single static title screen:
   - `0xB1F4..0xB343` is the best current match for the earlier title/logo attract stages

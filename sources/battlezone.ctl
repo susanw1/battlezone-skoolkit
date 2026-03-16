@@ -2512,7 +2512,15 @@ B $9450,2,h2
 c $9452
 . MESPR
 D $9452
-. HL Address of a rectangle descriptor: destination, height, width, then data
+. HL Address of a rectangle descriptor: destination, height, width, then row-major byte data
+. Current best shipped read: generic message/rectangle blitter for the status
+. strip and small HUD warning areas.
+. Descriptor format:
+. - bytes 0..1: destination address
+. - byte 2: height in character rows
+. - byte 3: width in bytes
+. - remaining bytes: row-major source data copied into the destination
+. Each row advances by the Spectrum character-row stride (`+0x20`).
 @ $9452 label=MESPR
 C $9452,1
 . Load the destination address low byte.
@@ -2538,6 +2546,10 @@ c $9476
 . MESER
 D $9476
 . HL Address of a rectangle descriptor: destination, height, width
+. Current best shipped read: companion rectangle eraser for `MESPR`.
+. Uses the same descriptor header (`destination`, `height`, `width`) but fills
+. the target rectangle with zero bytes instead of copying source data.
+. Each row advances by the Spectrum character-row stride (`+0x20`).
 @ $9476 label=MESER
 C $9476,1
 . Load the destination address low byte.
@@ -2566,6 +2578,11 @@ c $948C
 D $948C
 . A Digit or symbol index
 . BC Destination address
+. Current best shipped read: generic 7-row status-strip glyph renderer reused by
+. `NUMBA`, life-strip redraws, and a few attract/title overlays.
+. The low nibble of `A` selects an 8-byte slot in `NumberGlyphs`; only the first
+. 7 rows are copied, then `BC` is advanced one column so callers can chain glyph
+. plots horizontally without adjusting the destination themselves.
 @ $948C label=PlotNumberGlyph
 C $948C,1
 . Preserve the destination pointer for the caller.
@@ -2587,6 +2604,12 @@ c $94AC
 . SCOPR
 D $94AC
 . B Score increment in packed BCD
+. Current best shipped read: shared packed-BCD score updater with inlined
+. extra-life handling.
+. Adds the increment in `B` to `ScoreBCD`, compares the result against the next
+. extra-life threshold at `0xFEE6`, awards a life if needed, doubles that next
+. threshold, redraws one life symbol pair if the strip is not yet full, then
+. falls through into `NUMBA` to refresh the visible score display.
 @ $94AC label=SCOPR
 C $94AC,h3
 . Load the current score.
@@ -2606,6 +2629,7 @@ C $94CF,h4
 C $94D3,h2
 . Stop drawing life symbols once the strip is full.
 C $94D5,h2
+. Compute the destination column for the newly awarded life symbol pair.
 C $94D7,h3
 C $94DB,h2
 C $94E1,h2
@@ -2617,12 +2641,18 @@ c $94EC
 D $94EC
 . Used by the routines at #R$AD3E and #R$B55D.
 . HL Packed BCD value to display
+. Current best shipped read: generic packed-BCD print helper reused for the
+. gameplay score strip and several attract/start numeric displays.
+. The destination is redirected by patching the `LD BC,$....` immediate at
+. `$94EF`, rather than by duplicating the routine.
 @ $94EC label=NUMBA
 C $94EC,h3
 . Persist the current packed BCD value.
 C $94EF,h3
 . Destination `BC` immediate patched by `0xB0DA/0xB0E9/0xB1C0/0xB1D4/0xB563` to
-. redirect score/heading output without duplicating the routine.
+. redirect the same print loop between the normal gameplay score strip,
+. temporary start-transition heading position, per-entry attract numeric list,
+. and the showcase score strip.
 C $94F4,h2
 C $94FA,h2
 C $94FC,h2
@@ -2719,10 +2749,13 @@ C $9619,h3
 C $961C,h3
 C $961F,h3
 C $9622,h3
+. Seed the initial extra-life threshold (`25` in packed BCD).
 C $9625,h3
+. Store that threshold and prepare the zero-increment `SCOPR` redraw.
 C $9628,h2
 C $962A,h3
 C $962D,h3
+. Start drawing the initial life-strip glyph pairs at `$4014`.
 C $9630,h2
 C $9632,h3
 C $9635,h2
@@ -3153,8 +3186,10 @@ C $9A48,h3
 C $9A4B,h2
 C $9A4D,h2
 C $9A4F,h2
+. Print the close-range tank-family warning rectangle from `CEAA`.
 C $9A51,h3
 C $9A54,h3
+. Erase the same warning rectangle when the cue is no longer needed.
 C $9A57,h3
 C $9A5A,h3
 C $9A5D,h2
@@ -3623,8 +3658,10 @@ C $9F4A,h3
 C $9F4D,h3
 C $9F50,h3
 C $9F53,h2
+. Print the missile warning rectangle from `CEAA`.
 C $9F55,h3
 C $9F58,h3
+. Erase the companion missile warning rectangle from `CEEA`.
 C $9F5B,h3
 C $9F5E,h3
 C $9F61,h3
@@ -4358,11 +4395,13 @@ C $A6FC,h2
 C $A6FE,h3
 C $A701,h3
 . No obstacle-block warning needed: erase the message and allow all movement bits.
+. Erase the obstacle-block warning rectangle from `CF9E`.
 C $A704,h3
 C $A707,h2
 C $A709,h3
 C $A70C,h3
 . Obstacle-block warning path: print the warning and restrict surviving movement bits via `C`.
+. Print the obstacle-block warning rectangle from `CF9E`.
 C $A710,h3
 @ $A714 label=KMOVTurnDecode
 C $A714,h3
@@ -5229,10 +5268,12 @@ C $B0CC,h3
 C $B0CF,h3
 C $B0D4,h3
 C $B0D7,h3
+. Patch `NUMBA` to the temporary start-transition heading position.
 C $B0DA,h3
 C $B0DD,h3
 C $B0E0,h3
 C $B0E3,h3
+. Restore `NUMBA` to the normal gameplay score-strip position.
 C $B0E6,h3
 C $B0E9,h3
 C $B0EC,h3
@@ -5310,11 +5351,13 @@ C $B1B5,h2
 C $B1B7,h2
 C $B1BB,h2
 C $B1BD,h2
+. Patch `NUMBA` to the destination for this attract-page numeric entry.
 C $B1C0,h3
 C $B1C3,h4
 C $B1C8,h3
 C $B1CF,h2
 C $B1D1,h3
+. Restore `NUMBA` to the normal gameplay score-strip position.
 C $B1D4,h3
 C $B1D7,h2
 C $B1D9,h3
@@ -5716,6 +5759,7 @@ D $B55D
 @ $B55D label=AttractModeShowcaseFrame
 C $B55D,h3
 . Call #R$977E.
+. Patch `NUMBA` to the showcase score-strip position.
 C $B560,h6
 . Write #N$50AB to *#R$94EF(#N$94F0).
 C $B566,h3
