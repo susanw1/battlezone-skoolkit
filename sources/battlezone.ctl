@@ -1917,6 +1917,8 @@ C $8C56,h3
 C $8C59,h3
 N $8C5E
 . This entry point is used by the routine at #R$B2F5.
+. The crash/death path at `0xADD4` temporarily patches this opcode byte to
+. `RET` (`0xC9`) and later restores it to `LD HL,nn` (`0x21`) at `0xAE3D`.
 C $8C5E,h3
 C $8C61,h3
 C $8C64,h2
@@ -1928,7 +1930,11 @@ C $8C7A,h3
 C $8C7D,h3
 C $8C80,h2
 b $8CA0
-. Data block at 8CA0
+. StartupWorkspaceSeedData
+. Copied by `0xAD0C..0xAD16` into `0xF700..0xF723` during the reset/title
+. entry path, so this is genuine embedded data inside the main executable span,
+. not missed code.
+@ $8CA0 label=StartupWorkspaceSeedData
 B $8CA0,8,h8
 B $8CA8,8,h8
 B $8CB0,8,h8
@@ -1962,26 +1968,7 @@ N $8D68
 . limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
 . FE24/FE26 workspace pair.
 @ $8D68 label=MHLC
-B $8D68,8,h8
-B $8D70,8,h8
-B $8D78,8,h8
-B $8D80,8,h8
-B $8D88,8,h8
-B $8D90,8,h8
-B $8D98,8,h8
-B $8DA0,8,h8
-B $8DA8,8,h8
-B $8DB0,8,h8
-B $8DB8,8,h8
-B $8DC0,8,h8
-B $8DC8,8,h8
-B $8DD0,8,h8
-B $8DD8,8,h8
-B $8DE0,8,h8
-B $8DE8,8,h8
-B $8DF0,8,h8
-B $8DF8,8,h8
-B $8E00,8,h8
+c $8D68
 N $8E08
 . SHLC
 .
@@ -1990,109 +1977,53 @@ N $8E08
 . hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
 . hill infill pass for the object interior.
 @ $8E08 label=SHLC
-B $8E08,8,h8
-B $8E10,8,h8
-B $8E18,8,h8
-B $8E20,8,h8
-B $8E28,8,h8
-B $8E30,8,h8
+c $8E08
 N $8E38
 . MHLPT
 .
 . Probable main-hill plotting stage from the notebook's SCREEN page. This
-. routine appears to use the hill pointer at FE2C together with the main-hill
-. limits derived by #R$8D68 to draw the regular hill backdrop outside object
-. occlusion bounds.
+. routine uses the stream pointer at FE2C together with the main-hill limits
+. derived by #R$8D68.
+. Current best read: it copies hill-row data from the FE2C stream into the
+. off-screen E700 playfield buffer for the left and right outer regions, then
+. fills the interior span in E8A0..E8BF with `0xAA`.
 @ $8E38 label=MHLPT
-B $8E38,8,h8
-B $8E40,8,h8
-B $8E48,8,h8
-B $8E50,8,h8
-B $8E58,8,h8
-B $8E60,8,h8
-B $8E68,8,h8
-B $8E70,8,h8
-B $8E78,8,h8
-B $8E80,8,h8
-B $8E88,8,h8
-B $8E90,8,h8
-B $8E98,8,h8
-B $8EA0,8,h8
-B $8EA8,8,h8
-B $8EB0,8,h8
-B $8EB8,8,h8
-B $8EC0,8,h8
-B $8EC8,8,h8
-B $8ED0,8,h8
-B $8ED8,8,h8
-B $8EE0,8,h8
-B $8EE8,8,h8
-B $8EF0,8,h8
-B $8EF8,8,h8
-B $8F00,8,h8
-B $8F08,8,h8
-B $8F10,8,h8
-B $8F18,8,h8
-B $8F20,8,h8
-B $8F28,8,h8
-B $8F30,8,h8
-B $8F38,8,h8
-B $8F40,8,h8
-B $8F48,8,h8
-B $8F50,3,h3
+c $8E38
+N $8E47
+@ $8E47 label=MHLPTWriteOuterLeft
+N $8E7D
+@ $8E7D label=MHLPTAdvanceToOuterRight
+N $8E96
+@ $8E96 label=MHLPTWriteOuterRight
+N $8ECC
+@ $8ECC label=MHLPTFillInteriorSetup
+N $8F1B
+@ $8F1B label=MHLPTFillInterior
 N $8F53
 . SHLPT
 .
 . Probable secondary-hill plotting stage from the notebook's SCREEN page. It
 . reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
 . matching the recollected infill pass inside the object limits.
+. Current best read: it advances through the FE2C stream while only writing
+. into still-empty bytes of the off-screen E700 playfield buffer, then steps
+. inward by row until the infill region is complete.
 @ $8F53 label=SHLPT
-B $8F53,5,h5
-B $8F58,8,h8
-B $8F60,8,h8
-B $8F68,8,h8
-B $8F70,8,h8
-B $8F78,8,h8
-B $8F80,8,h8
-B $8F88,8,h8
-B $8F90,8,h8
-B $8F98,8,h8
-B $8FA0,8,h8
-B $8FA8,8,h8
-B $8FB0,8,h8
-B $8FB8,8,h8
-B $8FC0,8,h8
-B $8FC8,8,h8
-B $8FD0,8,h8
-B $8FD8,8,h8
-B $8FE0,8,h8
-B $8FE8,8,h8
-B $8FF0,8,h8
-B $8FF8,8,h8
-B $9000,8,h8
-B $9008,8,h8
-B $9010,8,h8
-B $9018,8,h8
-B $9020,8,h8
-B $9028,8,h8
-B $9030,8,h8
-B $9038,8,h8
-B $9040,8,h8
-B $9048,8,h8
-B $9050,8,h8
-B $9058,8,h8
-B $9060,8,h8
-B $9068,8,h8
-B $9070,8,h8
-B $9078,8,h8
-B $9080,8,h8
-B $9088,8,h8
-B $9090,8,h8
-B $9098,8,h8
-B $90A0,8,h8
-B $90A8,8,h8
-B $90B0,8,h8
-B $90B8,2,h2
+c $8F53
+N $8F61
+@ $8F61 label=SHLPTSeedSecondLimit
+N $8F69
+@ $8F69 label=SHLPTBeginPass
+N $8F88
+@ $8F88 label=SHLPTWriteIfEmpty
+N $8FFB
+@ $8FFB label=SHLPTAdvanceInnerRow
+N $9020
+@ $9020 label=SHLPTWriteBackwardIfEmpty
+N $9081
+@ $9081 label=SHLPTStepUpRow
+N $9093
+@ $9093 label=SHLPTDone
 c $90BA
 . RADAR
 D $90BA
@@ -2241,6 +2172,9 @@ N $91E6
 . jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
 . selected movement/turn variant, then returns updated coordinates in `DE/BC`
 . and the updated view-turn angle in `HL`.
+. Indirect-entry audit note: this `JP (HL)` is the only true computed routine
+. dispatch in the shipped gameplay code, and `KMOVTurnDecode` only seeds it
+. with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312`.
 @ $91E6 label=TurnTransformDispatcher
 c $91E6
 C $91E6,1
@@ -2690,6 +2624,8 @@ D $94EC
 C $94EC,h3
 . Persist the current packed BCD value.
 C $94EF,h3
+. Destination `BC` immediate patched by `0xB0DA/0xB0E9/0xB1C0/0xB1D4/0xB563` to
+. redirect score/heading output without duplicating the routine.
 C $94F4,h2
 C $94FA,h2
 C $94FC,h2
@@ -4274,6 +4210,8 @@ C $A714,h3
 . - bit 3 -> `0x92AE` double-speed left turn
 . - bit 2 -> `0x9312` double-speed right turn
 . - no turn bits -> no explicit turn handler selected here
+. This is the sole writer of the indirect `TURN` dispatch pointer used by
+. `TurnTransformDispatcher`.
 C $A718,h3
 C $A71D,h3
 C $A720,h2
@@ -4805,7 +4743,8 @@ C $AD0D,11,h9,2
 C $AD18,h3
 . Jump to #R$B1F4.
 b $AD1B
-. Data block at AD1B
+. Padding / reserved space between the title-entry copy block and `KEMPST`.
+. No direct callers/jumpers land here, and no code currently reads from it.
 B $AD1B,8,h8
 B $AD23,8,h8
 B $AD2B,8,h8
@@ -5149,6 +5088,9 @@ C $B0F8,h3
 C $B103,h2
 C $B106,h2
 C $B108,h4
+. `IX` is set to `0xB110 + (period-derived low 2 bits)`, so the later `JP (IX)`
+. lands at one of `0xB110..0xB113` inside this same timing pad. This is a
+. cycle-alignment trick, not a hidden secondary routine entry.
 C $B10E,h2
 C $B116,h2
 C $B118,h2
@@ -8417,12 +8359,20 @@ W $FE28,2,h2
 g $FE2A
 @ $FE2A label=LIM4
 W $FE2A,2,h2
+. Notebook name says `HLCNT`, but current shipped-behaviour reading is that
+. this word is a live hill-data stream pointer. Initialised to `$6900` and
+. adjusted by the player turn/motion path before `MHLPT` / `SHLPT` consume it
+. via `SP`.
 g $FE2C
 @ $FE2C label=HLCNT
 W $FE2C,2,h2
+. Notebook name says `SHCNT`, but in shipped code this word behaves as the
+. moving inner-row stream pointer used by `SHLPTStepUpRow`.
 g $FE2E
 @ $FE2E label=SHCNT
 W $FE2E,2,h2
+. Current best read: temporary inner-width / limit pair used by `SHLPT` while
+. stepping through the infill region.
 g $FE30
 @ $FE30 label=LIM
 W $FE30,2,h2

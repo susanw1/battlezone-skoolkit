@@ -103,3 +103,21 @@ When scanning new areas:
 3. Treat rounded starts after those pads as likely separately assembled work chunks.
 4. Treat fall-throughs as intentional until proven otherwise.
 5. If the code appears to jump into "data", re-check the classification before assuming anything fancy like a jump table.
+
+## Audit Status
+
+- Direct-target audit currently finds no `CALL` / `JP` / `JR` target landing in a non-code block.
+- Within the main executable span `0x8000..0xB77A`, only two non-code islands remain:
+  - `0x8CA0..0x8D67`: genuine embedded data, copied by `0xAD0C..0xAD16` into `0xF700..0xF723`
+  - `0xAD1B..0xAD3D`: padding / reserved space before `KEMPST`
+- Absolute writes into the code range are currently limited to:
+  - `0x8C3C` and `0x960D`: the attract-mode status-panel hack
+  - `0x8C5E`: temporary crash/death-path patch to turn the secondary `SDRAW` entry into `RET`
+  - `0x94F0`: patched `BC` immediate inside `NUMBA` to redirect score/heading output
+- Indirect-entry audit currently finds only three computed jumps in the whole shipped program:
+  - `0x91EA JP (HL)`: the real `TURN` dispatcher, seeded only with `0x91EB`, `0x924A`, `0x92AE`, and `0x9312`
+  - `0xB12F JP (IX)` and `0xB133 JP (IX)`: both land inside `0xB110..0xB113`, a tiny timing pad in `PlayStartTheme`
+- So Susan's recollection is almost exactly right:
+  - the code is one large executable body with some growth padding
+  - direct jumps/calls are not landing in true data
+  - the only proven self-modification is not just the status-colour hack, but a very small additional set of operand/opcode patches at `0x8C5E` and `0x94F0`

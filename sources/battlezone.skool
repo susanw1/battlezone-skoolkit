@@ -3574,6 +3574,8 @@ c$8C3C LD HL,$DFA0   ;
  $8C59 LD BC,$1000   ;
  $8C5C LDIR          ;
 ; This entry point is used by the routine at #R$B2F5.
+; The crash/death path at `0xADD4` temporarily patches this opcode byte to
+; `RET` (`0xC9`) and later restores it to `LD HL,nn` (`0x21`) at `0xAE3D`.
 *$8C5E LD HL,$DFA0   ;
  $8C61 LD DE,$DFA1   ;
  $8C64 LD A,$08      ;
@@ -3622,7 +3624,11 @@ c$8C3C LD HL,$DFA0   ;
  $8C9E NOP           ;
  $8C9F NOP           ;
 
-; Data block at 8CA0
+; StartupWorkspaceSeedData
+; Copied by `0xAD0C..0xAD16` into `0xF700..0xF723` during the reset/title
+; entry path, so this is genuine embedded data inside the main executable span,
+; not missed code.
+@label=StartupWorkspaceSeedData
 b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $8CA8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8CB0 DEFB $00,$00,$0B,$05,$00,$00,$46,$42
@@ -3648,6 +3654,13 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $8D50 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8D58 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8D60 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Routine at 8D68
+;
+; Used by the routines at #R$977E and #R$AD3E.
+;
+; .
+;
 ; MHLC
 ; .
 ; Probable main-hill limit calculation from the notebook's SCREEN page. This
@@ -3655,26 +3668,112 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
 ; FE24/FE26 workspace pair.
 @label=MHLC
-*$8D68 DEFB $2A,$1C,$FE,$11,$80,$00,$19,$7D
- $8D70 DEFB $E6,$F8,$1F,$1F,$1F,$47,$7C,$A7
- $8D78 DEFB $CA,$82,$8D,$06,$20,$F2,$82,$8D
- $8D80 DEFB $06,$FF,$2A,$1E,$FE,$19,$7D,$E6
- $8D88 DEFB $F8,$1F,$1F,$1F,$4F,$7C,$A7,$CA
- $8D90 DEFB $99,$8D,$0E,$20,$F2,$99,$8D,$0E
- $8D98 DEFB $FF,$2A,$20,$FE,$19,$7D,$E6,$F8
- $8DA0 DEFB $1F,$1F,$1F,$6F,$7C,$A7,$CA,$B0
- $8DA8 DEFB $8D,$2E,$20,$F2,$B0,$8D,$2E,$FF
- $8DB0 DEFB $7D,$2A,$22,$FE,$19,$57,$7D,$E6
- $8DB8 DEFB $F8,$1F,$1F,$1F,$5F,$7C,$A7,$CA
- $8DC0 DEFB $C9,$8D,$1E,$20,$F2,$C9,$8D,$1E
- $8DC8 DEFB $FF,$7B,$91,$F2,$D3,$8D,$EB,$50
- $8DD0 DEFB $59,$44,$4D,$79,$A7,$F2,$D9,$8D
- $8DD8 DEFB $0C,$7A,$B8,$F2,$EB,$8D,$3E,$1F
- $8DE0 DEFB $1E,$00,$90,$47,$F2,$FF,$8D,$04
- $8DE8 DEFB $C3,$FF,$8D,$3E,$1F,$92,$57,$F2
- $8DF0 DEFB $F3,$8D,$14,$7B,$90,$3D,$F2,$FA
- $8DF8 DEFB $8D,$97,$5F,$04,$78,$42,$57,$ED
- $8E00 DEFB $43,$24,$FE,$ED,$53,$26,$FE,$C9
+c$8D68 LD HL,($FE1C) ;
+ $8D6B LD DE,$0080   ;
+ $8D6E ADD HL,DE     ;
+ $8D6F LD A,L        ;
+ $8D70 AND $F8       ;
+ $8D72 RRA           ;
+ $8D73 RRA           ;
+ $8D74 RRA           ;
+ $8D75 LD B,A        ;
+ $8D76 LD A,H        ;
+ $8D77 AND A         ;
+ $8D78 JP Z,$8D82    ;
+ $8D7B LD B,$20      ;
+ $8D7D JP P,$8D82    ;
+ $8D80 LD B,$FF      ;
+*$8D82 LD HL,($FE1E) ;
+ $8D85 ADD HL,DE     ;
+ $8D86 LD A,L        ;
+ $8D87 AND $F8       ;
+ $8D89 RRA           ;
+ $8D8A RRA           ;
+ $8D8B RRA           ;
+ $8D8C LD C,A        ;
+ $8D8D LD A,H        ;
+ $8D8E AND A         ;
+ $8D8F JP Z,$8D99    ;
+ $8D92 LD C,$20      ;
+ $8D94 JP P,$8D99    ;
+ $8D97 LD C,$FF      ;
+*$8D99 LD HL,($FE20) ;
+ $8D9C ADD HL,DE     ;
+ $8D9D LD A,L        ;
+ $8D9E AND $F8       ;
+ $8DA0 RRA           ;
+ $8DA1 RRA           ;
+ $8DA2 RRA           ;
+ $8DA3 LD L,A        ;
+ $8DA4 LD A,H        ;
+ $8DA5 AND A         ;
+ $8DA6 JP Z,$8DB0    ;
+ $8DA9 LD L,$20      ;
+ $8DAB JP P,$8DB0    ;
+ $8DAE LD L,$FF      ;
+*$8DB0 LD A,L        ;
+ $8DB1 LD HL,($FE22) ;
+ $8DB4 ADD HL,DE     ;
+ $8DB5 LD D,A        ;
+ $8DB6 LD A,L        ;
+ $8DB7 AND $F8       ;
+ $8DB9 RRA           ;
+ $8DBA RRA           ;
+ $8DBB RRA           ;
+ $8DBC LD E,A        ;
+ $8DBD LD A,H        ;
+ $8DBE AND A         ;
+ $8DBF JP Z,$8DC9    ;
+ $8DC2 LD E,$20      ;
+ $8DC4 JP P,$8DC9    ;
+ $8DC7 LD E,$FF      ;
+*$8DC9 LD A,E        ;
+ $8DCA SUB C         ;
+ $8DCB JP P,$8DD3    ;
+ $8DCE EX DE,HL      ;
+ $8DCF LD D,B        ;
+ $8DD0 LD E,C        ;
+ $8DD1 LD B,H        ;
+ $8DD2 LD C,L        ;
+*$8DD3 LD A,C        ;
+ $8DD4 AND A         ;
+ $8DD5 JP P,$8DD9    ;
+ $8DD8 INC C         ;
+*$8DD9 LD A,D        ;
+ $8DDA CP B          ;
+ $8DDB JP P,$8DEB    ;
+ $8DDE LD A,$1F      ;
+ $8DE0 LD E,$00      ;
+ $8DE2 SUB B         ;
+ $8DE3 LD B,A        ;
+ $8DE4 JP P,$8DFF    ;
+ $8DE7 INC B         ;
+ $8DE8 JP $8DFF      ;
+*$8DEB LD A,$1F      ;
+ $8DED SUB D         ;
+ $8DEE LD D,A        ;
+ $8DEF JP P,$8DF3    ;
+ $8DF2 INC D         ;
+*$8DF3 LD A,E        ;
+ $8DF4 SUB B         ;
+ $8DF5 DEC A         ;
+ $8DF6 JP P,$8DFA    ;
+ $8DF9 SUB A         ;
+*$8DFA LD E,A        ;
+ $8DFB INC B         ;
+ $8DFC LD A,B        ;
+ $8DFD LD B,D        ;
+ $8DFE LD D,A        ;
+*$8DFF LD ($FE24),BC ;
+ $8E03 LD ($FE26),DE ;
+ $8E07 RET           ;
+
+; Routine at 8E08
+;
+; Used by the routines at #R$977E and #R$AD3E.
+;
+; .
+;
 ; SHLC
 ; .
 ; Probable secondary-hill limit calculation from the notebook's SCREEN page.
@@ -3682,107 +3781,549 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
 ; hill infill pass for the object interior.
 @label=SHLC
-*$8E08 DEFB $ED,$4B,$24,$FE,$ED,$5B,$26,$FE
- $8E10 DEFB $7B,$A7,$C2,$21,$8E,$3E,$1F,$90
- $8E18 DEFB $91,$3C,$41,$4F,$1E,$00,$C3,$2F
- $8E20 DEFB $8E,$7A,$91,$60,$41,$4F,$7A,$83
- $8E28 DEFB $57,$3E,$1F,$92,$94,$3C,$5F,$ED
- $8E30 DEFB $53,$28,$FE,$ED,$43,$2A,$FE,$C9
+c$8E08 LD BC,($FE24) ;
+ $8E0C LD DE,($FE26) ;
+ $8E10 LD A,E        ;
+ $8E11 AND A         ;
+ $8E12 JP NZ,$8E21   ;
+ $8E15 LD A,$1F      ;
+ $8E17 SUB B         ;
+ $8E18 SUB C         ;
+ $8E19 INC A         ;
+ $8E1A LD B,C        ;
+ $8E1B LD C,A        ;
+ $8E1C LD E,$00      ;
+ $8E1E JP $8E2F      ;
+*$8E21 LD A,D        ;
+ $8E22 SUB C         ;
+ $8E23 LD H,B        ;
+ $8E24 LD B,C        ;
+ $8E25 LD C,A        ;
+ $8E26 LD A,D        ;
+ $8E27 ADD A,E       ;
+ $8E28 LD D,A        ;
+ $8E29 LD A,$1F      ;
+ $8E2B SUB D         ;
+ $8E2C SUB H         ;
+ $8E2D INC A         ;
+ $8E2E LD E,A        ;
+*$8E2F LD ($FE28),DE ;
+ $8E33 LD ($FE2A),BC ;
+ $8E37 RET           ;
+
+; Routine at 8E38
+;
+; Used by the routines at #R$977E and #R$AD3E.
+;
+; .
+;
 ; MHLPT
 ; .
 ; Probable main-hill plotting stage from the notebook's SCREEN page. This
-; routine appears to use the hill pointer at FE2C together with the main-hill
-; limits derived by #R$8D68 to draw the regular hill backdrop outside object
-; occlusion bounds.
+; routine uses the stream pointer at FE2C together with the main-hill limits
+; derived by #R$8D68.
+; Current best read: it copies hill-row data from the FE2C stream into the
+; off-screen E700 playfield buffer for the left and right outer regions, then
+; fills the interior span in E8A0..E8BF with `0xAA`.
 @label=MHLPT
-*$8E38 DEFB $ED,$73,$00,$FE,$ED,$7B,$2C,$FE
- $8E40 DEFB $ED,$4B,$24,$FE,$33,$2E,$40,$CB
- $8E48 DEFB $AD,$26,$E7,$0D,$FA,$7D,$8E,$D1
- $8E50 DEFB $73,$24,$72,$24,$D1,$73,$24,$72
- $8E58 DEFB $24,$D1,$73,$24,$72,$24,$D1,$73
- $8E60 DEFB $24,$72,$26,$E7,$CB,$ED,$D1,$73
- $8E68 DEFB $24,$72,$24,$D1,$73,$24,$72,$24
- $8E70 DEFB $D1,$73,$24,$72,$24,$D1,$73,$24
- $8E78 DEFB $72,$2C,$C3,$47,$8E,$2A,$2C,$FE
- $8E80 DEFB $23,$3E,$20,$48,$90,$47,$07,$07
- $8E88 DEFB $07,$07,$5F,$16,$00,$CB,$12,$CB
- $8E90 DEFB $83,$19,$F9,$68,$CB,$F5,$CB,$AD
- $8E98 DEFB $26,$E7,$0D,$FA,$CC,$8E,$D1,$73
- $8EA0 DEFB $24,$72,$24,$D1,$73,$24,$72,$24
- $8EA8 DEFB $D1,$73,$24,$72,$24,$D1,$73,$24
- $8EB0 DEFB $72,$26,$E7,$CB,$ED,$D1,$73,$24
- $8EB8 DEFB $72,$24,$D1,$73,$24,$72,$24,$D1
- $8EC0 DEFB $73,$24,$72,$24,$D1,$73,$24,$72
- $8EC8 DEFB $2C,$C3,$96,$8E,$ED,$4B,$26,$FE
- $8ED0 DEFB $78,$07,$07,$07,$07,$5F,$16,$00
- $8ED8 DEFB $CB,$12,$CB,$83,$2A,$2C,$FE,$23
- $8EE0 DEFB $19,$F9,$68,$CB,$F5,$CB,$AD,$26
- $8EE8 DEFB $E7,$0D,$FA,$1B,$8F,$D1,$73,$24
- $8EF0 DEFB $72,$24,$D1,$73,$24,$72,$24,$D1
- $8EF8 DEFB $73,$24,$72,$24,$D1,$73,$24,$72
- $8F00 DEFB $26,$E7,$CB,$ED,$D1,$73,$24,$72
- $8F08 DEFB $24,$D1,$73,$24,$72,$24,$D1,$73
- $8F10 DEFB $24,$72,$24,$D1,$73,$24,$72,$2C
- $8F18 DEFB $C3,$E5,$8E,$ED,$4B,$24,$FE,$11
- $8F20 DEFB $A0,$E8,$79,$68,$41,$A7,$3E,$AA
- $8F28 DEFB $28,$04,$12,$13,$10,$FC,$45,$05
- $8F30 DEFB $04,$28,$07,$11,$BF,$E8,$12,$1B
- $8F38 DEFB $10,$FC,$ED,$4B,$26,$FE,$21,$A0
- $8F40 DEFB $E8,$58,$41,$16,$00,$19,$05,$04
- $8F48 DEFB $28,$04,$77,$23,$10,$FC,$ED,$7B
- $8F50 DEFB $00,$FE,$C9
+c$8E38 LD ($FE00),SP ;
+ $8E3C LD SP,($FE2C) ;
+ $8E40 LD BC,($FE24) ;
+ $8E44 INC SP        ;
+ $8E45 LD L,$40      ;
+@label=MHLPTWriteOuterLeft
+*$8E47 RES 5,L       ;
+ $8E49 LD H,$E7      ;
+ $8E4B DEC C         ;
+ $8E4C JP M,$8E7D    ;
+ $8E4F POP DE        ;
+ $8E50 LD (HL),E     ;
+ $8E51 INC H         ;
+ $8E52 LD (HL),D     ;
+ $8E53 INC H         ;
+ $8E54 POP DE        ;
+ $8E55 LD (HL),E     ;
+ $8E56 INC H         ;
+ $8E57 LD (HL),D     ;
+ $8E58 INC H         ;
+ $8E59 POP DE        ;
+ $8E5A LD (HL),E     ;
+ $8E5B INC H         ;
+ $8E5C LD (HL),D     ;
+ $8E5D INC H         ;
+ $8E5E POP DE        ;
+ $8E5F LD (HL),E     ;
+ $8E60 INC H         ;
+ $8E61 LD (HL),D     ;
+ $8E62 LD H,$E7      ;
+ $8E64 SET 5,L       ;
+ $8E66 POP DE        ;
+ $8E67 LD (HL),E     ;
+ $8E68 INC H         ;
+ $8E69 LD (HL),D     ;
+ $8E6A INC H         ;
+ $8E6B POP DE        ;
+ $8E6C LD (HL),E     ;
+ $8E6D INC H         ;
+ $8E6E LD (HL),D     ;
+ $8E6F INC H         ;
+ $8E70 POP DE        ;
+ $8E71 LD (HL),E     ;
+ $8E72 INC H         ;
+ $8E73 LD (HL),D     ;
+ $8E74 INC H         ;
+ $8E75 POP DE        ;
+ $8E76 LD (HL),E     ;
+ $8E77 INC H         ;
+ $8E78 LD (HL),D     ;
+ $8E79 INC L         ;
+ $8E7A JP $8E47      ;
+@label=MHLPTAdvanceToOuterRight
+*$8E7D LD HL,($FE2C) ;
+ $8E80 INC HL        ;
+ $8E81 LD A,$20      ;
+ $8E83 LD C,B        ;
+ $8E84 SUB B         ;
+ $8E85 LD B,A        ;
+ $8E86 RLCA          ;
+ $8E87 RLCA          ;
+ $8E88 RLCA          ;
+ $8E89 RLCA          ;
+ $8E8A LD E,A        ;
+ $8E8B LD D,$00      ;
+ $8E8D RL D          ;
+ $8E8F RES 0,E       ;
+ $8E91 ADD HL,DE     ;
+ $8E92 LD SP,HL      ;
+ $8E93 LD L,B        ;
+ $8E94 SET 6,L       ;
+@label=MHLPTWriteOuterRight
+*$8E96 RES 5,L       ;
+ $8E98 LD H,$E7      ;
+ $8E9A DEC C         ;
+ $8E9B JP M,$8ECC    ;
+ $8E9E POP DE        ;
+ $8E9F LD (HL),E     ;
+ $8EA0 INC H         ;
+ $8EA1 LD (HL),D     ;
+ $8EA2 INC H         ;
+ $8EA3 POP DE        ;
+ $8EA4 LD (HL),E     ;
+ $8EA5 INC H         ;
+ $8EA6 LD (HL),D     ;
+ $8EA7 INC H         ;
+ $8EA8 POP DE        ;
+ $8EA9 LD (HL),E     ;
+ $8EAA INC H         ;
+ $8EAB LD (HL),D     ;
+ $8EAC INC H         ;
+ $8EAD POP DE        ;
+ $8EAE LD (HL),E     ;
+ $8EAF INC H         ;
+ $8EB0 LD (HL),D     ;
+ $8EB1 LD H,$E7      ;
+ $8EB3 SET 5,L       ;
+ $8EB5 POP DE        ;
+ $8EB6 LD (HL),E     ;
+ $8EB7 INC H         ;
+ $8EB8 LD (HL),D     ;
+ $8EB9 INC H         ;
+ $8EBA POP DE        ;
+ $8EBB LD (HL),E     ;
+ $8EBC INC H         ;
+ $8EBD LD (HL),D     ;
+ $8EBE INC H         ;
+ $8EBF POP DE        ;
+ $8EC0 LD (HL),E     ;
+ $8EC1 INC H         ;
+ $8EC2 LD (HL),D     ;
+ $8EC3 INC H         ;
+ $8EC4 POP DE        ;
+ $8EC5 LD (HL),E     ;
+ $8EC6 INC H         ;
+ $8EC7 LD (HL),D     ;
+ $8EC8 INC L         ;
+ $8EC9 JP $8E96      ;
+@label=MHLPTFillInteriorSetup
+*$8ECC LD BC,($FE26) ;
+ $8ED0 LD A,B        ;
+ $8ED1 RLCA          ;
+ $8ED2 RLCA          ;
+ $8ED3 RLCA          ;
+ $8ED4 RLCA          ;
+ $8ED5 LD E,A        ;
+ $8ED6 LD D,$00      ;
+ $8ED8 RL D          ;
+ $8EDA RES 0,E       ;
+ $8EDC LD HL,($FE2C) ;
+ $8EDF INC HL        ;
+ $8EE0 ADD HL,DE     ;
+ $8EE1 LD SP,HL      ;
+ $8EE2 LD L,B        ;
+ $8EE3 SET 6,L       ;
+*$8EE5 RES 5,L       ;
+ $8EE7 LD H,$E7      ;
+ $8EE9 DEC C         ;
+ $8EEA JP M,$8F1B    ;
+ $8EED POP DE        ;
+ $8EEE LD (HL),E     ;
+ $8EEF INC H         ;
+ $8EF0 LD (HL),D     ;
+ $8EF1 INC H         ;
+ $8EF2 POP DE        ;
+ $8EF3 LD (HL),E     ;
+ $8EF4 INC H         ;
+ $8EF5 LD (HL),D     ;
+ $8EF6 INC H         ;
+ $8EF7 POP DE        ;
+ $8EF8 LD (HL),E     ;
+ $8EF9 INC H         ;
+ $8EFA LD (HL),D     ;
+ $8EFB INC H         ;
+ $8EFC POP DE        ;
+ $8EFD LD (HL),E     ;
+ $8EFE INC H         ;
+ $8EFF LD (HL),D     ;
+ $8F00 LD H,$E7      ;
+ $8F02 SET 5,L       ;
+ $8F04 POP DE        ;
+ $8F05 LD (HL),E     ;
+ $8F06 INC H         ;
+ $8F07 LD (HL),D     ;
+ $8F08 INC H         ;
+ $8F09 POP DE        ;
+ $8F0A LD (HL),E     ;
+ $8F0B INC H         ;
+ $8F0C LD (HL),D     ;
+ $8F0D INC H         ;
+ $8F0E POP DE        ;
+ $8F0F LD (HL),E     ;
+ $8F10 INC H         ;
+ $8F11 LD (HL),D     ;
+ $8F12 INC H         ;
+ $8F13 POP DE        ;
+ $8F14 LD (HL),E     ;
+ $8F15 INC H         ;
+ $8F16 LD (HL),D     ;
+ $8F17 INC L         ;
+ $8F18 JP $8EE5      ;
+@label=MHLPTFillInterior
+*$8F1B LD BC,($FE24) ;
+ $8F1F LD DE,$E8A0   ;
+ $8F22 LD A,C        ;
+ $8F23 LD L,B        ;
+ $8F24 LD B,C        ;
+ $8F25 AND A         ;
+ $8F26 LD A,$AA      ;
+ $8F28 JR Z,$8F2E    ;
+*$8F2A LD (DE),A     ;
+ $8F2B INC DE        ;
+ $8F2C DJNZ $8F2A    ;
+*$8F2E LD B,L        ;
+ $8F2F DEC B         ;
+ $8F30 INC B         ;
+ $8F31 JR Z,$8F3A    ;
+ $8F33 LD DE,$E8BF   ;
+*$8F36 LD (DE),A     ;
+ $8F37 DEC DE        ;
+ $8F38 DJNZ $8F36    ;
+*$8F3A LD BC,($FE26) ;
+ $8F3E LD HL,$E8A0   ;
+ $8F41 LD E,B        ;
+ $8F42 LD B,C        ;
+ $8F43 LD D,$00      ;
+ $8F45 ADD HL,DE     ;
+ $8F46 DEC B         ;
+ $8F47 INC B         ;
+ $8F48 JR Z,$8F4E    ;
+*$8F4A LD (HL),A     ;
+ $8F4B INC HL        ;
+ $8F4C DJNZ $8F4A    ;
+*$8F4E LD SP,($FE00) ;
+ $8F52 RET           ;
+
+; Routine at 8F53
+;
+; Used by the routines at #R$977E and #R$AD3E.
+;
+; .
+;
 ; SHLPT
 ; .
 ; Probable secondary-hill plotting stage from the notebook's SCREEN page. It
 ; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
 ; matching the recollected infill pass inside the object limits.
+; Current best read: it advances through the FE2C stream while only writing
+; into still-empty bytes of the off-screen E700 playfield buffer, then steps
+; inward by row until the infill region is complete.
 @label=SHLPT
-*$8F53 DEFB $CD,$61,$8F,$ED,$4B
- $8F58 DEFB $28,$FE,$ED,$43,$30,$FE,$C3,$69
- $8F60 DEFB $8F,$ED,$4B,$2A,$FE,$ED,$43,$30
- $8F68 DEFB $FE,$78,$ED,$73,$00,$FE,$07,$07
- $8F70 DEFB $07,$07,$5F,$CB,$83,$16,$00,$CB
- $8F78 DEFB $12,$2A,$2C,$FE,$19,$F9,$33,$68
- $8F80 DEFB $41,$78,$A7,$CA,$93,$90,$CB,$F5
- $8F88 DEFB $26,$E7,$CB,$AD,$97,$B6,$C2,$FB
- $8F90 DEFB $8F,$D1,$73,$24,$B6,$20,$57,$72
- $8F98 DEFB $24,$B6,$20,$52,$D1,$73,$24,$B6
- $8FA0 DEFB $20,$4D,$72,$24,$B6,$20,$48,$D1
- $8FA8 DEFB $73,$24,$B6,$20,$43,$72,$24,$B6
- $8FB0 DEFB $20,$3E,$D1,$73,$24,$B6,$20,$39
- $8FB8 DEFB $72,$26,$E7,$CB,$ED,$B6,$20,$31
- $8FC0 DEFB $D1,$73,$24,$B6,$20,$2C,$72,$24
- $8FC8 DEFB $B6,$20,$27,$D1,$73,$24,$B6,$20
- $8FD0 DEFB $22,$72,$24,$B6,$20,$1D,$D1,$73
- $8FD8 DEFB $24,$B6,$20,$18,$72,$24,$B6,$D1
- $8FE0 DEFB $20,$06,$73,$24,$B6,$20,$01,$72
- $8FE8 DEFB $2C,$10,$9D,$C3,$93,$90,$D1,$D1
- $8FF0 DEFB $D1,$D1,$D1,$D1,$D1,$2C,$10,$90
- $8FF8 DEFB $C3,$93,$90,$05,$CA,$93,$90,$60
- $9000 DEFB $ED,$4B,$30,$FE,$78,$81,$3D,$4F
- $9008 DEFB $07,$07,$07,$07,$5F,$16,$00,$CB
- $9010 DEFB $12,$CB,$83,$44,$2A,$2C,$FE,$19
- $9018 DEFB $23,$F9,$22,$2E,$FE,$69,$CB,$F5
- $9020 DEFB $26,$E7,$CB,$AD,$97,$B6,$C2,$93
- $9028 DEFB $90,$D1,$73,$24,$B6,$20,$52,$72
- $9030 DEFB $24,$B6,$C2,$81,$90,$D1,$73,$24
- $9038 DEFB $B6,$20,$46,$72,$24,$B6,$20,$41
- $9040 DEFB $D1,$73,$24,$B6,$20,$3B,$72,$24
- $9048 DEFB $B6,$20,$36,$D1,$73,$24,$B6,$20
- $9050 DEFB $30,$72,$CB,$ED,$26,$E7,$B6,$20
- $9058 DEFB $28,$D1,$73,$24,$B6,$20,$22,$72
- $9060 DEFB $24,$B6,$20,$1D,$D1,$73,$24,$B6
- $9068 DEFB $20,$17,$72,$24,$B6,$20,$12,$D1
- $9070 DEFB $73,$24,$B6,$20,$0C,$72,$24,$B6
- $9078 DEFB $20,$07,$D1,$73,$24,$B6,$20,$01
- $9080 DEFB $72,$2D,$EB,$2A,$2E,$FE,$78,$01
- $9088 DEFB $F0,$FF,$09,$F9,$47,$22,$2E,$FE
- $9090 DEFB $EB,$10,$8D,$ED,$7B,$00,$FE,$C9
- $9098 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $90A0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $90A8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $90B0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $90B8 DEFB $00,$00
+c$8F53 CALL $8F61    ;
+ $8F56 LD BC,($FE28) ;
+ $8F5A LD ($FE30),BC ;
+ $8F5E JP $8F69      ;
+@label=SHLPTSeedSecondLimit
+*$8F61 LD BC,($FE2A) ;
+ $8F65 LD ($FE30),BC ;
+@label=SHLPTBeginPass
+*$8F69 LD A,B        ;
+ $8F6A LD ($FE00),SP ;
+ $8F6E RLCA          ;
+ $8F6F RLCA          ;
+ $8F70 RLCA          ;
+ $8F71 RLCA          ;
+ $8F72 LD E,A        ;
+ $8F73 RES 0,E       ;
+ $8F75 LD D,$00      ;
+ $8F77 RL D          ;
+ $8F79 LD HL,($FE2C) ;
+ $8F7C ADD HL,DE     ;
+ $8F7D LD SP,HL      ;
+ $8F7E INC SP        ;
+ $8F7F LD L,B        ;
+ $8F80 LD B,C        ;
+ $8F81 LD A,B        ;
+ $8F82 AND A         ;
+ $8F83 JP Z,$9093    ;
+ $8F86 SET 6,L       ;
+@label=SHLPTWriteIfEmpty
+*$8F88 LD H,$E7      ;
+ $8F8A RES 5,L       ;
+ $8F8C SUB A         ;
+ $8F8D OR (HL)       ;
+ $8F8E JP NZ,$8FFB   ;
+ $8F91 POP DE        ;
+ $8F92 LD (HL),E     ;
+ $8F93 INC H         ;
+ $8F94 OR (HL)       ;
+ $8F95 JR NZ,$8FEE   ;
+ $8F97 LD (HL),D     ;
+ $8F98 INC H         ;
+ $8F99 OR (HL)       ;
+ $8F9A JR NZ,$8FEE   ;
+ $8F9C POP DE        ;
+ $8F9D LD (HL),E     ;
+ $8F9E INC H         ;
+ $8F9F OR (HL)       ;
+ $8FA0 JR NZ,$8FEF   ;
+ $8FA2 LD (HL),D     ;
+ $8FA3 INC H         ;
+ $8FA4 OR (HL)       ;
+ $8FA5 JR NZ,$8FEF   ;
+ $8FA7 POP DE        ;
+ $8FA8 LD (HL),E     ;
+ $8FA9 INC H         ;
+ $8FAA OR (HL)       ;
+ $8FAB JR NZ,$8FF0   ;
+ $8FAD LD (HL),D     ;
+ $8FAE INC H         ;
+ $8FAF OR (HL)       ;
+ $8FB0 JR NZ,$8FF0   ;
+ $8FB2 POP DE        ;
+ $8FB3 LD (HL),E     ;
+ $8FB4 INC H         ;
+ $8FB5 OR (HL)       ;
+ $8FB6 JR NZ,$8FF1   ;
+ $8FB8 LD (HL),D     ;
+ $8FB9 LD H,$E7      ;
+ $8FBB SET 5,L       ;
+ $8FBD OR (HL)       ;
+ $8FBE JR NZ,$8FF1   ;
+ $8FC0 POP DE        ;
+ $8FC1 LD (HL),E     ;
+ $8FC2 INC H         ;
+ $8FC3 OR (HL)       ;
+ $8FC4 JR NZ,$8FF2   ;
+ $8FC6 LD (HL),D     ;
+ $8FC7 INC H         ;
+ $8FC8 OR (HL)       ;
+ $8FC9 JR NZ,$8FF2   ;
+ $8FCB POP DE        ;
+ $8FCC LD (HL),E     ;
+ $8FCD INC H         ;
+ $8FCE OR (HL)       ;
+ $8FCF JR NZ,$8FF3   ;
+ $8FD1 LD (HL),D     ;
+ $8FD2 INC H         ;
+ $8FD3 OR (HL)       ;
+ $8FD4 JR NZ,$8FF3   ;
+ $8FD6 POP DE        ;
+ $8FD7 LD (HL),E     ;
+ $8FD8 INC H         ;
+ $8FD9 OR (HL)       ;
+ $8FDA JR NZ,$8FF4   ;
+ $8FDC LD (HL),D     ;
+ $8FDD INC H         ;
+ $8FDE OR (HL)       ;
+ $8FDF POP DE        ;
+ $8FE0 JR NZ,$8FE8   ;
+ $8FE2 LD (HL),E     ;
+ $8FE3 INC H         ;
+ $8FE4 OR (HL)       ;
+ $8FE5 JR NZ,$8FE8   ;
+ $8FE7 LD (HL),D     ;
+*$8FE8 INC L         ;
+ $8FE9 DJNZ $8F88    ;
+ $8FEB JP $9093      ;
+*$8FEE POP DE        ;
+*$8FEF POP DE        ;
+*$8FF0 POP DE        ;
+*$8FF1 POP DE        ;
+*$8FF2 POP DE        ;
+*$8FF3 POP DE        ;
+*$8FF4 POP DE        ;
+ $8FF5 INC L         ;
+ $8FF6 DJNZ $8F88    ;
+ $8FF8 JP $9093      ;
+@label=SHLPTAdvanceInnerRow
+*$8FFB DEC B         ;
+ $8FFC JP Z,$9093    ;
+ $8FFF LD H,B        ;
+ $9000 LD BC,($FE30) ;
+ $9004 LD A,B        ;
+ $9005 ADD A,C       ;
+ $9006 DEC A         ;
+ $9007 LD C,A        ;
+ $9008 RLCA          ;
+ $9009 RLCA          ;
+ $900A RLCA          ;
+ $900B RLCA          ;
+ $900C LD E,A        ;
+ $900D LD D,$00      ;
+ $900F RL D          ;
+ $9011 RES 0,E       ;
+ $9013 LD B,H        ;
+ $9014 LD HL,($FE2C) ;
+ $9017 ADD HL,DE     ;
+ $9018 INC HL        ;
+ $9019 LD SP,HL      ;
+ $901A LD ($FE2E),HL ;
+ $901D LD L,C        ;
+ $901E SET 6,L       ;
+@label=SHLPTWriteBackwardIfEmpty
+*$9020 LD H,$E7      ;
+ $9022 RES 5,L       ;
+ $9024 SUB A         ;
+ $9025 OR (HL)       ;
+ $9026 JP NZ,$9093   ;
+ $9029 POP DE        ;
+ $902A LD (HL),E     ;
+ $902B INC H         ;
+ $902C OR (HL)       ;
+ $902D JR NZ,$9081   ;
+ $902F LD (HL),D     ;
+ $9030 INC H         ;
+ $9031 OR (HL)       ;
+ $9032 JP NZ,$9081   ;
+ $9035 POP DE        ;
+ $9036 LD (HL),E     ;
+ $9037 INC H         ;
+ $9038 OR (HL)       ;
+ $9039 JR NZ,$9081   ;
+ $903B LD (HL),D     ;
+ $903C INC H         ;
+ $903D OR (HL)       ;
+ $903E JR NZ,$9081   ;
+ $9040 POP DE        ;
+ $9041 LD (HL),E     ;
+ $9042 INC H         ;
+ $9043 OR (HL)       ;
+ $9044 JR NZ,$9081   ;
+ $9046 LD (HL),D     ;
+ $9047 INC H         ;
+ $9048 OR (HL)       ;
+ $9049 JR NZ,$9081   ;
+ $904B POP DE        ;
+ $904C LD (HL),E     ;
+ $904D INC H         ;
+ $904E OR (HL)       ;
+ $904F JR NZ,$9081   ;
+ $9051 LD (HL),D     ;
+ $9052 SET 5,L       ;
+ $9054 LD H,$E7      ;
+ $9056 OR (HL)       ;
+ $9057 JR NZ,$9081   ;
+ $9059 POP DE        ;
+ $905A LD (HL),E     ;
+ $905B INC H         ;
+ $905C OR (HL)       ;
+ $905D JR NZ,$9081   ;
+ $905F LD (HL),D     ;
+ $9060 INC H         ;
+ $9061 OR (HL)       ;
+ $9062 JR NZ,$9081   ;
+ $9064 POP DE        ;
+ $9065 LD (HL),E     ;
+ $9066 INC H         ;
+ $9067 OR (HL)       ;
+ $9068 JR NZ,$9081   ;
+ $906A LD (HL),D     ;
+ $906B INC H         ;
+ $906C OR (HL)       ;
+ $906D JR NZ,$9081   ;
+ $906F POP DE        ;
+ $9070 LD (HL),E     ;
+ $9071 INC H         ;
+ $9072 OR (HL)       ;
+ $9073 JR NZ,$9081   ;
+ $9075 LD (HL),D     ;
+ $9076 INC H         ;
+ $9077 OR (HL)       ;
+ $9078 JR NZ,$9081   ;
+ $907A POP DE        ;
+ $907B LD (HL),E     ;
+ $907C INC H         ;
+ $907D OR (HL)       ;
+ $907E JR NZ,$9081   ;
+ $9080 LD (HL),D     ;
+@label=SHLPTStepUpRow
+*$9081 DEC L         ;
+ $9082 EX DE,HL      ;
+ $9083 LD HL,($FE2E) ;
+ $9086 LD A,B        ;
+ $9087 LD BC,$FFF0   ;
+ $908A ADD HL,BC     ;
+ $908B LD SP,HL      ;
+ $908C LD B,A        ;
+ $908D LD ($FE2E),HL ;
+ $9090 EX DE,HL      ;
+ $9091 DJNZ $9020    ;
+@label=SHLPTDone
+*$9093 LD SP,($FE00) ;
+ $9097 RET           ;
+ $9098 NOP           ;
+ $9099 NOP           ;
+ $909A NOP           ;
+ $909B NOP           ;
+ $909C NOP           ;
+ $909D NOP           ;
+ $909E NOP           ;
+ $909F NOP           ;
+ $90A0 NOP           ;
+ $90A1 NOP           ;
+ $90A2 NOP           ;
+ $90A3 NOP           ;
+ $90A4 NOP           ;
+ $90A5 NOP           ;
+ $90A6 NOP           ;
+ $90A7 NOP           ;
+ $90A8 NOP           ;
+ $90A9 NOP           ;
+ $90AA NOP           ;
+ $90AB NOP           ;
+ $90AC NOP           ;
+ $90AD NOP           ;
+ $90AE NOP           ;
+ $90AF NOP           ;
+ $90B0 NOP           ;
+ $90B1 NOP           ;
+ $90B2 NOP           ;
+ $90B3 NOP           ;
+ $90B4 NOP           ;
+ $90B5 NOP           ;
+ $90B6 NOP           ;
+ $90B7 NOP           ;
+ $90B8 NOP           ;
+ $90B9 NOP           ;
 
 ; RADAR
 ;
@@ -4014,6 +4555,9 @@ c$9132 LD D,$00                                         ;
 ; jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
 ; selected movement/turn variant, then returns updated coordinates in `DE/BC`
 ; and the updated view-turn angle in `HL`.
+; Indirect-entry audit note: this `JP (HL)` is the only true computed routine
+; dispatch in the shipped gameplay code, and `KMOVTurnDecode` only seeds it
+; with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312`.
 @label=TurnTransformDispatcher
 c$91E6 PUSH HL       ;
  $91E7 LD HL,($FE5C) ;
@@ -4483,7 +5027,8 @@ c$94AC LD HL,($FE76) ; Load the current score.
 ; HL Packed BCD value to display
 @label=NUMBA
 c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
- $94EF LD BC,$4059   ;
+ $94EF LD BC,$4059   ; Destination `BC` immediate patched by `0xB0DA/0xB0E9/0xB1C0/0xB1D4/0xB563` to
+                     ; redirect score/heading output without duplicating the routine.
  $94F2 LD A,H        ;
  $94F3 AND A         ;
  $94F4 JR Z,$9510    ;
@@ -6647,6 +7192,8 @@ c$977E LD HL,($FE70) ;
                      ; - bit 3 -> `0x92AE` double-speed left turn
                      ; - bit 2 -> `0x9312` double-speed right turn
                      ; - no turn bits -> no explicit turn handler selected here
+                     ; This is the sole writer of the indirect `TURN` dispatch pointer used by
+                     ; `TurnTransformDispatcher`.
  $A717 AND C         ;
  $A718 LD ($FE56),A  ;
  $A71B BIT 5,A       ;
@@ -7367,7 +7914,8 @@ c$AD0C DI            ; Disable interrupts.
  $AD16 LDIR          ; }
  $AD18 JP $B1F4      ; Jump to #R$B1F4.
 
-; Data block at AD1B
+; Padding / reserved space between the title-entry copy block and `KEMPST`.
+; No direct callers/jumpers land here, and no code currently reads from it.
 b$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD23 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD2B DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -7897,7 +8445,9 @@ c$AD3E LD BC,$0000   ;
  $B103 AND $03       ;
  $B105 LD C,A        ;
  $B106 LD B,$00      ;
- $B108 LD IX,$B110   ;
+ $B108 LD IX,$B110   ; `IX` is set to `0xB110 + (period-derived low 2 bits)`, so the later `JP (IX)`
+                     ; lands at one of `0xB110..0xB113` inside this same timing pad. This is a
+                     ; cycle-alignment trick, not a hidden secondary routine entry.
  $B10C ADD IX,BC     ;
  $B10E LD A,$08      ;
  $B110 NOP           ;
@@ -12488,15 +13038,20 @@ g$FE28 DEFW $0000
 
 ; Game status buffer entry at FE2A
 @label=LIM4
-g$FE2A DEFW $0000
+g$FE2A DEFW $0000    ; Notebook name says `HLCNT`, but current shipped-behaviour reading is that
+                     ; this word is a live hill-data stream pointer. Initialised to `$6900` and
+                     ; adjusted by the player turn/motion path before `MHLPT` / `SHLPT` consume it
+                     ; via `SP`.
 
 ; Game status buffer entry at FE2C
 @label=HLCNT
-g$FE2C DEFW $0000
+g$FE2C DEFW $0000    ; Notebook name says `SHCNT`, but in shipped code this word behaves as the
+                     ; moving inner-row stream pointer used by `SHLPTStepUpRow`.
 
 ; Game status buffer entry at FE2E
 @label=SHCNT
-g$FE2E DEFW $0000
+g$FE2E DEFW $0000    ; Current best read: temporary inner-width / limit pair used by `SHLPT` while
+                     ; stepping through the infill region.
 
 ; Game status buffer entry at FE30
 @label=LIM

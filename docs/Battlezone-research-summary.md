@@ -256,6 +256,7 @@ Working summary of verified facts, local source material, and open questions for
     - the `0x7C00..0x7FFF` family is no longer being treated as "fixed-point trig tables"
     - `RADAR` also indexes pages `0x7C` / `0x7D` directly while plotting blips, so the stronger current-best read is that this block is a shared plotting lookup family
     - pages `0x7C`, `0x7D`, and `0x7E` now look more like precomputed address/mask or step data for screen plotting than pure trig values
+    - after reclassifying the hill routines, there is still no obvious evidence that `MHLC/SHLC/MHLPT/SHLPT` use this lookup family directly
   - further support for Susan's recollection:
     - each of the four main branches contains an 8-step repeated shift/compare/subtract sequence, now best read as an unrolled slope-division / gradient setup block
     - the small setup routine at `0x8000`, now labeled `InitLineHelperTables`, builds runtime plotting helpers:
@@ -263,6 +264,37 @@ Working summary of verified facts, local source material, and open questions for
       - `LeftPixelMaskTable` at `FA00..FBFF`: current best read is 256 `(byte-offset,left-mask)` pairs, one per X position
       - `RightPixelMaskTable` at `FC00..FDFF`: current best read is the mirrored 256-entry companion table
     - this is strong evidence that the shipped code still uses a precomputed Y-to-Spectrum-row mapping plus X mask helpers, just against the off-screen buffer rather than the visible screen
+- Hill pipeline reclassification:
+  - `MHLC` at `0x8D68`, `SHLC` at `0x8E08`, `MHLPT` at `0x8E38`, and `SHLPT` at `0x8F53` are now emitted as real code instead of anonymous `DEFB`
+  - current best read:
+    - `MHLC` converts the current object-edge limits at `FE1C/FE1E/FE20/FE22` into clipped hill-column bounds in `FE24/FE26`
+    - `SHLC` derives the inner/infill pair in `FE28/FE2A` from those primary limits
+    - `MHLPT` uses `SP` as a stream pointer via `FE2C`, copies hill row data into the off-screen `E700` playfield buffer for the outer regions, then fills the span in `E8A0..E8BF` with `0xAA`
+    - `SHLPT` reuses the same stream but only writes into still-empty bytes of the off-screen buffer, matching Susan's recollection of the infill pass inside the object limits
+    - notebook name `HLCNT` at `FE2C` is now suspicious or at least misleading: in shipped code it behaves as a hill-data stream pointer, not a simple count
+    - likewise, notebook `SHCNT` at `FE2E` currently looks more like the moving inner-row stream pointer used by `SHLPTStepUpRow` than a simple count
+    - `FE30` currently looks like a temporary inner-width / limit pair used by `SHLPT` while stepping through the infill region
+  - first-pass internal anchors now exist too:
+    - `MHLPTWriteOuterLeft` at `0x8E47`
+    - `MHLPTAdvanceToOuterRight` at `0x8E7D`
+    - `MHLPTWriteOuterRight` at `0x8E96`
+    - `MHLPTFillInteriorSetup` at `0x8ECC`
+    - `MHLPTFillInterior` at `0x8F1B`
+    - `SHLPTSeedSecondLimit` at `0x8F61`
+    - `SHLPTBeginPass` at `0x8F69`
+    - `SHLPTWriteIfEmpty` at `0x8F88`
+    - `SHLPTAdvanceInnerRow` at `0x8FFB`
+    - `SHLPTWriteBackwardIfEmpty` at `0x9020`
+    - `SHLPTStepUpRow` at `0x9081`
+    - `SHLPTDone` at `0x9093`
+- Code/data audit status:
+  - direct-target sweep over the current generated disassembly found 964 direct `CALL`/`JP`/`JR` targets and none of them land in a non-code block
+  - the remaining untargeted code starts are currently:
+    - `0x924A`, `0x92AE`, `0x9312`: expected `TURN` handler entries selected indirectly through the `TURN` pointer
+    - `0xAD0C`: top-level reset/title re-entry
+    - `0xB77A`: final attract/title handoff into `0xAD0C`
+    - `0xFF27`: topmost jump/vector into `0xB77A`
+  - this strongly supports Susan's recollection that explicit `CALL`/`JP` targets should not be landing in true data, and that the main remaining classification risk is indirect-entry code rather than direct mis-targeting
 - `SHIPS` in the notebook now looks very likely to be the runtime lives counter at `0xFEE4`
   - the shipped death/game-over machinery at `0xADD4` is still the best code match for notebook `CRASH`, but it looks like a later expanded implementation rather than a close textual match to page 17
   - initialised to `3` at `0x958B..0x958E`
@@ -383,6 +415,17 @@ Working summary of verified facts, local source material, and open questions for
   - large `NOP` runs look like deliberate growth padding between separately assembled chunks
   - round starts such as `0x8660`, `0x88EA`, `0x8C3C`, `0x9132`, `0x956A`, `0xAD0C`, `0xB1F4`, `0xB2F5`, `0xB55D`, `0xB587`, and `0xB676` behave like genuine module starts
   - a dedicated working note is now maintained in `docs/Code-structure-notes.md`
+  - direct-target audit currently finds no `CALL` / `JP` / `JR` target landing in a non-code block
+  - inside the main executable span `0x8000..0xB77A`, only two non-code islands remain:
+    - `0x8CA0..0x8D67`: genuine embedded seed data, copied by `0xAD0C..0xAD16` into `0xF700..0xF723`
+    - `0xAD1B..0xAD3D`: padding / reserved space before `KEMPST`
+  - the only absolute writes into code-range addresses currently identified are:
+    - `0x8C3C` and `0x960D`: the known attract-mode status-panel hack
+    - `0x8C5E`: a crash/death-path temporary patch that turns the secondary `SDRAW` entry into `RET`
+    - `0x94F0`: operand patching inside `NUMBA` to redirect the destination `BC` immediate
+  - indirect-entry audit currently finds only three computed jumps in the whole shipped program:
+    - `0x91EA JP (HL)`: the real `TURN` dispatcher, seeded only with `0x91EB`, `0x924A`, `0x92AE`, and `0x9312`
+    - `0xB12F JP (IX)` and `0xB133 JP (IX)`: both land inside `0xB110..0xB113`, a tiny timing/alignment pad in `PlayStartTheme`
   - previously unresolved notebook names now have stronger current-best mappings:
     - `PERSP` = `0x8660`
     - `RADAR` = `0x90BA`
