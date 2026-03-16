@@ -1,6 +1,6 @@
 # Battlezone Research Summary
 
-Last updated: 2026-03-13
+Last updated: 2026-03-16
 
 ## Purpose
 
@@ -218,6 +218,72 @@ Working summary of verified facts, local source material, and open questions for
       - view slots at `0xD554`, `0xD590`, `0xD5CC`
     - `0xD5F6` = low-block-family base for `OB4VU`
       - view slots at `0xD5F6`, `0xD632`, `0xD66E`
+  - exact rendered family anchors now exposed in the generated skool:
+    - `CRAVU` at `0xCC9C`
+    - `MISS` at `0xD3DC`
+    - `MBLVU` / `HBLVU` at `0xD488`
+    - `OB1VU` / `OB2VU` at `0xD4A2`
+    - `OB3VU` at `0xD554`
+    - `OB4VU` at `0xD5F6`
+    - `TKEXV` at `0xD6B8`
+    - `SAEXV` at `0xD7CC`
+    - `MSEXV` at `0xD8B0`
+    - `EXBLT` at `0xD95C`
+  - exact rendered effect-geometry companion anchors now exposed in the generated skool:
+    - `TKEX_XTAB` / `TKEX_ZTAB` / `TKEX_YLOC` at `0xD9E6` / `0xDADA` / `0xDBCE`
+    - `SAEX_XTAB` / `SAEX_ZTAB` / `SAEX_YLOC` at `0xDA1E` / `0xDB12` / `0xDC06`
+    - `MSEX_XTAB` / `MSEX_ZTAB` / `MSEX_YLOC` at `0xDA46` / `0xDB3A` / `0xDC2E`
+  - exact rendered deferred-effect workspace anchors now exposed in the generated skool:
+    - `DeferredEffectXOffsetA/B/C/D` at `0xFEBC / 0xFEC0 / 0xFEC4 / 0xFEC8`
+    - `DeferredEffectZOffsetA/B/C/D` at `0xFEBE / 0xFEC2 / 0xFEC6 / 0xFECA`
+    - `DeferredEffectSourceX` / `DeferredEffectSourceZ` at `0xFECC / 0xFED0`
+    - `DeferredEffectYBias` / `DeferredEffectYBase` at `0xFECE / 0xFED2`
+    - `DeferredEffectAngle` / `DeferredEffectPhaseCountdown` at `0xFED4 / 0xFED6`
+    - `DeferredEffectPrimaryCounts` / `DeferredEffectSecondaryCounts` at `0xFED8 / 0xFEDA`
+    - `DeferredEffectLineData` at `0xFEDC`
+    - `DeferredEffectXTAB` / `DeferredEffectZTAB` / `DeferredEffectYLOC` at `0xFEDE / 0xFEE0 / 0xFEE2`
+  - exact rendered live-bullet workspace anchors now exposed in the generated skool:
+    - `PlayerBulletX` / `PlayerBulletZ` / `PlayerBulletOrientation` / `PlayerBulletLife` at `0xFEAC / 0xFEAE / 0xFEB0 / 0xFEB2`
+    - `HostileBulletX` / `HostileBulletZ` / `HostileBulletOrientation` / `HostileBulletLife` at `0xFEB4 / 0xFEB6 / 0xFEB8 / 0xFEBA`
+  - exact rendered tank-family workspace anchors now exposed in the generated skool:
+    - `TankX` / `TankZ` at `0xFE5E / 0xFE60`
+    - `TankOrientation` / `TankDesiredHeading` / `TankStrategy` at `0xFE62 / 0xFE64 / 0xFE66`
+    - `TankMoveCountdown` at `0xFE68`
+  - exact rendered missile-family workspace anchors now exposed in the generated skool:
+    - `MissileCount` / `MissileManoeuvreCounter` at `0xFE78 / 0xFE7A`
+    - `MissileX` / `MissileY` / `MissileZ` at `0xFE7C / 0xFE7E / 0xFE80`
+    - `MissileZigCount` / `MissileStrategy` / `MissileOrientation` / `MissilePhaseSign` at `0xFE82 / 0xFE84 / 0xFE86 / 0xFE88`
+    - `Probable_BorderSoundLatch` at `0xFE74`
+  - exact rendered saucer-family workspace anchors now exposed in the generated skool:
+    - `SaucerX` / `SaucerZ` / `SaucerPhase` at `0xFE8E / 0xFE90 / 0xFE92`
+    - `SaucerDriftCountdown` / `SaucerDriftStep` at `0xFE94 / 0xFE96`
+  - exact rendered obstacle-pair workspace anchors now exposed in the generated skool:
+    - `Obstacle1X` / `Obstacle1Z` at `0xFE98 / 0xFE9A`
+    - `Obstacle2X` / `Obstacle2Z` at `0xFE9C / 0xFE9E`
+    - `Obstacle3X` / `Obstacle3Z` at `0xFEA0 / 0xFEA2`
+    - `Obstacle4X` / `Obstacle4Z` at `0xFEA4 / 0xFEA6`
+  - exact rendered view-slot anchors now exposed in the generated skool:
+    - `MISS_View0` / `MISS_View1` / `MISS_View2` at `0xD392` / `0xD3DC` / `0xD43E`
+    - `OB1VU_View0..2` and `OB2VU_View0..2` at `0xD4A2` / `0xD4DE` / `0xD51A`
+    - `OB3VU_View0..2` at `0xD554` / `0xD590` / `0xD5CC`
+    - `OB4VU_View0..2` at `0xD5F6` / `0xD632` / `0xD66E`
+  - selector-side ctl comments now use those `...View*` names instead of raw `D3xx/D4xx/D5xx` addresses, so the generated HTML reads more coherently around the missile and obstacle view selectors
+  - explosion/deferred-effect ctl comments now likewise use `TKEXV`, `SAEXV`, `MSEXV`, `EXBLT`, `EXBXL`, and `EXBZL` by name instead of raw `D6xx/D7xx/D8xx/D95C/DD6E/DE1E` addresses
+  - the explosion setup comments now also use the named effect-geometry companions `TKEX_XTAB/ZTAB/YLOC`, `SAEX_XTAB/ZTAB/YLOC`, and `MSEX_XTAB/ZTAB/YLOC` instead of raw `D9xx/DAxx/DBxx/DCxx` addresses
+  - the deferred-effect setup and animator comments now also use the named `DeferredEffect...` workspace slots instead of opaque raw `FEBC..FEE2` references where practical
+  - the player/hostile bullet comments now also use the named bullet workspace slots instead of opaque raw `FEAC..FEBA` references where practical
+  - the live tank/supertank state is now directly anchorable in the generated skool via `TankX`, `TankZ`, `TankOrientation`, `TankDesiredHeading`, `TankStrategy`, and `TankMoveCountdown`
+  - the missile strategy comments now likewise use `MissileStrategy`, `MissileOrientation`, `MissileManoeuvreCounter`, `MissileX/Y/Z`, `MissileZigCount`, and `MissilePhaseSign` instead of raw `FE7A..FE88` references where practical
+  - the saucer path now likewise uses `SaucerX`, `SaucerZ`, `SaucerPhase`, `SaucerDriftCountdown`, and `SaucerDriftStep` instead of raw `FE8E..FE96` references where practical
+  - exact rendered companion location-table anchors now exposed in the generated skool:
+    - `HBLXLC` at `0xDD20`
+    - `OBXLC` at `0xDD28`
+    - `EXXLC` at `0xDD36`
+    - `EXBXL` at `0xDD6E`
+    - `HBLZLC` at `0xDDD0`
+    - `OBZLC` at `0xDDD8`
+    - `EXZLC` at `0xDDE6`
+    - `EXBZL` at `0xDE1E`
 - Added a probable `LNLPT` mapping:
   - `0x805C` is now the current best match for the notebook's `LNLPT`
   - current best line-data format read:
@@ -597,7 +663,7 @@ Working summary of verified facts, local source material, and open questions for
   - `0xCC9C` is now structurally confirmed as a valid `LNLPT` block:
     - line count byte `05`
     - followed by five records of four 16-bit projected-coordinate pointers
-    - current best meaning remains the pre-zero-lives screen-break / crack overlay
+    - current best meaning is now notebook `CRAVU`: the pre-zero-lives screen-break / crack overlay
   - `0xCC5C` is structurally *not* an `LNLPT` block
     - the zero-lives branch uses an overlapping `LDIR` trick that fills the first 32 bytes with `0xBF`
     - the second 32 bytes keep the original handwritten seed values
@@ -615,6 +681,11 @@ Working summary of verified facts, local source material, and open questions for
   - `SaucerExplosionSetup` at `0xA934` seeds the saucer `SAEXV` path using line-data family `0xD7CC`
   - `MissileExplosionSetup` at `0xAA0B` seeds the missile `MSEXV` path using line-data family `0xD8B0`
   - `0xD95C` is the current best `EXBLT` family, used by the later bullet-impact / bullet-explosion path
+  - those four families now have exact data anchors in the disassembly:
+    - `TKEXV` at `0xD6B8`
+    - `SAEXV` at `0xD7CC`
+    - `MSEXV` at `0xD8B0`
+    - `EXBLT` at `0xD95C`
   - `BulletImpactEffectSetup` at `0xAC22` selects player-bullet vs hostile-bullet impact coordinates and falls into the shared bullet-impact effect setup
   - `DeferredEffectAnimator` at `0xAA5D` is the shared animated continuation used by those setup routines
     - `DeferredEffectAdvanceState` at `0xAA6B`
@@ -628,7 +699,11 @@ Working summary of verified facts, local source material, and open questions for
     - the selector at `0xA080` sits inside the missile render path, not the player-crash path
     - it chooses one of three ordered missile view families by comparing projected X values at `0xDE98/0xDE9A/0xDE9C`
     - `0xD3DC` is the larger middle family, while `0xD392` and `0xD43E` look like mirrored side-view counterparts
-  - notebook `CRAVU` from page 17 is therefore unresolved again
+  - page-17 notebook `CRAVU` is now best mapped to `0xCC9C`, because the shipped `CRASH` path points `FE02` there, calls `LNLPT`, calls `SDRAW`, and delays between draws exactly as the notebook notes describe
+  - additional exact data anchors now exposed in the generated disassembly:
+    - `MISS` at `0xD3DC` as the current best family anchor for the ordered missile-view block
+    - `MBLVU` / `HBLVU` at `0xD488`
+    - `OB3VU` at `0xD554`
 - Added a probable state-byte mapping around the main loop:
   - `0xFE6A` = probable `EXST1` active-entity existence/state byte
   - `0xFE6C` = probable `EXST2` deferred explosion/respawn state byte

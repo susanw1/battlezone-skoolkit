@@ -3392,20 +3392,20 @@ C $9D13,h2
 . Saucer active?
 C $9D15,h3
 C $9D18,h3
-. Advance the 2-bit live saucer phase in `FE92`.
+. Advance the 2-bit live saucer phase in `SaucerPhase`.
 C $9D1C,h2
 C $9D1E,h3
 C $9D21,h3
-. Count down `FE94`; when it expires, reseed the signed X-drift step in `FE96`
+. Count down `SaucerDriftCountdown`; when it expires, reseed `SaucerDriftStep`
 . and reload the drift-change timer.
 C $9D25,h3
 C $9D29,h3
 C $9D2C,h3
-. Apply the signed X drift in `FE96` to the live saucer X position at `FE8E`.
+. Apply `SaucerDriftStep` to the live saucer X position at `SaucerX`.
 C $9D2F,h4
 C $9D34,h3
 C $9D37,h3
-. Refresh/clamp the live saucer Z position in `FE90` from the shared world Z.
+. Refresh/clamp the live saucer Z position in `SaucerZ` from the shared world Z.
 C $9D3A,h3
 C $9D3F,h2
 C $9D41,h3
@@ -3425,7 +3425,7 @@ C $9D69,h3
 C $9D6D,h3
 C $9D72,h3
 C $9D75,h3
-. Turn the live phase in `FE92` into the current saucer geometry offset.
+. Turn the live phase in `SaucerPhase` into the current saucer geometry offset.
 C $9D80,h2
 C $9D83,h2
 . Build the temporary saucer X list from the phase-selected source tables.
@@ -3515,8 +3515,8 @@ C $9E46,h3
 C $9E49,h3
 . Current best read: `MISSTRAT` / missile strategy state machine.
 . Evidence:
-. - this block manipulates the live missile strategy byte in `FE84`
-. - it updates the signed missile offset/orientation slot in `FE86`
+. - this block manipulates the live missile strategy byte in `MissileStrategy`
+. - it updates the signed missile offset/orientation slot in `MissileOrientation`
 . - the `BIT`/`RES`/`SET` pattern matches the notebook `MISSTRAT` page and
 .   its `MSTRT`/`MSTRJ` bitfield notes very closely
 C $9E4E,h3
@@ -3527,7 +3527,7 @@ C $9E5E,h3
 C $9E61,h3
 C $9E65,h3
 C $9E6A,h3
-. Update the vertical/hop state in `FE7E` and the associated missile strategy bits.
+. Update the vertical/hop state in `MissileY` and the associated missile strategy bits.
 C $9E6D,h3
 C $9E71,h2
 C $9E73,h3
@@ -3535,23 +3535,27 @@ C $9E7A,h3
 C $9E7D,h3
 C $9E81,h3
 C $9E84,h3
-. Count down `FE7A`; when it expires, choose the next staged turn/orientation transition.
+. Count down `MissileManoeuvreCounter`; when it expires, choose the next staged
+. turn/orientation transition.
 C $9E88,h3
 C $9E8C,h3
 C $9E91,h3
-. Convert the staged left-turn state into a live leftward orientation step in `FE86`.
+. Convert the staged left-turn state into a live leftward orientation step in
+. `MissileOrientation`.
 C $9E98,h3
 C $9E9B,h3
 C $9E9F,h3
 C $9EA2,h3
 C $9EA7,h3
-. Convert the staged right-turn state into a live rightward orientation step in `FE86`.
+. Convert the staged right-turn state into a live rightward orientation step in
+. `MissileOrientation`.
 C $9EAE,h3
 C $9EB1,h3
 C $9EB5,h3
 C $9EB8,h3
 C $9EBD,h3
-. Refresh the live missile orientation from `(MISX,MISZ)` when no staged turn remains active.
+. Refresh the live missile orientation from `MissileX` / `MissileZ` when no
+. staged turn remains active.
 C $9EC2,h3
 C $9EC5,h3
 C $9EC8,h4
@@ -3561,7 +3565,7 @@ C $9ED3,h2
 C $9ED9,h3
 C $9EE2,h2
 . Randomly trigger the next zig direction when no hop is active and the remaining-zig
-. counter in `FE82` still allows another manoeuvre.
+. counter in `MissileZigCount` still allows another manoeuvre.
 C $9EE4,h3
 C $9EE7,h3
 C $9EEC,h3
@@ -3575,7 +3579,7 @@ C $9F04,h3
 C $9F09,h3
 C $9F0D,h3
 C $9F10,h2
-. Reload the manoeuvre countdown in `FE7A`.
+. Reload `MissileManoeuvreCounter`.
 C $9F12,h3
 C $9F15,h3
 . Compare the missile high-byte position against the player and set the hop/avoidance
@@ -3608,7 +3612,7 @@ C $9F61,h3
 C $9F64,h2
 C $9F66,h2
 C $9F68,h3
-. Clamp the live missile orientation in `FE86` to the shipped bounds.
+. Clamp the live missile orientation in `MissileOrientation` to the shipped bounds.
 C $9F6B,h3
 C $9F70,h3
 C $9F73,h3
@@ -3650,7 +3654,8 @@ C $9FD4,h3
 C $9FD7,h3
 C $9FDA,h3
 C $9FDD,h3
-. Toggle the missile phase/sign latch in `FE88`, then rotate the live missile geometry.
+. Toggle the missile phase/sign latch in `MissilePhaseSign`, then rotate the
+. live missile geometry.
 C $9FE1,h3
 C $9FE4,h3
 C $9FED,h2
@@ -3704,20 +3709,20 @@ C $A078,h3
 C $A07B,h2
 C $A07D,h3
 C $A080,h3
-. Choose the current missile visible-line family (`D392` / `D3DC` / `D43E`)
-. from the projected X ordering.
+. Choose the current missile visible-line family (`MISS_View0` / `MISS_View1` /
+. `MISS_View2`) from the projected X ordering.
 C $A084,h3
 C $A089,h3
 C $A08C,h3
-. Probable missile visible-line View0 family.
+. `MISS_View0`.
 C $A08F,h3
 C $A092,h3
 C $A097,h3
 C $A09A,h3
-. Probable missile visible-line View1 family.
+. `MISS_View1`.
 C $A09D,h3
 C $A0A0,h3
-. Probable missile visible-line View2 family.
+. `MISS_View2`.
 C $A0A3,h3
 C $A0A6,h2
 C $A0A8,h2
@@ -3767,7 +3772,8 @@ C $A12B,h3
 C $A12E,h2
 C $A130,h3
 C $A133,h3
-. Player-bullet active path: either retire/requeue it or advance, rotate, project, and test hits.
+. Player-bullet active path: either retire/requeue `PlayerBulletLife` or advance,
+. rotate, project, and test hits.
 C $A137,h3
 C $A13A,h3
 C $A13D,h2
@@ -3781,8 +3787,8 @@ C $A14D,h2
 C $A14F,h3
 C $A152,h3
 C $A155,h3
-. Advance the live player-bullet `(X,Z)` position, install the shared hostile-bullet
-. geometry tables, then rotate/project it.
+. Advance the live player-bullet `PlayerBulletX` / `PlayerBulletZ`, install the
+. shared bullet geometry tables, then rotate/project it using `PlayerBulletOrientation`.
 C $A159,h3
 C $A15C,h4
 C $A165,h3
@@ -3865,7 +3871,8 @@ C $A22B,h3
 C $A22E,h3
 C $A231,h3
 C $A234,h2
-. Hostile-bullet active path: either retire/requeue it or advance, rotate, project, and draw.
+. Hostile-bullet active path: either retire/requeue `HostileBulletLife` or advance,
+. rotate, project, and draw.
 C $A236,h2
 C $A238,h3
 C $A23B,h2
@@ -3881,8 +3888,9 @@ C $A252,h2
 C $A254,h3
 C $A257,h3
 C $A25A,h3
-. Advance the live hostile-bullet `(X,Z)` position, install the obstacle-family
-. geometry tables, then rotate/project it and test for crash/visibility.
+. Advance the live hostile-bullet `HostileBulletX` / `HostileBulletZ`, install the
+. obstacle-family geometry tables, then rotate/project it using `HostileBulletOrientation`
+. and test for crash/visibility.
 C $A25D,h4
 C $A262,h3
 C $A26B,h3
@@ -4008,8 +4016,9 @@ C $A3A6,h3
 C $A3AA,h2
 . Cube-family low-bit selector.
 C $A3AC,h3
-. Probable shared OB1VU/OB2VU cube line-data family
-. base (View0 at D4A2, View1 at D4DE, View2 at D51A).
+. Shared `OB1VU` / `OB2VU` cube line-data family base
+. (`OB1VU_View0` / `OB2VU_View0`, `OB1VU_View1` / `OB2VU_View1`,
+. `OB1VU_View2` / `OB2VU_View2`).
 C $A3AF,h3
 C $A3B3,h3
 C $A3B6,h3
@@ -4022,7 +4031,7 @@ C $A3C6,h4
 C $A3CB,h2
 . Cube-family low-bit selector.
 C $A3CD,h3
-. Same cube-family line-data base.
+. Same cube-family line-data base and view-slot scheme.
 C $A3D0,h3
 C $A3D4,h3
 C $A3D7,h3
@@ -4035,8 +4044,8 @@ C $A3E7,h4
 C $A3EB,h2
 . Pyramid-family low-bit selector.
 C $A3EE,h3
-. Probable OB3VU / pyramid line-data family base
-. (View0 at D554, View1 at D590, View2 at D5CC).
+. `OB3VU` / pyramid line-data family base
+. (`OB3VU_View0`, `OB3VU_View1`, `OB3VU_View2`).
 C $A3F1,h3
 C $A3F5,h3
 C $A3F8,h3
@@ -4049,8 +4058,8 @@ C $A408,h4
 C $A40C,h2
 . Low-block-family low-bit selector.
 C $A40E,h3
-. Probable OB4VU / low-block line-data family base
-. (View0 at D5F6, View1 at D632, View2 at D66E).
+. `OB4VU` / low-block line-data family base
+. (`OB4VU_View0`, `OB4VU_View1`, `OB4VU_View2`).
 C $A411,h3
 C $A414,h3
 C $A417,h3
@@ -4542,8 +4551,8 @@ C $A931,h3
 N $A934
 . Probable saucer explosion setup:
 . - awards score increment `5`
-. - seeds the later animated explosion path with the line-data family at
-.   $D7CC and companion geometry families at $DA1E/$DB12/$DC06
+. - seeds the later animated explosion path with `SAEXV`, `SAEX_XTAB`,
+.   `SAEX_ZTAB`, and `SAEX_YLOC`
 . - current best notebook match: `SAEXV`
 @ $A934 label=SaucerExplosionSetup
 C $A934,h3
@@ -4560,10 +4569,14 @@ C $A948,h2
 C $A94A,h3
 C $A94D,h3
 C $A950,h3
+. Store the deferred effect source X/Z pair in `DeferredEffectSourceX` /
+. `DeferredEffectSourceZ`.
 C $A953,h3
 C $A956,h3
 C $A959,h3
 C $A95C,h3
+. Install `DeferredEffectPrimaryCounts`, `DeferredEffectSecondaryCounts`,
+. `DeferredEffectLineData`, and the `DeferredEffectXTAB/ZTAB/YLOC` companions.
 C $A95F,h3
 C $A962,h3
 C $A965,h3
@@ -4576,9 +4589,11 @@ C $A977,h3
 C $A97A,h3
 C $A97D,h3
 C $A980,h3
+. Seed `DeferredEffectYBias` and `DeferredEffectYBase`.
 C $A983,h3
 C $A986,h3
 C $A989,h3
+. Clear the staged `DeferredEffectXOffset*` / `DeferredEffectZOffset*` terms.
 C $A98C,h3
 C $A98F,h3
 C $A992,h3
@@ -4593,8 +4608,8 @@ C $A9A9,h3
 N $A9AC
 . Probable tank / supertank explosion setup:
 . - awards score increment `1` or `3`
-. - seeds the later animated explosion path with the line-data family at
-.   $D6B8 and companion geometry families at $D9E6/$DADA/$DBCE
+. - seeds the later animated explosion path with `TKEXV`, `TKEX_XTAB`,
+.   `TKEX_ZTAB`, and `TKEX_YLOC`
 . - current best notebook match: `TKEXV`
 @ $A9AC label=TankExplosionSetup
 C $A9AC,h3
@@ -4620,6 +4635,7 @@ C $A9D8,h3
 C $A9DB,h3
 C $A9DE,h3
 C $A9E1,h3
+. Install the tank-effect count pairs, line data, and XTAB/ZTAB/YLOC companions.
 C $A9E4,h3
 C $A9E7,h3
 C $A9EA,h3
@@ -4651,6 +4667,7 @@ C $AA27,h3
 C $AA2A,h3
 C $AA2D,h3
 C $AA30,h3
+. Install the missile-effect count pairs, line data, and XTAB/ZTAB/YLOC companions.
 C $AA33,h3
 C $AA36,h3
 C $AA39,h3
@@ -4668,8 +4685,8 @@ C $AA5A,h3
 N $AA5D
 . Probable missile explosion / impact setup:
 . - awards score increment `2`
-. - seeds the later animated explosion path with the line-data family at
-.   $D8B0 and companion geometry families at $DA46/$DB3A/$DC2E
+. - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
+.   `MSEX_ZTAB`, and `MSEX_YLOC`
 . - current best notebook match: `MSEXV`
 @ $AA5D label=DeferredEffectAnimator
 C $AA5D,h2
@@ -4681,7 +4698,8 @@ C $AA66,h3
 @ $AA6B label=DeferredEffectAdvanceState
 C $AA6B,h3
 C $AA6E,h3
-. Advance the per-frame explosion offsets, counters, and line/table pointers.
+. Advance the staged `DeferredEffectXOffset*` / `DeferredEffectZOffset*` terms and
+. related per-phase counters.
 C $AA6E,h3
 C $AA72,h3
 C $AA75,h3
@@ -4702,14 +4720,15 @@ C $AAA5,h3
 C $AAA8,h3
 C $AAAC,h3
 C $AAAF,h3
+. Install the current `DeferredEffectXTAB` / `DeferredEffectZTAB` pair.
 C $AAB2,h3
 C $AAB5,h3
 C $AAB8,h3
 C $AABB,h3
-. EXBXL
+. `EXBXL`
 C $AABE,h3
 C $AAC1,h3
-. EXBZL
+. `EXBZL`
 C $AAC4,h3
 C $AAC7,h3
 C $AACB,h3
@@ -4717,8 +4736,8 @@ C $AACE,h3
 @ $AAD1 label=DeferredEffectPhaseSetup
 C $AAD1,h3
 C $AAD4,h3
-. Seed the current effect phase: advance the spin/orientation term, install
-. source `(X,Z)` plus geometry pointers, and run the shared transform helper.
+. Seed the current effect phase: advance `DeferredEffectAngle`, install
+. `DeferredEffectSourceX` / `DeferredEffectSourceZ`, and run the shared transform helper.
 C $AAD4,h3
 C $AAD8,h3
 C $AADB,h4
@@ -4862,7 +4881,7 @@ C $ACA3,h3
 C $ACA6,h3
 C $ACA9,h3
 C $ACAF,h3
-. Probable EXBLT line-data family.
+. `EXBLT` line-data family.
 C $ACB2,h3
 C $ACB5,h2
 C $ACB7,h2
@@ -6776,12 +6795,14 @@ B $CC8C,8,h8
 B $CC94,8,h8
 . #UDG(#PC)
 N $CC9C
-. Probable screen-break / crack line-data block used by the lose-life effect.
+. Current best `CRAVU` match from notebook page 17.
+. Shipped use: screen-break / crack line-data block used by the lose-life effect.
 . `FE02` is pointed here at $ADDF/$AE0B/$AE2E and the block is consumed by
-. `LNLPT`.
+. `LNLPT`, followed by `SDRAW` and delay loops, matching the notebook's
+. `CRASH` page very closely.
 . Structure matches `LNLPT` exactly: line count byte `05`, then five line
 . records of four 16-bit projected-coordinate pointers each.
-@ $CC9C label=Probable_CrashBreak_LineData
+@ $CC9C label=CRAVU
 B $CC9C,8,h8
 . #UDG(#PC)
 B $CCA4,8,h8
@@ -7026,6 +7047,11 @@ B $CD7C,4,h4
 > $F700  $D3C4 DEFB $DE,$D4,$DE,$94,$DE,$9C,$DE,$CE
 > $F700  $D3CC DEFB $DE,$D4,$DE,$96,$DE,$9C,$DE,$D0
 > $F700  $D3D4 DEFB $DE,$D4,$DE,$98,$DE,$9C,$DE,$D0
+@ $D392 label=MISS_View0
+B $D392,8,h8
+@ $D3DC label=MISS
+@ $D3DC label=MISS_View1
+B $D3DC,8,h8
 > $F700  $D3DC DEFB $0C,$C8,$DE,$CA,$DE,$90,$DE,$92
 > $F700  $D3E4 DEFB $DE,$CA,$DE,$D0,$DE,$92,$DE,$98
 > $F700  $D3EC DEFB $DE,$CE,$DE,$D0,$DE,$96,$DE,$98
@@ -7048,6 +7074,10 @@ B $CD7C,4,h4
 > $F700  $D474 DEFB $DE,$9C,$DE,$CE,$DE,$D4,$DE,$96
 > $F700  $D47C DEFB $DE,$9C,$DE,$D2,$DE,$D4,$DE,$9A
 > $F700  $D484 DEFB $DE,$9C,$DE,$D2,$03,$C8,$DE,$CE
+@ $D43E label=MISS_View2
+B $D43E,8,h8
+@ $D488 label=MBLVU
+@ $D488 label=HBLVU
 > $F700  $D48C DEFB $DE,$90,$DE,$96,$DE,$CA,$DE,$CE
 > $F700  $D494 DEFB $DE,$92,$DE,$96,$DE,$CC,$DE,$CE
 > $F700  $D49C DEFB $DE,$94,$DE,$96,$DE,$CC,$04,$CA
@@ -7073,6 +7103,8 @@ B $CD7C,4,h4
 > $F700  $D53C DEFB $DE,$D4,$DE,$96,$DE,$9C,$DE,$D0
 > $F700  $D544 DEFB $DE,$D2,$DE,$98,$DE,$9A,$DE,$D2
 > $F700  $D54C DEFB $DE,$D4,$DE,$9A,$DE,$9C,$DE,$D2
+@ $D554 label=OB3VU
+B $D554,8,h8
 > $F700  $D554 DEFB $03,$D0,$DE,$D2,$DE,$98,$DE,$9A
 > $F700  $D55C DEFB $DE,$D0,$DE,$CE,$DE,$98,$DE,$96
 > $F700  $D564 DEFB $DE,$D2,$DE,$CE,$DE,$9A,$DE,$96
@@ -7118,6 +7150,7 @@ B $CD7C,4,h4
 > $F700  $D6A4 DEFB $DE,$9C,$DE,$D0,$DE,$D2,$DE,$98
 > $F700  $D6AC DEFB $DE,$9A,$DE,$D2,$DE,$D4,$DE,$9A
 > $F700 ; Probable `TKEXV` line-data family for the tank / supertank explosion path.
+@ $D6B8 label=TKEXV
 > $F700  $D6B4 DEFB $DE,$9C,$DE,$D2,$22,$FE,$DE,$FC
 > $F700  $D6BC DEFB $DE,$C6,$DE,$C4,$DE,$FC,$DE,$FA
 > $F700  $D6C4 DEFB $DE,$C4,$DE,$C2,$DE,$FA,$DE,$F8
@@ -7154,6 +7187,8 @@ B $CD7C,4,h4
 > $F700  $D7BC DEFB $DE,$90,$DE,$94,$DE,$CA,$DE,$D2
 > $F700 ; Probable `SAEXV` line-data family for the saucer explosion path.
 > $F700  $D7C4 DEFB $DE,$92,$DE,$9A,$DE,$00,$00,$00
+@ $D7CC label=SAEXV
+B $D7CC,8,h8
 > $F700  $D7CC DEFB $1C,$FE,$DE,$FC,$DE,$C6,$DE,$C4
 > $F700  $D7D4 DEFB $DE,$FC,$DE,$FA,$DE,$C4,$DE,$C2
 > $F700  $D7DC DEFB $DE,$F8,$DE,$FE,$DE,$C0,$DE,$C6
@@ -7184,6 +7219,8 @@ B $CD7C,4,h4
 > $F700  $D8A4 DEFB $DE,$D8,$DE,$DC,$DE,$A0,$DE,$A4
 > $F700 ; Probable `MSEXV` line-data family for the missile explosion path begins at
 > $F700 ; $D8B0 inside this region.
+@ $D8B0 label=MSEXV
+B $D8B0,8,h8
 > $F700  $D8AC DEFB $DE,$06,$06,$06,$15,$FE,$DE,$FC
 > $F700  $D8B4 DEFB $DE,$C6,$DE,$C4,$DE,$FC,$DE,$FA
 > $F700  $D8BC DEFB $DE,$C4,$DE,$C2,$DE,$FA,$DE,$F8
@@ -7213,6 +7250,24 @@ B $CD7C,4,h4
 > $F700 ; - XTAB table at $D9D0
 > $F700 ; - ZTAB table at $DAC4
 > $F700 ; - YLOC table at $DBB8
+@ $D9E6 label=TKEX_XTAB
+B $D9E6,8,h8
+@ $DA1E label=SAEX_XTAB
+B $DA1E,8,h8
+@ $DA46 label=MSEX_XTAB
+B $DA46,8,h8
+@ $DADA label=TKEX_ZTAB
+B $DADA,8,h8
+@ $DB12 label=SAEX_ZTAB
+B $DB12,8,h8
+@ $DB3A label=MSEX_ZTAB
+B $DB3A,8,h8
+@ $DBCE label=TKEX_YLOC
+B $DBCE,8,h8
+@ $DC06 label=SAEX_YLOC
+B $DC06,8,h8
+@ $DC2E label=MSEX_YLOC
+B $DC2E,8,h8
 > $F700 ; - HBLXLC/OBXLC/EXXLC at $DD20/$DD28/$DD36
 > $F700 ; - EXBXL at $DD6E
 > $F700 ; - HBLZLC/OBZLC/EXZLC at $DDD0/$DDD8/$DDE6
@@ -7232,6 +7287,31 @@ B $CD7C,4,h4
 > $F700 ; - $D4A2/$D4DE/$D51A: probable shared cube-family obstacle views
 > $F700 ; - $D554/$D590/$D5CC: probable pyramid-family obstacle views
 > $F700 ; - $D5F6/$D632/$D66E: probable low-block obstacle views
+@ $D4A2 label=OB1VU
+@ $D4A2 label=OB2VU
+@ $D4A2 label=OB1VU_View0
+@ $D4A2 label=OB2VU_View0
+B $D4A2,8,h8
+@ $D4DE label=OB1VU_View1
+@ $D4DE label=OB2VU_View1
+B $D4DE,8,h8
+@ $D51A label=OB1VU_View2
+@ $D51A label=OB2VU_View2
+B $D51A,8,h8
+@ $D554 label=OB3VU_View0
+@ $D5F6 label=OB4VU
+@ $D590 label=OB3VU_View1
+B $D590,8,h8
+@ $D5CC label=OB3VU_View2
+B $D5CC,8,h8
+@ $D5F6 label=OB4VU_View0
+B $D5F6,8,h8
+@ $D632 label=OB4VU_View1
+B $D632,8,h8
+@ $D66E label=OB4VU_View2
+B $D66E,8,h8
+@ $D95C label=EXBLT
+B $D95C,8,h8
 > $F700  $D95C DEFB $05,$C8,$DE,$CA,$DE,$90,$DE,$92
 > $F700  $D964 DEFB $DE,$CC,$DE,$CE,$DE,$94,$DE,$96
 > $F700  $D96C DEFB $DE,$D0,$DE,$D2,$DE,$98,$DE,$9A
@@ -7353,8 +7433,14 @@ B $CD7C,4,h4
 > $F700  $DD0C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD14 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD1C DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DD20 label=HBLXLC
+B $DD20,8,h8
 > $F700  $DD24 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DD28 label=OBXLC
+B $DD28,8,h8
 > $F700  $DD2C DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DD36 label=EXXLC
+B $DD36,8,h8
 > $F700  $DD34 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD3C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD44 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -7362,6 +7448,8 @@ B $CD7C,4,h4
 > $F700  $DD54 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD5C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD64 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DD6E label=EXBXL
+B $DD6E,8,h8
 > $F700  $DD6C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD74 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DD7C DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -7375,8 +7463,14 @@ B $CD7C,4,h4
 > $F700  $DDBC DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DDC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DDCC DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DDD0 label=HBLZLC
+B $DDD0,8,h8
 > $F700  $DDD4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DDD8 label=OBZLC
+B $DDD8,8,h8
 > $F700  $DDDC DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DDE6 label=EXZLC
+B $DDE6,8,h8
 > $F700  $DDE4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DDEC DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DDF4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -7384,6 +7478,8 @@ B $CD7C,4,h4
 > $F700  $DE04 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DE0C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DE14 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+@ $DE1E label=EXBZL
+B $DE1E,8,h8
 > $F700  $DE1C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DE24 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 > $F700  $DE2C DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -8657,12 +8753,14 @@ g $FE5E
 . In the attract title code this is reused as the first title word's X offset.
 . Current best gameplay overlay: tank-family `TKX`.
 @ $FE5E label=EntityXPos
+@ $FE5E label=TankX
 W $FE5E,2,h2
 g $FE60
 . Current entity/effect Z position used by several transient setup paths.
 . In the attract title code this is reused as the first title word's Z offset.
 . Current best gameplay overlay: tank-family `TKZ`.
 @ $FE60 label=EntityZPos
+@ $FE60 label=TankZ
 W $FE60,2,h2
 g $FE62
 . Current entity/effect heading/orientation and nearby transient state.
@@ -8674,7 +8772,12 @@ g $FE62
 .   bit 7 kill/aggressive, bit 6 forward, bit 5 back, bit 4 left, bit 3
 .   right
 @ $FE62 label=EntityHeadingOrOrient
-B $FE62,6,h6
+@ $FE62 label=TankOrientation
+W $FE62,2,h2
+@ $FE64 label=TankDesiredHeading
+W $FE64,2,h2
+@ $FE66 label=TankStrategy
+B $FE66,2,h2
 g $FE68
 . Mixed transient state:
 . - FE68: movement/effect delay counter; current best tank-family overlay:
@@ -8699,6 +8802,7 @@ g $FE68
 .   bullet/hostile bullet visible
 . - FE6E bits 1-0 mirror the currently visible obstacle/object selector
 @ $FE68 label=EntityMoveDelay
+@ $FE68 label=TankMoveCountdown
 B $FE68,2,h2
 @ $FE6A label=Probable_EXST1
 B $FE6A,2,h2
@@ -8712,32 +8816,50 @@ B $FE6E,2,h2
 > $FE70 ; - `FE72` = slower spawn/variation counter incremented by `TEXST` and
 > $FE70 ;   reused when deriving tank-family move delays
 B $FE70,4,h4
-> $FE76 ; Current best missile-family overlays:
-> $FE76 ; - `FE78` = probable `MISCT` (missiles fired so far)
-> $FE76 ; - `FE7A` = probable `MSMCT` manoeuvre/frame counter
-> $FE76 ; - `FE7C` = probable `MISX`
-> $FE76 ; - `FE7E` = probable `MISY`
-> $FE76 ; - `FE80` = probable `MISZ`
-> $FE76 ; - `FE82` = probable `ZIG` / remaining-zig counter derived from `MISCT`
-> $FE76 ; - `FE84` = probable missile strategy/action bitfield; notebook `MSTRJ`
-> $FE76 ;   and `MSTRT` now look like alternate names/usages for this same byte
-> $FE76 ; - `FE86` = probable `MSOR` signed missile offset/orientation register
-> $FE76 ; - `FE88` = current best missile phase/sign toggle used when building
-> $FE76 ;   the live missile transform angle each frame
-> $FE76 ; Probable border/sound latch.
-> $FE76 ; Current best read:
-> $FE76 ; - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
-> $FE76 ;   `0x9FA4`
-> $FE76 ; - read by geometry/line routines before `OUT ($FE),A`
-> $FE76 ; - likely controls combined border/beeper activity rather than game logic
-> $FE76 @label=Probable_BorderSoundLatch
-> $FE76  $FE74 DEFB $00,$00
+g $FE74
+. Probable border/sound latch.
+. Current best read:
+. - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
+.   `0x9FA4`
+. - read by geometry/line routines before `OUT ($FE),A`
+. - likely controls combined border/beeper activity rather than game logic
+@ $FE74 label=Probable_BorderSoundLatch
+B $FE74,2,h2
 g $FE76
 . Packed-BCD score and nearby effect/state workspace.
 @ $FE76 label=ScoreBCD
-B $FE76,8,h8
-B $FE7E,8,h8
-B $FE86,8,h8
+B $FE76,2,h2
+g $FE78
+. Missile-family live workspace:
+. - `FE78` = probable `MISCT` (missiles fired so far)
+. - `FE7A` = probable `MSMCT` manoeuvre/frame counter
+. - `FE7C` = probable `MISX`
+. - `FE7E` = probable `MISY`
+. - `FE80` = probable `MISZ`
+. - `FE82` = probable `ZIG` / remaining-zig counter derived from `MISCT`
+. - `FE84` = probable missile strategy/action bitfield; notebook `MSTRJ`
+.   and `MSTRT` now look like alternate names/usages for this same byte
+. - `FE86` = probable `MSOR` signed missile offset/orientation register
+. - `FE88` = current best missile phase/sign toggle used when building the live
+.   missile transform angle each frame
+@ $FE78 label=MissileCount
+B $FE78,2,h2
+@ $FE7A label=MissileManoeuvreCounter
+B $FE7A,2,h2
+@ $FE7C label=MissileX
+B $FE7C,2,h2
+@ $FE7E label=MissileY
+B $FE7E,2,h2
+@ $FE80 label=MissileZ
+B $FE80,2,h2
+@ $FE82 label=MissileZigCount
+B $FE82,2,h2
+@ $FE84 label=MissileStrategy
+B $FE84,2,h2
+@ $FE86 label=MissileOrientation
+B $FE86,2,h2
+@ $FE88 label=MissilePhaseSign
+B $FE88,2,h2
 N $FE8E
 . In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 . word's X offset, Z offset, and angle.
@@ -8747,8 +8869,17 @@ N $FE8E
 . - `FE92` = saucer animation/view phase cycling `0..3`
 . - `FE94` = saucer drift-change countdown
 . - `FE96` = saucer signed X-drift step / velocity
-B $FE8E,8,h8
-g $FE96
+@ $FE8E label=SaucerX
+B $FE8E,2,h2
+@ $FE90 label=SaucerZ
+B $FE90,2,h2
+@ $FE92 label=SaucerPhase
+B $FE92,2,h2
+@ $FE94 label=SaucerDriftCountdown
+B $FE94,2,h2
+@ $FE96 label=SaucerDriftStep
+B $FE96,2,h2
+g $FE98
 . Obstacle world-position workspace, four packed `(X,Z)` pairs:
 . - `FE98/FE9A` = obstacle 1 X/Z
 . - `FE9C/FE9E` = obstacle 2 X/Z
@@ -8758,8 +8889,21 @@ g $FE96
 . - `0x9A92..0x9AE7` tank evasive/proximity checks
 . - `0xA37B..0xA420` obstacle-family selection for rendering/collision
 . - `0xA695..0xA714` movement masking against nearby obstacles
-B $FE96,8,h8
-B $FE9E,8,h8
+@ $FE98 label=Obstacle1X
+B $FE98,2,h2
+@ $FE9A label=Obstacle1Z
+B $FE9A,2,h2
+@ $FE9C label=Obstacle2X
+B $FE9C,2,h2
+@ $FE9E label=Obstacle2Z
+B $FE9E,2,h2
+@ $FEA0 label=Obstacle3X
+B $FEA0,2,h2
+@ $FEA2 label=Obstacle3Z
+B $FEA2,2,h2
+@ $FEA4 label=Obstacle4X
+B $FEA4,2,h2
+@ $FEA6 label=Obstacle4Z
 B $FEA6,2,h2
 g $FEA8
 . Current view/world-turn angle accumulator.
@@ -8767,14 +8911,77 @@ g $FEA8
 . logic around `0xA442..0xA484`; consumed by the shared `(X,Z)` transform pass
 . entered via `0x91E6`.
 @ $FEA8 label=ViewTurnAngle
-B $FEA8,6,h6
-B $FEAE,8,h8
-B $FEB6,8,h8
-B $FEBE,8,h8
-B $FEC6,8,h8
-B $FECE,8,h8
-B $FED6,8,h8
-B $FEDE,6,h6
+B $FEA8,4,h4
+. Live bullet workspace:
+. - `FEAC/FEAE/FEB0/FEB2` = player-bullet X/Z/orientation/life
+. - `FEB4/FEB6/FEB8/FEBA` = hostile-bullet X/Z/orientation/life
+@ $FEAC label=PlayerBulletX
+B $FEAC,2,h2
+@ $FEAE label=PlayerBulletZ
+B $FEAE,2,h2
+@ $FEB0 label=PlayerBulletOrientation
+B $FEB0,2,h2
+@ $FEB2 label=PlayerBulletLife
+B $FEB2,2,h2
+@ $FEB4 label=HostileBulletX
+B $FEB4,2,h2
+@ $FEB6 label=HostileBulletZ
+B $FEB6,2,h2
+@ $FEB8 label=HostileBulletOrientation
+B $FEB8,2,h2
+@ $FEBA label=HostileBulletLife
+B $FEBA,2,h2
+. Deferred effect / explosion animator workspace:
+. - `FEBC/FEC0/FEC4/FEC8` = four staged X-offset terms applied to `EXBXL`
+. - `FEBE/FEC2/FEC6/FECA` = four staged Z-offset terms applied to `EXBZL`
+. - `FECC/FED0` = deferred effect source X/Z pair
+. - `FECE/FED2` = deferred effect Y bias and descending Y base
+. - `FED4` = deferred effect angle / phase term
+. - `FED6` = deferred effect phase countdown
+. - `FED8/FEDA` = primary/secondary point-count pairs used while rewriting
+.   effect geometry and while projecting the generated point list
+. - `FEDC` = deferred effect line-data pointer
+. - `FEDE/FEE0/FEE2` = deferred effect XTAB/ZTAB/YLOC companion pointers
+@ $FEBC label=DeferredEffectXOffsetA
+B $FEBC,2,h2
+@ $FEBE label=DeferredEffectZOffsetA
+B $FEBE,2,h2
+@ $FEC0 label=DeferredEffectXOffsetB
+B $FEC0,2,h2
+@ $FEC2 label=DeferredEffectZOffsetB
+B $FEC2,2,h2
+@ $FEC4 label=DeferredEffectXOffsetC
+B $FEC4,2,h2
+@ $FEC6 label=DeferredEffectZOffsetC
+B $FEC6,2,h2
+@ $FEC8 label=DeferredEffectXOffsetD
+B $FEC8,2,h2
+@ $FECA label=DeferredEffectZOffsetD
+B $FECA,2,h2
+@ $FECC label=DeferredEffectSourceX
+B $FECC,2,h2
+@ $FECE label=DeferredEffectYBias
+B $FECE,2,h2
+@ $FED0 label=DeferredEffectSourceZ
+B $FED0,2,h2
+@ $FED2 label=DeferredEffectYBase
+B $FED2,2,h2
+@ $FED4 label=DeferredEffectAngle
+B $FED4,2,h2
+@ $FED6 label=DeferredEffectPhaseCountdown
+B $FED6,2,h2
+@ $FED8 label=DeferredEffectPrimaryCounts
+B $FED8,2,h2
+@ $FEDA label=DeferredEffectSecondaryCounts
+B $FEDA,2,h2
+@ $FEDC label=DeferredEffectLineData
+B $FEDC,2,h2
+@ $FEDE label=DeferredEffectXTAB
+B $FEDE,2,h2
+@ $FEE0 label=DeferredEffectZTAB
+B $FEE0,2,h2
+@ $FEE2 label=DeferredEffectYLOC
+B $FEE2,2,h2
 g $FEE4
 . Lives
 @ $FEE4 label=Lives
