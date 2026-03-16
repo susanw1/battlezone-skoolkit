@@ -218,38 +218,44 @@ Working summary of verified facts, local source material, and open questions for
     - 1 byte line count
     - then one record per line
     - each line record is four 16-bit pointers into the current projected-coordinate buffers
+    - current best pointer order is `Y1`, `Y2`, `X1`, `X2`
   - first-pass internal structure is now named:
     - `LNLPTLoadLineRecord` at `0x806B`
     - `LNLPTPreparePositiveDelta` at `0x810E`
     - `LNLPTPrepareNegativeDelta` at `0x813D`
-    - `LNLPTDrawPositiveXMajor` at `0x8179`
-    - `LNLPTDrawNegativeXMajor` at `0x828A`
-    - `LNLPTDrawPositiveYMajor` at `0x839D`
-    - `LNLPTDrawNegativeYMajor` at `0x84B3`
-    - `LNLPTDrawHorizontal` at `0x85C7`
+    - `LNLPTDrawPositiveYMajor` at `0x8179`
+    - `LNLPTDrawNegativeYMajor` at `0x828A`
+    - `LNLPTDrawPositiveXMajor` at `0x839D`
+    - `LNLPTDrawNegativeXMajor` at `0x84B3`
+    - `LNLPTDrawVertical` at `0x85C7`
+    - `LNLPTPositiveXMajorZeroGradient` at `0x845B`
+    - `LNLPTNegativeXMajorZeroGradient` at `0x856E`
     - `LNLPTNextLine` at `0x8631`
   - current best structural reading:
     - one line record is loaded and normalised at `0x806B..0x80D1`
     - current best workspace mapping inside `LNLPT` is:
-      - `FE0E` / `FE10` = sorted X endpoints
-      - `FE12` = X delta
-      - `FE08` / `FE0A` = Y endpoints
-      - `FE0C` = Y delta
+      - `FE0E` / `FE10` = vertically sorted Y endpoints
+      - `FE12` = absolute Y delta
+      - `FE08` / `FE0A` = corresponding X endpoints
+      - `FE0C` = signed X delta
     - the secondary delta sign is split by the preparation stages at `0x810E` / `0x813D`
     - the main raster work then falls into four X-major / Y-major branches for the two delta signs
-    - `0x85C7` is now best read as a horizontal-line fast path reached when the Y delta is zero
+    - `0x85C7` is now best read as a vertical-line fast path reached when the X delta is zero
+    - the horizontal case currently looks folded into the zero-gradient subpaths inside the X-major branches rather than split out as a separate top-level entrypoint
+    - those exact horizontal subpaths are now named at `0x845B` and `0x856E`
+    - importantly, they still run through the `0x7C/0x7D/0x7E` lookup pages, so there is not yet evidence of a separately isolated `$FF` middle-byte fill optimisation in the shipped code
     - all branches rejoin at `LNLPTNextLine`, which decrements the line count and loops to `0x806B`
   - branch-name correction:
-    - the earlier `Shallow/Steep` names, and then the first `XMajor/YMajor` correction, were both based on the wrong assumption that the first loaded/sorted pointer pair was `Y`
-    - `0x80D9..0x80F9` clips the first sorted pair against a `-86..+65` style horizontal window, so it now looks like `X`
-    - `0x8135` / `0x8171` therefore compare `Y delta` against `X delta`
+    - the earlier `Shallow/Steep` names and then the first `XMajor/YMajor` correction both ended up inverted
+    - `0x80D9..0x80F9` clips the first sorted pair against the centred visible Y window, so the first pair now looks like `Y`
+    - `0x8135` / `0x8171` therefore compare `abs(XD)` against `YD`
     - current best read is therefore:
-      - `0x8179` / `0x828A` = X-major
-      - `0x839D` / `0x84B3` = Y-major
+      - `0x8179` / `0x828A` = Y-major
+      - `0x839D` / `0x84B3` = X-major
   - important correction:
-    - the `0x7C00..0x7FFF` family used by `LNLPT` is now best read as precomputed 16-bit fixed-point trig/slope lookup data, not as raw pixel-mask tables
-    - `0x7C00` starts with a clear `7FFF,0000 / 7FF5,0324 / 7FD7,0647 ...` sinusoidal pattern
-    - `LNLPT` therefore looks more like an octant-style angle/slope rasteriser using those lookup pages than a simple mask-table blitter
+    - the `0x7C00..0x7FFF` family is no longer being treated as "fixed-point trig tables"
+    - `RADAR` also indexes pages `0x7C` / `0x7D` directly while plotting blips, so the stronger current-best read is that this block is a shared plotting lookup family
+    - pages `0x7C`, `0x7D`, and `0x7E` now look more like precomputed address/mask or step data for screen plotting than pure trig values
   - further support for Susan's recollection:
     - each of the four main branches contains an 8-step repeated shift/compare/subtract sequence, now best read as an unrolled slope-division / gradient setup block
     - the small setup routine at `0x8000`, now labeled `InitLineHelperTables`, builds runtime plotting helpers:

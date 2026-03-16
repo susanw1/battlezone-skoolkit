@@ -1074,12 +1074,13 @@ B $7BF0,8,h8
 B $7BF8,8,h8
 N $7C00
 D $7C00
-. Current best interpretation: precomputed 16-bit fixed-point lookup tables
-. with strong sine/cosine structure. `LNLPT` indexes page `0x7C` as a
-. shared primary-step family and pages `0x7D` / `0x7E` as companion
-. positive/negative-slope families; page `0x7F` appears to be the remaining
-. quadrant of the same lookup block.
-@ $7C00 label=FixedPointTrigTables
+. Current best interpretation: shared plotting lookup family used by both
+. `LNLPT` and `RADAR`.
+. Pages `0x7C`, `0x7D`, and `0x7E` appear to provide precomputed address/mask
+. or step data for screen plotting; the earlier "fixed-point trig" reading is
+. no longer trusted now that the radar code is known to index the same pages
+. directly while plotting blips.
+@ $7C00 label=PlotLookupTables
 B $7C00,8,h8
 B $7C08,8,h8
 B $7C10,8,h8
@@ -1257,15 +1258,16 @@ D $805C
 . `FE02` points at line-data blocks encoded as:
 . - 1 byte: line count
 . - then one record per line, each record being four 16-bit pointers
-.   into the current XPERS/YPERS-style projected-coordinate buffers.
+.   into the current XPERS/YPERS-style projected-coordinate buffers
+. - current best order: `Y1`, `Y2`, `X1`, `X2`
 . On return, `FE02` is updated from SP at $80D1, so consecutive line-data
 . blocks can be chained in memory and consumed one after another by repeated
 . calls.
 . Current best internal workspace read:
-. - `FE0E` / `FE10` = sorted projected X endpoints
-. - `FE12` = X delta
-. - `FE08` / `FE0A` = projected Y endpoints
-. - `FE0C` = Y delta
+. - `FE0E` / `FE10` = vertically sorted projected Y endpoints
+. - `FE12` = absolute Y delta
+. - `FE08` / `FE0A` = corresponding projected X endpoints
+. - `FE0C` = signed X delta
 . The `0x7C00..0x7FFF` block used later in the routine is now best read as a
 . precomputed fixed-point trig/slope lookup family, not as raw pixel-mask
 . tables. The four major draw branches therefore look more like octant-style
@@ -1273,6 +1275,10 @@ D $805C
 . The repeated 8-step shift/compare/subtract segments inside the four major
 . branches are current-best matches for unrolled slope-division / gradient
 . setup code.
+. There is a dedicated vertical fast path at `0x85C7` when `XD = 0`.
+. The horizontal case currently looks folded into the zero-gradient subpaths
+. inside the X-major branches rather than split out as a separate top-level
+. entrypoint.
 R $805C
 . Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
 @ $805C label=LNLPT
@@ -1347,10 +1353,10 @@ C $816C,h4
 C $8173,h3
 C $8176,h3
 N $8179
-@ $8179 label=LNLPTDrawPositiveXMajor
-. Current best correction: this is the positive-slope X-major branch.
-. The first loaded/sorted endpoint pair now looks like X, and `0x8135`
-. reaches `0x8179` only when the Y delta is smaller than the X delta.
+@ $8179 label=LNLPTDrawPositiveYMajor
+. Current best correction: this is the positive-slope Y-major branch.
+. The first loaded/sorted endpoint pair is the Y pair, and `0x8135` reaches
+. `0x8179` only when `YD` is greater than `abs(XD)`.
 . This branch also contains the 8-step unrolled shift/compare/subtract block
 . that now looks like the positive-slope gradient divide.
 C $8179,h3
@@ -1403,12 +1409,12 @@ C $8278,h2
 C $8285,h2
 C $8287,h3
 N $828A
-@ $828A label=LNLPTDrawNegativeXMajor
-. Current best correction: this is the negative-slope X-major branch.
-. The first loaded/sorted endpoint pair now looks like X, and `0x8171`
-. reaches `0x828A` only when the Y delta is smaller than the X delta.
+@ $828A label=LNLPTDrawNegativeYMajor
+. Current best correction: this is the negative-slope Y-major branch.
+. The first loaded/sorted endpoint pair is the Y pair, and `0x8171` reaches
+. `0x828A` only when `YD` is greater than `abs(XD)`.
 . Companion branch with the same 8-step unrolled gradient-divide pattern for
-. the negative-slope X-major case.
+. the negative-slope Y-major case.
 C $828A,h3
 C $828F,h2
 C $8295,h2
@@ -1459,12 +1465,12 @@ C $838B,h2
 C $8398,h2
 C $839A,h3
 N $839D
-@ $839D label=LNLPTDrawPositiveYMajor
-. Current best correction: this is the positive-slope Y-major branch.
-. The first loaded/sorted endpoint pair now looks like X, and `0x8135`
-. reaches `0x839D` when the Y delta is greater than or equal to the X delta.
+@ $839D label=LNLPTDrawPositiveXMajor
+. Current best correction: this is the positive-slope X-major branch.
+. The first loaded/sorted endpoint pair is the Y pair, and `0x8135` reaches
+. `0x839D` when `abs(XD)` is greater than or equal to `YD`.
 . Companion branch with the same 8-step unrolled gradient-divide pattern for
-. the positive-slope Y-major case.
+. the positive-slope X-major case.
 C $839D,h3
 C $83A3,h2
 C $83A9,h2
@@ -1503,6 +1509,14 @@ C $8449,h2
 C $8454,h2
 C $8456,h2
 C $8458,h3
+N $845B
+@ $845B label=LNLPTPositiveXMajorZeroGradient
+. Current best read: exact horizontal / zero-gradient subpath for the
+. positive-slope X-major case.
+. The code still drives the span through the `0x7C` / `0x7D` lookup pages, so
+. there is not yet evidence of a separately isolated `$FF` middle-byte fill
+. optimisation in the shipped routine.
+. Uses the shared plotting lookup family at #R$7C00.
 C $845B,h3
 C $8461,h3
 C $846B,h2
@@ -1515,12 +1529,12 @@ C $84A2,h2
 C $84AE,h2
 C $84B0,h3
 N $84B3
-@ $84B3 label=LNLPTDrawNegativeYMajor
-. Current best correction: this is the negative-slope Y-major branch.
-. The first loaded/sorted endpoint pair now looks like X, and `0x8171`
-. reaches `0x84B3` when the Y delta is greater than or equal to the X delta.
+@ $84B3 label=LNLPTDrawNegativeXMajor
+. Current best correction: this is the negative-slope X-major branch.
+. The first loaded/sorted endpoint pair is the Y pair, and `0x8171` reaches
+. `0x84B3` when `abs(XD)` is greater than or equal to `YD`.
 . Companion branch with the same 8-step unrolled gradient-divide pattern for
-. the negative-slope Y-major case.
+. the negative-slope X-major case.
 C $84B3,h3
 C $84B9,h2
 C $84BF,h2
@@ -1559,6 +1573,14 @@ C $855C,h2
 C $8567,h2
 C $8569,h2
 C $856B,h3
+N $856E
+@ $856E label=LNLPTNegativeXMajorZeroGradient
+. Current best read: exact horizontal / zero-gradient subpath for the
+. negative-slope X-major case.
+. Like `0x845B`, this remains table-driven through the `0x7C` / `0x7E`
+. lookup pages rather than obviously collapsing to a tiny dedicated span-fill
+. helper.
+. Uses the shared plotting lookup family at #R$7C00.
 C $856E,h3
 C $8574,h3
 C $857E,h2
@@ -1571,10 +1593,12 @@ C $85B6,h2
 C $85C2,h2
 C $85C4,h3
 N $85C7
-@ $85C7 label=LNLPTDrawHorizontal
-. Current best interpretation: horizontal-line fast path reached when the Y
-. delta in `FE0C` is zero. Holds the Y-derived row side constant and walks the
-. X endpoint range through the row/mask helper families.
+@ $85C7 label=LNLPTDrawVertical
+. Current best interpretation: vertical-line fast path reached when the X
+. delta in `FE0C` is zero. Holds the X-derived helper state constant and walks
+. the Y endpoint range through the row-address family.
+. Uses the shared plotting lookup family at #R$7C00, but the exact per-page
+. decomposition of that family is still unresolved.
 C $85C7,h3
 C $85CA,h3
 C $85D0,h3
@@ -2078,6 +2102,8 @@ D $90BA
 . radar/status workspace between `FE50` and `FE52`, converts the coordinate
 . pair into a radar cell/bit position, and plots the blip into the status
 . buffer.
+. The cell/bit conversion path uses the shared plotting lookup family at
+. #R$7C00.
 @ $90BA label=RADAR
 N $90BA
 @ $90BC label=RADARClearWorkspace
