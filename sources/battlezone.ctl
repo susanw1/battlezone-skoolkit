@@ -2990,6 +2990,7 @@ C $98E8,h3
 C $98EB,h3
 C $98EE,h3
 C $98F1,h3
+@ $98F4 label=TKSTRAT
 C $98F4,h3
 . Current best read: `TKSTRAT` core.
 . Evidence:
@@ -3010,6 +3011,15 @@ C $98F4,h3
 . - `0x28` = current best canned evasive state: back + right turn, forced
 .   when the tank gets too close to the player or to one of the obstacle
 .   proximity boxes tested at `0x9A92..0x9AE7`
+. Current best phase split:
+. - `0x98F4` = active-countdown path
+. - `0x9919` / `0x992C` = left/right heading update
+. - `0x9948` = forward/reverse movement step
+. - `0x99A5` = choose next state when the manoeuvre timer expires
+. - `0x9A04` = aggressive aim/attack steering choice from `TKDIR` vs `TKOR`
+. - `0x9A3B` = close-range cue / HUD message logic
+. - `0x9A76` = refresh desired heading to player
+. - `0x9A92` = obstacle-proximity override to canned evasive `0x28`
 C $98F8,h3
 C $98FC,h3
 C $98FF,h3
@@ -3021,12 +3031,17 @@ C $990D,h3
 C $9910,h2
 C $9912,h2
 C $9914,h3
+@ $9919 label=TankStrategyTurnLeft
 C $9919,h3
+. Decrease heading by a small or large step depending on whether the current
+. tank-family entity is the tank or the supertank.
 C $991F,h3
 C $9922,h2
 C $9926,h3
 C $9929,h3
+@ $992C label=TankStrategyTurnRight
 C $992C,h3
+. Mirror of `TankStrategyTurnLeft`.
 C $992F,h3
 C $9932,h2
 C $9934,h2
@@ -3034,7 +3049,9 @@ C $9936,h3
 C $993E,h3
 C $9941,h2
 C $9945,h3
+@ $9948 label=TankStrategyStepMovement
 C $9949,h2
+. Move the tank-family `(X,Z)` position using the current forward/reverse bit.
 C $994B,h3
 C $994E,h3
 C $9951,h4
@@ -3057,7 +3074,10 @@ C $999B,h2
 C $999D,h2
 C $999F,h3
 C $99A2,h3
+@ $99A5 label=TankStrategySelectNextState
 C $99A7,h3
+. Manoeuvre timer expired. Choose trundle/passive/aggressive state and reseed
+. `TKMCT` from the slower variation counter in `FE72`.
 C $99AC,h2
 C $99AF,h3
 C $99B4,h3
@@ -3084,7 +3104,10 @@ C $99FA,h2
 C $99FC,h3
 C $99FF,h2
 C $9A01,h3
+@ $9A04 label=TankStrategyAimOrAttack
 C $9A04,h3
+. Compare `TKOR` against `TKDIR` and choose aggressive left/right/forward state
+. while preserving bit 7.
 C $9A07,h4
 C $9A0F,h2
 C $9A11,h3
@@ -3103,7 +3126,10 @@ C $9A31,h3
 C $9A34,h2
 C $9A36,h2
 C $9A38,h3
+@ $9A3B label=TankStrategyRangeCue
 C $9A3B,h3
+. Close-range cue / message logic keyed from the tank high-byte position and
+. then from the desired-heading angle.
 C $9A3E,h2
 C $9A40,h2
 C $9A42,h3
@@ -3126,7 +3152,9 @@ C $9A6B,h3
 C $9A6E,h2
 C $9A70,h3
 C $9A73,h3
+@ $9A76 label=TankStrategyUpdateDesiredHeading
 C $9A76,h3
+. Refresh `TKDIR` from the current tank `(X,Z)` position via `CALL $938A`.
 C $9A79,h4
 C $9A7D,h3
 C $9A80,h2
@@ -3134,6 +3162,7 @@ C $9A84,h2
 C $9A87,h3
 C $9A8A,h3
 C $9A8E,h3
+@ $9A92 label=TankStrategyObstacleEvasionCheck
 C $9A92,h3
 . Current best read: obstacle-proximity test, not player-proximity.
 . `FE98..FEA7` holds four obstacle `(X,Z)` pairs; this block checks whether the
@@ -3346,21 +3375,37 @@ C $9D03,h3
 C $9D06,h2
 C $9D08,h2
 C $9D0A,h3
+@ $9D0D label=SAUC
+@ $9D18 label=SaucerAdvancePhase
+@ $9D21 label=SaucerUpdateDrift
+@ $9D2C label=SaucerApplyXDrift
+@ $9D37 label=SaucerUpdateZ
+@ $9D75 label=SaucerSelectPhaseGeometry
+@ $9D83 label=SaucerBuildXList
+@ $9DB5 label=SaucerBuildZList
+@ $9DE7 label=SaucerProjectAndDraw
+@ $9DF8 label=SaucerHidden
+@ $9E1C label=SaucerVisible
 C $9D0E,h2
 C $9D10,h3
 C $9D13,h2
 . Saucer active?
 C $9D15,h3
 C $9D18,h3
+. Advance the 2-bit live saucer phase in `FE92`.
 C $9D1C,h2
 C $9D1E,h3
 C $9D21,h3
+. Count down `FE94`; when it expires, reseed the signed X-drift step in `FE96`
+. and reload the drift-change timer.
 C $9D25,h3
 C $9D29,h3
 C $9D2C,h3
+. Apply the signed X drift in `FE96` to the live saucer X position at `FE8E`.
 C $9D2F,h4
 C $9D34,h3
 C $9D37,h3
+. Refresh/clamp the live saucer Z position in `FE90` from the shared world Z.
 C $9D3A,h3
 C $9D3F,h2
 C $9D41,h3
@@ -3380,8 +3425,10 @@ C $9D69,h3
 C $9D6D,h3
 C $9D72,h3
 C $9D75,h3
+. Turn the live phase in `FE92` into the current saucer geometry offset.
 C $9D80,h2
 C $9D83,h2
+. Build the temporary saucer X list from the phase-selected source tables.
 C $9D86,h3
 C $9D8A,h4
 C $9D8E,h3
@@ -3392,6 +3439,7 @@ C $9DA8,h4
 C $9DAC,h4
 C $9DB1,h4
 C $9DB5,h3
+. Build the temporary saucer Z list from the phase-selected source tables.
 C $9DB9,h3
 C $9DBC,h2
 C $9DBE,h4
@@ -3403,12 +3451,14 @@ C $9DDE,h3
 C $9DE1,h3
 C $9DE4,h3
 C $9DE7,h2
+. Run `PERSP` on the temporary saucer lists, then split into hidden and visible paths.
 C $9DE9,h3
 C $9DEC,h3
 C $9DEF,h3
 C $9DF2,h2
 C $9DF4,h2
 C $9DF8,h3
+. Hidden path: clear the saucer-visible bit and fall through to the shared post-entity path.
 C $9DFB,h3
 C $9DFE,h2
 . Clear the saucer-visible bit.
@@ -3424,6 +3474,8 @@ C $9E17,h3
 C $9E1A,h2
 . Set the saucer-visible bit.
 C $9E1C,h3
+. Visible path: seed the saucer X limits, select `D338`, bracket the draw with
+. the audible helper, then continue to the shared post-entity path.
 C $9E1F,h3
 C $9E22,h3
 C $9E25,h3
@@ -3436,6 +3488,24 @@ C $9E31,h3
 C $9E34,h3
 C $9E37,h3
 C $9E3A,h3
+@ $9E3D label=MISSILES
+@ $9E49 label=MISSTRAT
+@ $9E6A label=MissileVerticalState
+@ $9E84 label=MissileManoeuvreCountdown
+@ $9E91 label=MissileTurnLeftSetup
+@ $9EA7 label=MissileTurnRightSetup
+@ $9EBD label=MissileRefreshOrientation
+@ $9EE2 label=MissileRandomZigTrigger
+@ $9F10 label=MissileReloadManoeuvreCountdown
+@ $9F15 label=MissileNearPlayerCheck
+@ $9F39 label=MissileRadarAndMessages
+@ $9F68 label=MissileClampOrientation
+@ $9F8D label=MissileSoundAndTransformSetup
+@ $9FB3 label=MissileInstallTransformTables
+@ $9FDD label=MissileRotateGeometry
+@ $A00A label=MissileProjectAndDraw
+@ $A05F label=MissileVisible
+@ $A080 label=MissileSelectVisibleLineData
 C $9E3D,h2
 C $9E3F,h2
 C $9E41,h3
@@ -3457,6 +3527,7 @@ C $9E5E,h3
 C $9E61,h3
 C $9E65,h3
 C $9E6A,h3
+. Update the vertical/hop state in `FE7E` and the associated missile strategy bits.
 C $9E6D,h3
 C $9E71,h2
 C $9E73,h3
@@ -3464,19 +3535,23 @@ C $9E7A,h3
 C $9E7D,h3
 C $9E81,h3
 C $9E84,h3
+. Count down `FE7A`; when it expires, choose the next staged turn/orientation transition.
 C $9E88,h3
 C $9E8C,h3
 C $9E91,h3
+. Convert the staged left-turn state into a live leftward orientation step in `FE86`.
 C $9E98,h3
 C $9E9B,h3
 C $9E9F,h3
 C $9EA2,h3
 C $9EA7,h3
+. Convert the staged right-turn state into a live rightward orientation step in `FE86`.
 C $9EAE,h3
 C $9EB1,h3
 C $9EB5,h3
 C $9EB8,h3
 C $9EBD,h3
+. Refresh the live missile orientation from `(MISX,MISZ)` when no staged turn remains active.
 C $9EC2,h3
 C $9EC5,h3
 C $9EC8,h4
@@ -3485,6 +3560,8 @@ C $9ED0,h2
 C $9ED3,h2
 C $9ED9,h3
 C $9EE2,h2
+. Randomly trigger the next zig direction when no hop is active and the remaining-zig
+. counter in `FE82` still allows another manoeuvre.
 C $9EE4,h3
 C $9EE7,h3
 C $9EEC,h3
@@ -3498,8 +3575,11 @@ C $9F04,h3
 C $9F09,h3
 C $9F0D,h3
 C $9F10,h2
+. Reload the manoeuvre countdown in `FE7A`.
 C $9F12,h3
 C $9F15,h3
+. Compare the missile high-byte position against the player and set the hop/avoidance
+. bit when close enough.
 C $9F19,h3
 C $9F1D,h3
 C $9F21,h2
@@ -3511,6 +3591,7 @@ C $9F2E,h2
 C $9F30,h3
 C $9F36,h3
 C $9F39,h3
+. Radar blip, near-player message update, and missile overrun/respawn checks.
 C $9F3C,h4
 C $9F41,h2
 C $9F43,h3
@@ -3527,6 +3608,7 @@ C $9F61,h3
 C $9F64,h2
 C $9F66,h2
 C $9F68,h3
+. Clamp the live missile orientation in `FE86` to the shipped bounds.
 C $9F6B,h3
 C $9F70,h3
 C $9F73,h3
@@ -3538,6 +3620,8 @@ C $9F84,h3
 C $9F87,h3
 C $9F8A,h3
 C $9F8D,h3
+. Update the shared border/sound latch from missile proximity, then prepare the shared
+. transform/source-table workspace.
 C $9F90,h4
 C $9F94,h3
 C $9F98,h3
@@ -3551,6 +3635,7 @@ C $9FA9,h3
 C $9FAC,h3
 C $9FB0,h3
 C $9FB3,h3
+. Install the shared rotation and source-coordinate tables for missile geometry.
 C $9FB6,h3
 C $9FB9,h3
 C $9FBC,h3
@@ -3565,6 +3650,7 @@ C $9FD4,h3
 C $9FD7,h3
 C $9FDA,h3
 C $9FDD,h3
+. Toggle the missile phase/sign latch in `FE88`, then rotate the live missile geometry.
 C $9FE1,h3
 C $9FE4,h3
 C $9FED,h2
@@ -3580,6 +3666,7 @@ C $A003,h2
 C $A005,h2
 C $A007,h3
 C $A00A,h3
+. Project the rotated missile geometry and split into hidden and visible paths.
 C $A00D,h3
 C $A010,h3
 C $A013,h3
@@ -3604,6 +3691,8 @@ C $A055,h3
 C $A059,h3
 C $A05C,h3
 C $A05F,h3
+. Visible path: seed the missile X limits, set the missile-visible bit, maybe raise the
+. sight cue in `FE58`, select one of the three visible-line families, and draw.
 C $A062,h3
 C $A066,h3
 C $A069,h3
@@ -3615,6 +3704,8 @@ C $A078,h3
 C $A07B,h2
 C $A07D,h3
 C $A080,h3
+. Choose the current missile visible-line family (`D392` / `D3DC` / `D43E`)
+. from the projected X ordering.
 C $A084,h3
 C $A089,h3
 C $A08C,h3
@@ -3656,7 +3747,18 @@ C $A0CB,h2
 C $A0CD,h2
 C $A0CF,h2
 C $A0D2,h3
+@ $A122 label=BulletUpdateAndRender
+@ $A133 label=PlayerBulletCheckActive
+@ $A155 label=PlayerBulletAdvanceAndRotate
+@ $A1D3 label=PlayerBulletVisible
+@ $A201 label=PlayerBulletTestSaucerHit
+@ $A20F label=PlayerBulletTestMissileHit
+@ $A21D label=PlayerBulletTestTankHit
+@ $A234 label=HostileBulletCheckActive
+@ $A25A label=HostileBulletAdvanceAndRotate
+@ $A2ED label=HostileBulletVisible
 C $A122,h2
+. Shared player-bullet / hostile-bullet update, project, draw, and hit-test block.
 C $A124,h2
 C $A126,h3
 C $A129,h2
@@ -3665,6 +3767,7 @@ C $A12B,h3
 C $A12E,h2
 C $A130,h3
 C $A133,h3
+. Player-bullet active path: either retire/requeue it or advance, rotate, project, and test hits.
 C $A137,h3
 C $A13A,h3
 C $A13D,h2
@@ -3678,6 +3781,8 @@ C $A14D,h2
 C $A14F,h3
 C $A152,h3
 C $A155,h3
+. Advance the live player-bullet `(X,Z)` position, install the shared hostile-bullet
+. geometry tables, then rotate/project it.
 C $A159,h3
 C $A15C,h4
 C $A165,h3
@@ -3725,6 +3830,8 @@ C $A1D0,h3
 C $A1D3,h2
 . Set the player-bullet visible bit.
 C $A1D5,h3
+. Visible player-bullet path: center the projected X span, test overlap against the
+. current target limits, then either draw or trigger a hit path.
 C $A1D9,h2
 C $A1DB,h3
 C $A1DE,h4
@@ -3758,6 +3865,7 @@ C $A22B,h3
 C $A22E,h3
 C $A231,h3
 C $A234,h2
+. Hostile-bullet active path: either retire/requeue it or advance, rotate, project, and draw.
 C $A236,h2
 C $A238,h3
 C $A23B,h2
@@ -3773,6 +3881,8 @@ C $A252,h2
 C $A254,h3
 C $A257,h3
 C $A25A,h3
+. Advance the live hostile-bullet `(X,Z)` position, install the obstacle-family
+. geometry tables, then rotate/project it and test for crash/visibility.
 C $A25D,h4
 C $A262,h3
 C $A26B,h3
@@ -3828,6 +3938,8 @@ C $A2EA,h3
 C $A2ED,h2
 . Set the hostile-bullet visible bit.
 C $A2EF,h3
+. Visible hostile-bullet path: install the shared bullet line family and continue to
+. the obstacle/render block after drawing.
 C $A2F4,h3
 C $A2F7,h2
 C $A2F9,h3
@@ -3868,7 +3980,14 @@ C $A36F,h3
 C $A373,h2
 C $A375,h3
 C $A378,h3
+@ $A37B label=ObstacleSelectAndRender
+@ $A423 label=ObstacleRotateAndProject
+@ $A4CA label=ObstacleHidden
+@ $A4E1 label=ObstacleVisible
+@ $A576 label=ObstacleSelectVisibleLineData
 C $A37B,h2
+. Select the current obstacle/object family, seed its raw `(X,Z)` position and line-data
+. base, and either continue into obstacle projection or fall straight into the SCREEN phase.
 C $A37D,h2
 C $A37F,h2
 C $A381,h2
@@ -3938,6 +4057,8 @@ C $A417,h3
 C $A41B,h3
 C $A420,h3
 C $A423,h3
+. Rotate/project the selected obstacle/object, update the low-bit selector in `EXST1`,
+. and split into hidden vs visible paths.
 C $A426,h4
 C $A42A,h3
 C $A42D,h4
@@ -3998,6 +4119,7 @@ C $A4C7,h3
 C $A4CA,h2
 . Clear the obstacle/object low-bit selector in PRSTA.
 C $A4CC,h3
+. Hidden path: clear the visible low bits, restore neutral limits, and return to the SCREEN phase.
 C $A4CF,h3
 C $A4D2,h3
 C $A4D6,h3
@@ -4005,6 +4127,8 @@ C $A4D9,h2
 C $A4DB,h3
 C $A4DE,h3
 C $A4E1,h2
+. Visible path: copy the active obstacle/object selector into `PRSTA`, seed the visible
+. limits from `PERSP`, apply the hill-edge stop hack if needed, then choose the current view.
 C $A4E4,h3
 C $A4E7,h2
 . Copy the active obstacle/object low-bit selector into PRSTA.
@@ -4046,6 +4170,7 @@ C $A56E,h3
 C $A571,h3
 . Probable matching right-edge hill-stop hack.
 C $A576,h3
+. Choose the current obstacle/object visible-line view by projected X ordering, then draw.
 C $A579,h4
 C $A57F,h3
 C $A582,h3
@@ -4143,6 +4268,12 @@ N $A685
 .
 . This block merges Kempston and keyboard input, masks movement against nearby
 . obstacles, and prepares the turn/movement handler state.
+@ $A685 label=KEYIN
+@ $A685 label=InputDecodeAndMask
+@ $A692 label=InputStoreKMOV
+@ $A695 label=InputMaskAgainstObstacles
+@ $A701 label=InputNoObstacleWarning
+@ $A70C label=InputBlockedWarning
 C $A685,h3
 . Read Kempston movement bits if present.
 C $A689,h2
@@ -4150,7 +4281,10 @@ C $A68B,h2
 C $A68D,h3
 C $A692,h3
 . KMOV
+. Store the merged keyboard/Kempston movement code in `KMOV` before obstacle masking.
 C $A695,h3
+. Test the four packed obstacle `(X,Z)` pairs and mask out disallowed movement bits when
+. the player is too close for a clear move/turn.
 C $A698,h2
 C $A69A,h2
 C $A69C,h3
@@ -4195,10 +4329,12 @@ C $A6FA,h2
 C $A6FC,h2
 C $A6FE,h3
 C $A701,h3
+. No obstacle-block warning needed: erase the message and allow all movement bits.
 C $A704,h3
 C $A707,h2
 C $A709,h3
 C $A70C,h3
+. Obstacle-block warning path: print the warning and restrict surviving movement bits via `C`.
 C $A710,h3
 @ $A714 label=KMOVTurnDecode
 C $A714,h3
@@ -8570,6 +8706,11 @@ B $FE6A,2,h2
 B $FE6C,2,h2
 @ $FE6E label=Probable_PRSTA
 B $FE6E,2,h2
+> $FE70 ; Current best mixed transient read:
+> $FE70 ; - `FE70` = shared frame/age counter advanced once per main-loop pass;
+> $FE70 ;   used by tank strategy timing and also primed by the attract missile showcase
+> $FE70 ; - `FE72` = slower spawn/variation counter incremented by `TEXST` and
+> $FE70 ;   reused when deriving tank-family move delays
 B $FE70,4,h4
 > $FE76 ; Current best missile-family overlays:
 > $FE76 ; - `FE78` = probable `MISCT` (missiles fired so far)
@@ -8581,6 +8722,8 @@ B $FE70,4,h4
 > $FE76 ; - `FE84` = probable missile strategy/action bitfield; notebook `MSTRJ`
 > $FE76 ;   and `MSTRT` now look like alternate names/usages for this same byte
 > $FE76 ; - `FE86` = probable `MSOR` signed missile offset/orientation register
+> $FE76 ; - `FE88` = current best missile phase/sign toggle used when building
+> $FE76 ;   the live missile transform angle each frame
 > $FE76 ; Probable border/sound latch.
 > $FE76 ; Current best read:
 > $FE76 ; - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
@@ -8598,6 +8741,12 @@ B $FE86,8,h8
 N $FE8E
 . In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 . word's X offset, Z offset, and angle.
+. Current best gameplay overlays:
+. - `FE8E` = saucer X position
+. - `FE90` = saucer Z position
+. - `FE92` = saucer animation/view phase cycling `0..3`
+. - `FE94` = saucer drift-change countdown
+. - `FE96` = saucer signed X-drift step / velocity
 B $FE8E,8,h8
 g $FE96
 . Obstacle world-position workspace, four packed `(X,Z)` pairs:

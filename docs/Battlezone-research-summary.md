@@ -150,6 +150,12 @@ Working summary of verified facts, local source material, and open questions for
 - Added a confident joystick-input mapping:
 - `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield
 - the `0xA685..0xA75E` block now has notebook-backed comments as the `KEYIN` / keyboard-interpretation path that merges input, applies obstacle masking, and sets up `KMOV` / `TURN`
+- that input block is now split more explicitly as:
+  - `KEYIN` / `InputDecodeAndMask` at `0xA685`
+  - `InputStoreKMOV` at `0xA692`
+  - `InputMaskAgainstObstacles` at `0xA695`
+  - `InputNoObstacleWarning` at `0xA701`
+  - `InputBlockedWarning` at `0xA70C`
 - `KeyboardMovementDecode` at `0x9132` and `KEMPST` at `0xAD3E` now agree on a concrete `KMOV` code table:
   - `0x00` idle
   - `0x80` forward
@@ -298,6 +304,13 @@ Working summary of verified facts, local source material, and open questions for
     - `FE52` = persistent radar/status scratch-stack pointer used by `RADARClearWorkspace`; exact higher-level meaning still cautious
     - `FE54` = fire-request latch used by keyboard/Kempston decode and consumed by the player-fire path at `0x97D6`
     - `FE58` = one-frame sight/targeting cue latch consumed by the later screen-overlay phase
+  - further `FE68+` workspace tightening:
+    - `FE70` = shared frame/age counter advanced once per main-loop pass; reused by tank timing and the attract missile showcase
+    - `FE72` = slower spawn/variation counter incremented by `TEXST` and reused when deriving tank-family move delays
+    - `FE88` = current best missile phase/sign toggle used when building the live missile transform angle each frame
+    - `FE8E/FE90/FE92` = live saucer `X/Z/phase` in gameplay, but second title-word `X/Z/angle` in attract mode
+    - `FE94` = saucer drift-change countdown
+    - `FE96` = saucer signed X-drift step / velocity
   - first-pass internal anchors now exist too:
     - `MHLPTWriteOuterLeft` at `0x8E47`
     - `MHLPTAdvanceToOuterRight` at `0x8E7D`
@@ -384,11 +397,37 @@ Working summary of verified facts, local source material, and open questions for
       - that evasive state is now best read as close-obstacle avoidance, not player avoidance
     - `FE68` = probable `TKMCT`
     - `0x98F4` = current best `TKSTRAT` core
+    - internal phase split now labeled in the disassembly:
+      - `TankStrategyTurnLeft` at `0x9919`
+      - `TankStrategyTurnRight` at `0x992C`
+      - `TankStrategyStepMovement` at `0x9948`
+      - `TankStrategySelectNextState` at `0x99A5`
+      - `TankStrategyAimOrAttack` at `0x9A04`
+      - `TankStrategyRangeCue` at `0x9A3B`
+      - `TankStrategyUpdateDesiredHeading` at `0x9A76`
+      - `TankStrategyObstacleEvasionCheck` at `0x9A92`
     - `0x9644` = current best shipped `TEXST` match: tank-family existence/spawn logic broadened into the main score/random dispatcher, with an inlined `MSET` branch
       - current best threshold reading:
         - below 5 points: tank-only
         - 5-24 points: tank vs missile, matching the page-4 `M=1/4` / `M|M=3/4` style notes depending on whether the missile bit is already active
         - 25+ points: tank / supertank / missile mix
+    - `0x9D0D` = current best shipped `SAUC` match: live saucer update/render path
+      - internal phase split now labeled in the disassembly:
+        - `SaucerAdvancePhase` at `0x9D18`
+        - `SaucerUpdateDrift` at `0x9D21`
+        - `SaucerApplyXDrift` at `0x9D2C`
+        - `SaucerUpdateZ` at `0x9D37`
+        - `SaucerSelectPhaseGeometry` at `0x9D75`
+        - `SaucerBuildXList` at `0x9D83`
+        - `SaucerBuildZList` at `0x9DB5`
+        - `SaucerProjectAndDraw` at `0x9DE7`
+        - `SaucerHidden` at `0x9DF8`
+        - `SaucerVisible` at `0x9E1C`
+      - current best behaviour:
+        - `FE92` is a 2-bit live phase selector
+        - `FE94` / `FE96` form the drift-change countdown and signed X-drift step
+        - `FE8E` / `FE90` are the live saucer `X/Z` position slots in gameplay
+        - the visible path seeds `D338`, brackets the draw with the audible helper at `0xA0C3`, and then returns to the shared post-entity path
     - `FE98..FEA7` = current best obstacle-position block, four packed `(X,Z)` pairs used by:
       - `0x9A92..0x9AE7` tank close-obstacle evasive checks
       - `0xA37B..0xA420` obstacle-family selection for render/collision
@@ -424,6 +463,55 @@ Working summary of verified facts, local source material, and open questions for
     - `0x972E` = current best shipped `MSET` missile-setup branch
     - `0x9E3D` = current best broader `MISSILES` phase
     - `0x9E49` = current best `MISSTRAT` core
+      - internal phase split now labeled in the disassembly:
+        - `MissileVerticalState` at `0x9E6A`
+        - `MissileManoeuvreCountdown` at `0x9E84`
+        - `MissileTurnLeftSetup` at `0x9E91`
+        - `MissileTurnRightSetup` at `0x9EA7`
+        - `MissileRefreshOrientation` at `0x9EBD`
+        - `MissileRandomZigTrigger` at `0x9EE2`
+        - `MissileReloadManoeuvreCountdown` at `0x9F10`
+        - `MissileNearPlayerCheck` at `0x9F15`
+        - `MissileRadarAndMessages` at `0x9F39`
+        - `MissileClampOrientation` at `0x9F68`
+        - `MissileSoundAndTransformSetup` at `0x9F8D`
+        - `MissileInstallTransformTables` at `0x9FB3`
+        - `MissileRotateGeometry` at `0x9FDD`
+        - `MissileProjectAndDraw` at `0xA00A`
+        - `MissileVisible` at `0xA05F`
+        - `MissileSelectVisibleLineData` at `0xA080`
+      - current best behaviour:
+        - `FE7A` is the live manoeuvre countdown
+        - `FE84` carries the staged zig/hop state bits
+        - `FE86` is the live signed orientation/offset register adjusted by the left/right setup phases
+        - `0xA080` selects among the three missile visible-line families `D392 / D3DC / D43E` from projected X ordering
+    - `0xA122` = shared player-bullet / hostile-bullet update and draw block
+      - internal phase split now labeled in the disassembly:
+        - `PlayerBulletCheckActive` at `0xA133`
+        - `PlayerBulletAdvanceAndRotate` at `0xA155`
+        - `PlayerBulletVisible` at `0xA1D3`
+        - `PlayerBulletTestSaucerHit` at `0xA201`
+        - `PlayerBulletTestMissileHit` at `0xA20F`
+        - `PlayerBulletTestTankHit` at `0xA21D`
+        - `HostileBulletCheckActive` at `0xA234`
+        - `HostileBulletAdvanceAndRotate` at `0xA25A`
+        - `HostileBulletVisible` at `0xA2ED`
+      - current best behaviour:
+        - the player-bullet path advances `FEAC/FEAE`, rotates/projects with the `HBLXLC/HBLZLC` table pair, and then either draws `D488` or triggers one of the enemy explosion setup entries
+        - the hostile-bullet path advances `FEB4/FEB6`, rotates/projects with the `OBXLC/OBZLC` table pair, and either crashes the player via `0xADD4` or draws the shared bullet visible-line family
+    - `0xA37B` = shared obstacle/object select-and-render block
+      - internal phase split now labeled in the disassembly:
+        - `ObstacleSelectAndRender` at `0xA37B`
+        - `ObstacleRotateAndProject` at `0xA423`
+        - `ObstacleHidden` at `0xA4CA`
+        - `ObstacleVisible` at `0xA4E1`
+        - `ObstacleSelectVisibleLineData` at `0xA576`
+      - current best behaviour:
+        - scans the four packed obstacle `(X,Z)` pairs in `FE98..FEA7`
+        - chooses one current family base among the cube, pyramid, and low-block `LINCDS` sets
+        - rotates/projects the selected obstacle using the `EXXLC/EXZLC` companion tables
+        - mirrors the low-bit family selector from `EXST1` into `PRSTA` on the visible path
+        - applies the temporary left/right hill-stop hack before choosing the current view and drawing
   - page 6 uses `MSTRJ` in missile setup, while pages 20-21 use `MSTRT` in the strategy notes
   - current best code-side reading is that both notebook names refer to the same live missile state byte at `FE84`
 - `S` key handling is now separated into two clear roles:
