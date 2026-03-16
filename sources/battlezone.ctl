@@ -1637,6 +1637,11 @@ D $8660
 . writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
 . visible X limits, and returns status in `C` for caller-side draw/visibility
 . decisions.
+. Current best status-code read from the shipped callers:
+. - `C=0` drawable / visible enough to continue
+. - `C=1` primary depth failure: at least one source Z value is too near /
+.   behind the projection threshold
+. - `C=2` projected X overflow or visible-range failure
 @ $8660 label=PERSP
 C $8660,h4
 @ $8676 label=PERSPProjectPrimary
@@ -1646,15 +1651,19 @@ C $866C,h3
 C $866F,h4
 C $8673,h2
 C $867C,h2
+. Reject the point if the primary depth/Z word is below the shipped near threshold.
 C $867E,h3
 C $8681,h2
+. Return `C=1`: primary depth failure / behind-near-plane.
 C $8683,h4
 C $8691,h2
 C $86A0,h3
 C $86A3,h3
 C $86AB,h2
+. If the projected X magnitude overflows the accepted range, fail with `C=2`.
 C $86AD,h3
 C $86B0,h2
+. Return `C=2`: horizontal overflow / not drawable in the visible window.
 C $86B2,h4
 C $86B6,h4
 C $86BB,h4
@@ -1719,6 +1728,7 @@ C $87C3,h3
 C $87C8,h3
 C $87CB,h3
 C $87CE,h2
+. Return `C=2`: tracked visible X span lies outside the accepted window.
 C $87D0,h4
 C $87D4,h4
 C $87D9,h4
@@ -1769,14 +1779,19 @@ C $88CB,h3
 C $88CE,h4
 C $88D2,h4
 C $88D6,h2
+. Return `C=0`: projection completed and the caller may treat the object as drawable.
 c $88EA
 . Shared X/Z rotation transform
 D $88EA
 . Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
 . Current best read: reusable table-driven X/Z rotation stage.
 . It consumes source coordinate lists plus angle-dependent tables and writes
-. rotated coordinate lists for later perspective projection. The attract-mode
-. title tumble reuses the same block by feeding it a non-standard Y/Z pair.
+. rotated coordinate lists for later perspective projection.
+. Current best structural read: four repeated multiply/accumulate passes using
+. the shared element count in `MUCNT`, the active table/displacement pairs in
+. `XTAB`/`ZTAB` and `XDIS`/`ZDIS`, and the saved source-word continuation in
+. `MMAT`. The attract-mode title tumble reuses the same block by feeding it a
+. non-standard Y/Z pair.
 @ $88EA label=RotateXZLists
 C $88EA,h4
 @ $8925 label=RotateXZPrimaryPass
@@ -1840,7 +1855,11 @@ C $8A60,h3
 C $8A6B,h3
 C $8A6E,h3
 C $8A75,h3
+N $8A78
 @ $8A78 label=RotateXZFinalPass
+. Current best read: third transform pass. Reuses the saved source-word/sign
+. continuation in `MMAT` with the Z-side table family to build one of the
+. later rotated output lists.
 C $8A78,h4
 C $8A7C,h3
 C $8A81,h3
@@ -1868,6 +1887,11 @@ C $8B1E,h3
 C $8B2A,h3
 C $8B2D,h3
 C $8B37,h3
+N $8B3A
+@ $8B3A label=RotateXZCompanionPass
+. Current best read: fourth/final transform pass. Reuses the complemented sign
+. state plus the X-side table family to build the companion rotated output
+. list, then stores the final descending stack pointer back into `ZLOC`.
 C $8B3A,h4
 C $8B3E,h3
 C $8B42,h4
@@ -2030,9 +2054,12 @@ D $90BA
 . Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
 . Current best notebook match: `RADAR`.
 . Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
-. radar/status workspace between `FE50` and `FE52`, converts the coordinate
-. pair into a radar cell/bit position, and plots the blip into the status
-. buffer.
+. radar/status blip state, converts the coordinate pair into a radar
+. cell/bit position, and plots the blip into the status buffer.
+. Current best shipped read:
+. - `FE50` remembers the last plotted destination byte so it can be cleared
+. - `FE52` is a persistent radar/proximity helper-table base (initialised to
+.   `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`
 . The cell/bit conversion path uses the shared plotting lookup family at
 . #R$7C00.
 @ $90BA label=RADAR
@@ -2470,45 +2497,15 @@ C $9376,1
 B $9377,1
 B $9378,8,h8
 B $9380,8,h8
-B $9388,8,h8
-B $9390,8,h8
-B $9398,8,h8
-B $93A0,8,h8
-B $93A8,8,h8
-B $93B0,8,h8
-B $93B8,8,h8
-B $93C0,8,h8
-B $93C8,8,h8
-B $93D0,8,h8
-B $93D8,8,h8
-B $93E0,8,h8
-B $93E8,8,h8
-B $93F0,8,h8
-B $9378,8,h8
-B $9380,8,h8
-B $9388,8,h8
-B $9390,8,h8
-B $9398,8,h8
-B $93A0,8,h8
-B $93A8,8,h8
-B $93B0,8,h8
-B $93B8,8,h8
-B $93C0,8,h8
-B $93C8,8,h8
-B $93D0,8,h8
-B $93D8,8,h8
-B $93E0,8,h8
-B $93E8,8,h8
-B $93F0,8,h8
-B $93F8,8,h8
-B $9400,8,h8
-B $9408,8,h8
-B $9410,8,h8
-B $9418,8,h8
-B $9420,8,h8
-B $9428,8,h8
-B $9430,8,h8
-B $9438,8,h8
+B $9388,2,h2
+N $938A
+. Shared heading/bearing helper.
+. Called with a world-space `(X,Z)` pair in `HL`/`DE`.
+. Current best shipped read: convert the signed `(X,Z)` vector into the
+. compact 8-bit heading/bearing code used by tank desired-heading logic,
+. missile orientation refresh, and proximity/range comparisons.
+@ $938A label=HeadingFromXZ
+c $938A
 B $9440,8,h8
 B $9448,8,h8
 B $9450,2,h2
@@ -3172,7 +3169,7 @@ C $9A70,h3
 C $9A73,h3
 @ $9A76 label=TankStrategyUpdateDesiredHeading
 C $9A76,h3
-. Refresh `TKDIR` from the current tank `(X,Z)` position via `CALL $938A`.
+. Refresh `TKDIR` from the current tank `(X,Z)` position via `HeadingFromXZ`.
 C $9A79,h4
 C $9A7D,h3
 C $9A80,h2
@@ -8712,9 +8709,9 @@ W $FE46,2,h2
 g $FE48
 @ $FE48 label=MMAT
 W $FE48,2,h2
-. Current shipped read: scratch pointer preserved between `RotateXZLists`
-. passes, carrying the saved source-list continuation from the first phase into
-. the later transform phases.
+. Current shipped read: saved source-word continuation from the first
+. `RotateXZLists` pass, preserved between passes and reused by the later
+. transform phases as a compact pointer/sign carrier.
 g $FE4A
 @ $FE4A label=XDIS
 W $FE4A,2,h2
@@ -8729,8 +8726,10 @@ W $FE4C,2,h2
 g $FE4E
 @ $FE4E label=MUCNT
 W $FE4E,2,h2
-. Shared small counter slot; in the zero-lives branch it
-. becomes the outer drip-frame countdown.
+. Shared small count/control slot. In `RotateXZLists` it is the active element
+. count reused by each transform pass; in `PlayStartTheme` it becomes the
+. 10-phrase countdown; in the zero-lives branch it becomes the outer
+. drip-frame countdown.
 g $FE50
 @ $FE50 label=EXBLP
 W $FE50,2,h2
@@ -8740,9 +8739,10 @@ W $FE50,2,h2
 g $FE52
 @ $FE52 label=EXSCN
 W $FE52,2,h2
-. Notebook name preserved. Current shipped read is still cautious: persistent
-. radar/status scratch-stack pointer used by `RADARClearWorkspace` to erase and
-. rebuild transient blip workspace, and later sampled by some entity logic.
+. Notebook name preserved. Current shipped read: persistent radar/proximity
+. helper-table base, initialised to `$6300`. `RADARClearWorkspace`
+. temporarily uses it via `SP` while clearing transient radar state, and later
+. entity logic samples its first byte as a proximity/range reference.
 g $FE54
 @ $FE54 label=TRIGA
 W $FE54,2,h2

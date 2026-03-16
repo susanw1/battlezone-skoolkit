@@ -2577,6 +2577,11 @@ c$805C LD HL,($FE02) ;
 ; writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
 ; visible X limits, and returns status in `C` for caller-side draw/visibility
 ; decisions.
+; Current best status-code read from the shipped callers:
+; - `C=0` drawable / visible enough to continue
+; - `C=1` primary depth failure: at least one source Z value is too near /
+;   behind the projection threshold
+; - `C=2` projected X overflow or visible-range failure
 @label=PERSP
 c$8660 LD ($FE00),SP ;
  $8664 LD ($FE40),A  ;
@@ -2593,9 +2598,9 @@ c$8660 LD ($FE00),SP ;
  $8679 EX AF,AF'     ;
  $867A LD A,(DE)     ;
  $867B INC DE        ;
- $867C CP $01        ;
+ $867C CP $01        ; Reject the point if the primary depth/Z word is below the shipped near threshold.
  $867E JP P,$8688    ;
- $8681 LD C,$01      ;
+ $8681 LD C,$01      ; Return `C=1`: primary depth failure / behind-near-plane.
  $8683 LD SP,($FE00) ;
  $8687 RET           ;
 *$8688 EXX           ;
@@ -2625,9 +2630,9 @@ c$8660 LD ($FE00),SP ;
  $86A7 SBC HL,DE     ;
 *$86A9 EX AF,AF'     ;
  $86AA LD A,H        ;
- $86AB CP $20        ;
+ $86AB CP $20        ; If the projected X magnitude overflows the accepted range, fail with `C=2`.
  $86AD JP M,$86C3    ;
- $86B0 LD C,$02      ;
+ $86B0 LD C,$02      ; Return `C=2`: horizontal overflow / not drawable in the visible window.
  $86B2 LD ($FE5A),SP ;
  $86B6 LD SP,($FE00) ;
  $86BA RET           ;
@@ -2794,7 +2799,7 @@ c$8660 LD ($FE00),SP ;
  $87C7 LD B,A        ;
  $87C8 JP NZ,$8677   ;
  $87CB JP $87E1      ;
-*$87CE LD C,$02      ;
+*$87CE LD C,$02      ; Return `C=2`: tracked visible X span lies outside the accepted window.
  $87D0 LD ($FE5A),SP ;
  $87D4 LD SP,($FE00) ;
  $87D8 RET           ;
@@ -2964,7 +2969,7 @@ c$8660 LD ($FE00),SP ;
  $88CB JP NZ,$87F6   ;
  $88CE LD ($FE3A),SP ;
  $88D2 LD SP,($FE00) ;
- $88D6 LD C,$00      ;
+ $88D6 LD C,$00      ; Return `C=0`: projection completed and the caller may treat the object as drawable.
  $88D8 RET           ;
  $88D9 NOP           ;
  $88DA NOP           ;
@@ -2989,8 +2994,12 @@ c$8660 LD ($FE00),SP ;
 ; Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
 ; Current best read: reusable table-driven X/Z rotation stage.
 ; It consumes source coordinate lists plus angle-dependent tables and writes
-; rotated coordinate lists for later perspective projection. The attract-mode
-; title tumble reuses the same block by feeding it a non-standard Y/Z pair.
+; rotated coordinate lists for later perspective projection.
+; Current best structural read: four repeated multiply/accumulate passes using
+; the shared element count in `MUCNT`, the active table/displacement pairs in
+; `XTAB`/`ZTAB` and `XDIS`/`ZDIS`, and the saved source-word continuation in
+; `MMAT`. The attract-mode title tumble reuses the same block by feeding it a
+; non-standard Y/Z pair.
 @label=RotateXZLists
 c$88EA LD ($FE00),SP ;
  $88EE LD ($FE4E),A  ;
@@ -3239,6 +3248,9 @@ c$88EA LD ($FE00),SP ;
  $8A73 EXX           ;
  $8A74 DEC B         ;
  $8A75 JP NZ,$89D6   ;
+; Current best read: third transform pass. Reuses the saved source-word/sign
+; continuation in `MMAT` with the Z-side table family to build one of the
+; later rotated output lists.
 @label=RotateXZFinalPass
 *$8A78 LD DE,($FE46) ;
  $8A7C LD A,($FE4E)  ;
@@ -3363,6 +3375,10 @@ c$88EA LD ($FE00),SP ;
  $8B35 EXX           ;
  $8B36 DEC B         ;
  $8B37 JP NZ,$8A92   ;
+; Current best read: fourth/final transform pass. Reuses the complemented sign
+; state plus the X-side table family to build the companion rotated output
+; list, then stores the final descending stack pointer back into `ZLOC`.
+@label=RotateXZCompanionPass
 *$8B3A LD ($FE32),SP ;
  $8B3E LD A,($FE4E)  ;
  $8B41 LD B,A        ;
@@ -4330,9 +4346,12 @@ c$8F53 CALL $8F61    ;
 ; Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
 ; Current best notebook match: `RADAR`.
 ; Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
-; radar/status workspace between `FE50` and `FE52`, converts the coordinate
-; pair into a radar cell/bit position, and plots the blip into the status
-; buffer.
+; radar/status blip state, converts the coordinate pair into a radar
+; cell/bit position, and plots the blip into the status buffer.
+; Current best shipped read:
+; - `FE50` remembers the last plotted destination byte so it can be cleared
+; - `FE52` is a persistent radar/proximity helper-table base (initialised to
+;   `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`
 ; The cell/bit conversion path uses the shared plotting lookup family at
 ; #R$7C00.
 ;
@@ -4867,29 +4886,143 @@ c$9312 POP HL                               ;
  $9377 DEFB $00                             ;
  $9378 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
  $9380 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
- $9388 DEFB $00,$00,$7C,$06,$00,$A7,$F2,$9A ;
- $9390 DEFB $93,$44,$4D,$21,$00,$00,$ED,$42 ;
- $9398 DEFB $06,$80,$29,$E5,$7A,$A7,$F2,$A9 ;
- $93A0 DEFB $93,$21,$00,$00,$ED,$52,$CB,$F0 ;
- $93A8 DEFB $EB,$CB,$23,$CB,$12,$08,$78,$08 ;
- $93B0 DEFB $C1,$D5,$EB,$A7,$ED,$42,$D1,$DA ;
- $93B8 DEFB $C3,$93,$69,$60,$EB,$4D,$44,$08 ;
- $93C0 DEFB $F6,$20,$08,$26,$00,$7A,$CB,$24 ;
- $93C8 DEFB $17,$38,$03,$B8,$38,$02,$90,$24 ;
- $93D0 DEFB $CB,$24,$17,$38,$03,$B8,$38,$02 ;
- $93D8 DEFB $90,$24,$CB,$24,$17,$38,$03,$B8 ;
- $93E0 DEFB $38,$02,$90,$24,$CB,$24,$17,$38 ;
- $93E8 DEFB $03,$B8,$38,$02,$90,$24,$CB,$24 ;
- $93F0 DEFB $17,$38,$03,$B8,$38,$02,$90,$24 ;
- $93F8 DEFB $CB,$24,$17,$38,$03,$B8,$38,$02 ;
- $9400 DEFB $90,$24,$CB,$24,$17,$38,$03,$B8 ;
- $9408 DEFB $38,$02,$90,$24,$CB,$24,$17,$38 ;
- $9410 DEFB $03,$B8,$38,$02,$90,$24,$6C,$26 ;
- $9418 DEFB $7B,$7E,$08,$47,$08,$CB,$68,$C2 ;
- $9420 DEFB $25,$94,$3E,$40,$96,$4F,$CB,$70 ;
- $9428 DEFB $CA,$37,$94,$CB,$78,$CA,$33,$94 ;
- $9430 DEFB $C6,$80,$C9,$3E,$80,$91,$C9,$CB ;
- $9438 DEFB $78,$C8,$ED,$44,$C9,$00,$00,$00 ;
+ $9388 DEFB $00,$00                         ;
+
+; Routine at 938A
+;
+; Used by the routines at #R$94EC and #R$977E.
+;
+; .
+;
+; Shared heading/bearing helper.
+; Called with a world-space `(X,Z)` pair in `HL`/`DE`.
+; Current best shipped read: convert the signed `(X,Z)` vector into the
+; compact 8-bit heading/bearing code used by tank desired-heading logic,
+; missile orientation refresh, and proximity/range comparisons.
+@label=HeadingFromXZ
+c$938A LD A,H                               ;
+ $938B LD B,$00                             ;
+ $938D AND A                                ;
+ $938E JP P,$939A                           ;
+ $9391 LD B,H                               ;
+ $9392 LD C,L                               ;
+ $9393 LD HL,$0000                          ;
+ $9396 SBC HL,BC                            ;
+ $9398 LD B,$80                             ;
+*$939A ADD HL,HL                            ;
+ $939B PUSH HL                              ;
+ $939C LD A,D                               ;
+ $939D AND A                                ;
+ $939E JP P,$93A9                           ;
+ $93A1 LD HL,$0000                          ;
+ $93A4 SBC HL,DE                            ;
+ $93A6 SET 6,B                              ;
+ $93A8 EX DE,HL                             ;
+*$93A9 SLA E                                ;
+ $93AB RL D                                 ;
+ $93AD EX AF,AF'                            ;
+ $93AE LD A,B                               ;
+ $93AF EX AF,AF'                            ;
+ $93B0 POP BC                               ;
+ $93B1 PUSH DE                              ;
+ $93B2 EX DE,HL                             ;
+ $93B3 AND A                                ;
+ $93B4 SBC HL,BC                            ;
+ $93B6 POP DE                               ;
+ $93B7 JP C,$93C3                           ;
+ $93BA LD L,C                               ;
+ $93BB LD H,B                               ;
+ $93BC EX DE,HL                             ;
+ $93BD LD C,L                               ;
+ $93BE LD B,H                               ;
+ $93BF EX AF,AF'                            ;
+ $93C0 OR $20                               ;
+ $93C2 EX AF,AF'                            ;
+*$93C3 LD H,$00                             ;
+ $93C5 LD A,D                               ;
+ $93C6 SLA H                                ;
+ $93C8 RLA                                  ;
+ $93C9 JR C,$93CE                           ;
+ $93CB CP B                                 ;
+ $93CC JR C,$93D0                           ;
+*$93CE SUB B                                ;
+ $93CF INC H                                ;
+*$93D0 SLA H                                ;
+ $93D2 RLA                                  ;
+ $93D3 JR C,$93D8                           ;
+ $93D5 CP B                                 ;
+ $93D6 JR C,$93DA                           ;
+*$93D8 SUB B                                ;
+ $93D9 INC H                                ;
+*$93DA SLA H                                ;
+ $93DC RLA                                  ;
+ $93DD JR C,$93E2                           ;
+ $93DF CP B                                 ;
+ $93E0 JR C,$93E4                           ;
+*$93E2 SUB B                                ;
+ $93E3 INC H                                ;
+*$93E4 SLA H                                ;
+ $93E6 RLA                                  ;
+ $93E7 JR C,$93EC                           ;
+ $93E9 CP B                                 ;
+ $93EA JR C,$93EE                           ;
+*$93EC SUB B                                ;
+ $93ED INC H                                ;
+*$93EE SLA H                                ;
+ $93F0 RLA                                  ;
+ $93F1 JR C,$93F6                           ;
+ $93F3 CP B                                 ;
+ $93F4 JR C,$93F8                           ;
+*$93F6 SUB B                                ;
+ $93F7 INC H                                ;
+*$93F8 SLA H                                ;
+ $93FA RLA                                  ;
+ $93FB JR C,$9400                           ;
+ $93FD CP B                                 ;
+ $93FE JR C,$9402                           ;
+*$9400 SUB B                                ;
+ $9401 INC H                                ;
+*$9402 SLA H                                ;
+ $9404 RLA                                  ;
+ $9405 JR C,$940A                           ;
+ $9407 CP B                                 ;
+ $9408 JR C,$940C                           ;
+*$940A SUB B                                ;
+ $940B INC H                                ;
+*$940C SLA H                                ;
+ $940E RLA                                  ;
+ $940F JR C,$9414                           ;
+ $9411 CP B                                 ;
+ $9412 JR C,$9416                           ;
+*$9414 SUB B                                ;
+ $9415 INC H                                ;
+*$9416 LD L,H                               ;
+ $9417 LD H,$7B                             ;
+ $9419 LD A,(HL)                            ;
+ $941A EX AF,AF'                            ;
+ $941B LD B,A                               ;
+ $941C EX AF,AF'                            ;
+ $941D BIT 5,B                              ;
+ $941F JP NZ,$9425                          ;
+ $9422 LD A,$40                             ;
+ $9424 SUB (HL)                             ;
+*$9425 LD C,A                               ;
+ $9426 BIT 6,B                              ;
+ $9428 JP Z,$9437                           ;
+ $942B BIT 7,B                              ;
+ $942D JP Z,$9433                           ;
+ $9430 ADD A,$80                            ;
+ $9432 RET                                  ;
+*$9433 LD A,$80                             ;
+ $9435 SUB C                                ;
+ $9436 RET                                  ;
+*$9437 BIT 7,B                              ;
+ $9439 RET Z                                ;
+ $943A NEG                                  ;
+ $943C RET                                  ;
+ $943D NOP                                  ;
+ $943E NOP                                  ;
+ $943F NOP                                  ;
  $9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
  $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
  $9450 DEFB $00,$00                         ;
@@ -5749,7 +5882,7 @@ c$977E LD HL,($FE70) ;
  $9A70 LD ($FE68),A  ;
  $9A73 LD ($FE66),A  ;
 @label=TankStrategyUpdateDesiredHeading
-*$9A76 LD HL,($FE5E) ; Refresh `TKDIR` from the current tank `(X,Z)` position via `CALL $938A`.
+*$9A76 LD HL,($FE5E) ; Refresh `TKDIR` from the current tank `(X,Z)` position via `HeadingFromXZ`.
  $9A79 LD DE,($FE60) ;
  $9A7D CALL $938A    ;
  $9A80 LD H,$00      ;
@@ -13287,9 +13420,9 @@ g$FE46 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to
 
 ; Game status buffer entry at FE48
 @label=MMAT
-g$FE48 DEFW $0000    ; Current shipped read: scratch pointer preserved between `RotateXZLists`
-                     ; passes, carrying the saved source-list continuation from the first phase into
-                     ; the later transform phases.
+g$FE48 DEFW $0000    ; Current shipped read: saved source-word continuation from the first
+                     ; `RotateXZLists` pass, preserved between passes and reused by the later
+                     ; transform phases as a compact pointer/sign carrier.
 
 ; Game status buffer entry at FE4A
 @label=XDIS
@@ -13304,8 +13437,10 @@ g$FE4C DEFW $0000    ; Companion current Z displacement / world-offset word fed 
 
 ; Game status buffer entry at FE4E
 @label=MUCNT
-g$FE4E DEFW $0000    ; Shared small counter slot; in the zero-lives branch it
-                     ; becomes the outer drip-frame countdown.
+g$FE4E DEFW $0000    ; Shared small count/control slot. In `RotateXZLists` it is the active element
+                     ; count reused by each transform pass; in `PlayStartTheme` it becomes the
+                     ; 10-phrase countdown; in the zero-lives branch it becomes the outer
+                     ; drip-frame countdown.
 
 ; Game status buffer entry at FE50
 @label=EXBLP
@@ -13315,9 +13450,10 @@ g$FE50 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to
 
 ; Game status buffer entry at FE52
 @label=EXSCN
-g$FE52 DEFW $0000    ; Notebook name preserved. Current shipped read is still cautious: persistent
-                     ; radar/status scratch-stack pointer used by `RADARClearWorkspace` to erase and
-                     ; rebuild transient blip workspace, and later sampled by some entity logic.
+g$FE52 DEFW $0000    ; Notebook name preserved. Current shipped read: persistent radar/proximity
+                     ; helper-table base, initialised to `$6300`. `RADARClearWorkspace`
+                     ; temporarily uses it via `SP` while clearing transient radar state, and later
+                     ; entity logic samples its first byte as a proximity/range reference.
 
 ; Game status buffer entry at FE54
 @label=TRIGA

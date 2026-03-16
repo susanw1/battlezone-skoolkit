@@ -380,7 +380,7 @@ Working summary of verified facts, local source material, and open questions for
     - `FE44` (`YTAB`) still has no confident direct shipped-code role isolated
   - `FE50..FE58` is now less opaque:
     - `FE50` = last radar/status blip destination byte, cleared on the next radar update
-    - `FE52` = persistent radar/status scratch-stack pointer used by `RADARClearWorkspace`; exact higher-level meaning still cautious
+    - `FE52` = persistent radar/proximity helper-table base, initialised to `$6300`; `RADARClearWorkspace` temporarily uses it via `SP`, and later entity logic samples its first byte as a proximity/range reference
     - `FE54` = fire-request latch used by keyboard/Kempston decode and consumed by the player-fire path at `0x97D6`
     - `FE58` = one-frame sight/targeting cue latch consumed by the later screen-overlay phase
   - further `FE68+` workspace tightening:
@@ -628,10 +628,18 @@ Working summary of verified facts, local source material, and open questions for
     - `RotateXZPrimaryPass` at `0x8925`
     - `RotateXZSecondaryPass` at `0x89C4`
     - `RotateXZFinalPass` at `0x8A78`
+    - `RotateXZCompanionPass` at `0x8B3A`
     - `RADARClearWorkspace` at `0x90BC`
     - `RADARMapX` at `0x90EB`
     - `RADARMapZ` at `0x9104`
     - `RADARPlotBlip` at `0x9119`
+  - current best `PERSP` status-code read from shipped callers:
+    - `C=0` drawable / continue to visible-path logic
+    - `C=1` primary depth failure: source Z too near / behind the projection threshold
+    - `C=2` projected-X overflow or visible-range failure
+  - `0x938A` is now promoted from misclassified data to code as `HeadingFromXZ`
+    - current best read: shared `(X,Z) -> 8-bit heading/bearing` helper
+    - used by tank desired-heading refresh, tank/missile initial heading setup, and missile proximity/orientation logic
     - `0xB0BC` then runs a short transition and jumps into the real game initialisation at `0x956A`, which eventually feeds the main loop at `0x977E`
 - Attract/demo structure now looks much more like Susan's staged recollection than a single static title screen:
   - `0xB1F4..0xB343` is the best current match for the earlier title/logo attract stages
