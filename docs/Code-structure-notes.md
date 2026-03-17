@@ -80,10 +80,16 @@ These are exactly the kind of gaps expected if blocks were assembled independent
     - `0xB0BC` start transition
     - `0xB0EF` start theme player
     - `0xB1F4` attract/title sequence
-    - `0xB2F5` title helper block
     - `0xB55D` showcase frame
     - `0xB587` entity showcase loop
     - `0xB676` instruction pages
+  - Later review showed `0xB2F5` is better treated as an internal phase entry, not
+    a top-level module start:
+    - `0xB1F4..0xB343` is one cohesive title-sequence block
+    - `0xB24D` = QS tumble loop
+    - `0xB2D5` = forward title flash/fade pass
+    - `0xB2F5` = reverse title flash/fade pass
+    - `0xB31E` = wipe/delay prelude before the separation/flyoff stage
 
 ## Fall-Through Cases Worth Preserving
 

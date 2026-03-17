@@ -1280,7 +1280,7 @@ D $805C
 . inside the X-major branches rather than split out as a separate top-level
 . entrypoint.
 R $805C
-. Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
+. Used throughout gameplay, crash/death, and attract/title rendering paths.
 @ $805C label=LNLPT
 C $805C,h3
 C $8060,h3
@@ -1628,10 +1628,14 @@ C $8631,h3
 C $8635,h3
 C $8638,h3
 C $863B,h4
+i $8640
+. Padding / reserved growth space between `LNLPT` and `PERSP`.
+. This 32-byte `NOP` run follows a hard `RET` and ends on the round boundary
+. at `0x8660`, strongly suggesting separately assembled module padding.
 c $8660
 . PERSP
 D $8660
-. Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+. Used throughout gameplay and attract/title rendering.
 . Current best notebook match: `PERSP`.
 . Shared perspective / clip stage. It consumes transformed coordinate tables,
 . writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
@@ -1780,10 +1784,14 @@ C $88CE,h4
 C $88D2,h4
 C $88D6,h2
 . Return `C=0`: projection completed and the caller may treat the object as drawable.
+i $88D9
+. Padding / reserved growth space between `PERSP` and `RotateXZLists`.
+. This 17-byte `NOP` run follows a `RET` and ends exactly at the next module
+. boundary `0x88EA`.
 c $88EA
 . Shared X/Z rotation transform
 D $88EA
-. Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+. Used throughout gameplay and attract/title rendering.
 . Current best read: reusable table-driven X/Z rotation stage.
 . It consumes source coordinate lists plus angle-dependent tables and writes
 . rotated coordinate lists for later perspective projection.
@@ -1920,10 +1928,14 @@ C $8BEC,h4
 C $8BF9,h3
 C $8BFC,h4
 C $8C00,h4
+i $8C06
+. Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
+. This `NOP` run follows a hard `RET` and ends on the next separately built
+. module boundary at `0x8C3C`.
 c $8C3C
 . SDRAW
 D $8C3C
-. Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
+. Used throughout gameplay, crash/death, and attract/title/showcase rendering.
 N $8C3C
 . #PUSHS
 . #UDGTABLE
@@ -1943,7 +1955,7 @@ C $8C53,h3
 C $8C56,h3
 C $8C59,h3
 N $8C5E
-. This entry point is used by the routine at #R$B2F5.
+. This entry point is used by the title flash/fade phase inside `AttractModeTitleSequence`.
 . The crash/death path at `0xADD4` temporarily patches this opcode byte to
 . `RET` (`0xC9`) and later restores it to `LD HL,nn` (`0x21`) at `0xAE3D`.
 C $8C5E,h3
@@ -1959,6 +1971,10 @@ C $8C77,h3
 C $8C7A,h3
 C $8C7D,h3
 C $8C80,h2
+i $8C85
+. Padding / reserved growth space between `SDRAW` and `StartupWorkspaceSeedData`.
+. This 27-byte `NOP` run follows a hard `RET` and precedes genuine embedded
+. seed data copied at reset/title start.
 b $8CA0
 . StartupWorkspaceSeedData
 . Copied by `0xAD0C..0xAD16` into `0xF700..0xF723` during the reset/title
@@ -2054,6 +2070,10 @@ N $9081
 @ $9081 label=SHLPTStepUpRow
 N $9093
 @ $9093 label=SHLPTDone
+i $9098
+. Padding / reserved growth space between `SHLPT` and `RADAR`.
+. This `NOP` run follows a hard `RET` and ends at the next module boundary
+. `0x90BA`.
 c $90BA
 . RADAR
 D $90BA
@@ -2077,6 +2097,10 @@ N $90BA
 N $9122
 B $9122,8,h8
 B $912A,6,h6
+i $9130
+. Padding / alignment space between `RADAR` and `KeyboardMovementDecode`.
+. Only two trailing `NOP`s remain visible here after the embedded byte block;
+. they are not referenced and simply align the next helper at `0x9132`.
 N $9132
 . Keyboard movement/button decode helper.
 . Called from gameplay input handling and the start/demo code. It scans the
@@ -2512,6 +2536,12 @@ N $938A
 . missile orientation refresh, and proximity/range comparisons.
 @ $938A label=HeadingFromXZ
 c $938A
+i $943D
+. Padding / reserved growth space after `HeadingFromXZ`.
+. The 3-byte `NOP` run at `0x943D..0x943F` follows a hard `RET` and precedes
+. a zeroed spacer block before `MESPR`.
+b $9440
+. Zeroed padding / spacer block between `HeadingFromXZ` and `MESPR`.
 B $9440,8,h8
 B $9448,8,h8
 B $9450,2,h2
@@ -2645,7 +2675,7 @@ C $94E8,h3
 c $94EC
 . NUMBA
 D $94EC
-. Used by the routines at #R$AD3E and #R$B55D.
+. Used by score/life update plus start-transition, attract, and showcase code.
 . HL Packed BCD value to display
 . Current best shipped read: generic packed-BCD print helper reused for the
 . gameplay score strip and several attract/start numeric displays.
@@ -2679,7 +2709,10 @@ C $9523,h3
 C $9527,h3
 C $952B,h3
 C $952F,h3
-N $9538
+i $9533
+. Padding / reserved growth space before the short score-strip helper at `0x9538`.
+. This 5-byte `NOP` run follows a hard `RET` and is not a live fallthrough path.
+c $9538
 . This entry point is used by the routine at #R$977E.
 C $9538,h2
 C $953A,h2
@@ -2691,8 +2724,13 @@ C $9545,h2
 . About 4.92 ms per `LDIR` pass, or about 19.73 ms for the whole 4-pass block
 . at 3.5 MHz.
 C $9548,h3
-N $956A
-. This entry point is used by the routines at #R$AD3E and #R$B2F5.
+i $954C
+. Padding / reserved growth space between the short score-strip helper and the
+. main reset/initialisation block at `0x956A`.
+. This 30-byte `NOP` run follows a hard `RET` and ends at a round-number
+. module boundary.
+c $956A
+. Entered from the common start-game transition and the attract/showcase setup patch path.
 C $956A,h3
 C $956D,h3
 . Clear probable EXST1 / EXST2 state bytes.
@@ -3820,6 +3858,11 @@ C $A0CB,h2
 C $A0CD,h2
 C $A0CF,h2
 C $A0D2,h3
+i $A0D6
+. Padding / reserved growth space between the missile block and the shared
+. bullet update/render block.
+. This `NOP` run follows a hard `RET` and ends on the next routine boundary at
+. `0xA122`.
 @ $A122 label=BulletUpdateAndRender
 @ $A133 label=PlayerBulletCheckActive
 @ $A155 label=PlayerBulletAdvanceAndRotate
@@ -4957,10 +5000,18 @@ C $ACB5,h2
 C $ACB7,h2
 C $ACB9,h3
 C $ACBD,h2
+i $ACC0
+. Padding / reserved growth space between the deferred-effect block and the
+. startup/title copy helper at `0xAD0C`.
+. This `NOP` run follows a hard `RET` and ends at the next round-number helper
+. boundary.
 c $AD0C
-. Routine at AD0C
+. Game Entry Point
 D $AD0C
-. Used by the routine at #R$B77A.
+@ $AD0C label=GameEntryPoint
+. Primary reset/title entrypoint.
+. Disables interrupts, copies the startup seed data into working RAM, and then
+. jumps into `AttractModeTitleSequence`.
 C $AD0C,1
 . Disable interrupts.
 C $AD0D,11,h9,2
@@ -5308,8 +5359,8 @@ C $B0B0,h3
 C $B0B3,h3
 C $B0B9,h3
 N $B0BC
-. This entry point is used by the routines at #R$B1F4, #R$B2F5, #R$B587 and
-. #R$B676.
+. This entry point is used by the attract/title sequence, the showcase stage,
+. and the instructions loop.
 . Common start-game transition from the attract/title/instructions flow.
 . Multiple raw `S`-key checks in the intro code jump here; this path runs a
 . short visual/audio transition, restores the score display, and then jumps
@@ -5442,7 +5493,7 @@ C $B1F1,h3
 c $B1F4
 . Routine at B1F4
 D $B1F4
-. Used by the routines at #R$977E, #R$AD0C, #R$AD3E and #R$B676.
+. Used by the primary entrypoint, gameplay abort/back-to-title paths, and the instructions loop.
 . Current best read: attract-mode stage A/B.
 . It clears the screen, prepares title/demo resources, runs the tumbling
 . title/logo animation blocks, and checks `S` at multiple points so the player
@@ -5543,7 +5594,11 @@ C $B2CD,h1
 C $B2D1,h2
 C $B2D3,h2
 N $B2D5
-. This entry point is used by the routine at #R$B2F5.
+. Current best read: forward title flash/fade pass.
+. This is not a separate top-level routine; it is an internal phase of
+. `AttractModeTitleSequence`, entered from the preceding QS/logo stage and
+. paired with the reverse pass at `0xB2F5`.
+@ $B2D5 label=AttractModeTitleFlashForward
 C $B2D5,h3
 C $B2DB,h3
 C $B2DE,h3
@@ -5559,10 +5614,12 @@ C $B2EF,h3
 . Start game.
 C $B2F2,h3
 . Jump to #R$B2D5.
-c $B2F5
-. Routine at B2F5
-D $B2F5
-. Used by the routine at #R$B1F4.
+N $B2F5
+. Current best read: reverse title flash/fade pass.
+. This is an internal entry point within `AttractModeTitleSequence`, not a
+. distinct top-level routine: `0xB2D5..0xB343` forms one cohesive flash/fade,
+. restore, and pre-separation prelude.
+@ $B2F5 label=AttractModeTitleFlashReverse
 C $B2F6,h3
 C $B2FC,h3
 C $B2FF,h3
@@ -5578,6 +5635,11 @@ C $B31A,h2
 . Restore the full attribute buffer to `0x44`.
 C $B317,h3
 C $B31C,h2
+N $B31E
+. Current best read: title pre-separation wipe/delay pass.
+. Applies the coarse screen wipe, then runs the calibrated delay before
+. jumping into `AttractModeTitleSeparationAndFlyoff`.
+@ $B31E label=AttractModeTitleWipePrelude
 C $B31E,h3
 C $B32C,h3
 C $B331,h3
@@ -5886,7 +5948,7 @@ C $B586,1
 c $B587
 . Routine at B587
 D $B587
-. Used by the routine at #R$B2F5.
+. Entered from the attract/title sequence after the title flyoff/setup path.
 . Current best read: attract-mode stage C.
 . This block appears to force selected entity states and repeatedly call the
 . main game loop to showcase tank / supertank / saucer / missile examples,
@@ -6183,12 +6245,12 @@ C $B771,h6
 C $B777,h3
 . Jump to #R$B1F4.
 c $B77A
-. Game Entry Point
+. Game Entry Vector
 D $B77A
 . Used by the routine at #R$FF27.
-@ $B77A label=GameEntryPoint
+@ $B77A label=GameEntryVector
 C $B77A,h3
-. Jump to #R$AD0C.
+. Jump to the primary `GameEntryPoint` at #R$AD0C.
 b $B77D
 . Data block at B77D
 B $B77D,8,h8
@@ -9193,8 +9255,8 @@ B $FF15,8,h8
 B $FF1D,8,h8
 B $FF25,2,h2
 c $FF27
-. Game Entry Point Alias
-@ $FF27 label=Alias_GameEntryPoint
+. Game Entry Vector Alias
+@ $FF27 label=Alias_GameEntryVector
 C $FF27,h3
 . Jump to #R$B77A.
 u $FF2A

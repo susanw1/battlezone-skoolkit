@@ -407,9 +407,9 @@ Working summary of verified facts, local source material, and open questions for
   - direct-target sweep over the current generated disassembly found 964 direct `CALL`/`JP`/`JR` targets and none of them land in a non-code block
   - the remaining untargeted code starts are currently:
     - `0x924A`, `0x92AE`, `0x9312`: expected `TURN` handler entries selected indirectly through the `TURN` pointer
-    - `0xAD0C`: top-level reset/title re-entry
-    - `0xB77A`: final attract/title handoff into `0xAD0C`
-    - `0xFF27`: topmost jump/vector into `0xB77A`
+    - `0xAD0C`: primary `GameEntryPoint`
+    - `0xB77A`: `GameEntryVector`, a small handoff into `0xAD0C`
+    - `0xFF27`: topmost alias/vector into `0xB77A`
   - this strongly supports Susan's recollection that explicit `CALL`/`JP` targets should not be landing in true data, and that the main remaining classification risk is indirect-entry code rather than direct mis-targeting
 - `SHIPS` in the notebook now looks very likely to be the runtime lives counter at `0xFEE4`
   - the shipped death/game-over machinery at `0xADD4` is still the best code match for notebook `CRASH`, but it looks like a later expanded implementation rather than a close textual match to page 17
@@ -604,7 +604,8 @@ Working summary of verified facts, local source material, and open questions for
     - all of them jump to the common transition at `0xB0BC`
 - High-level structure scan strongly supports Susan's development recollection:
   - large `NOP` runs look like deliberate growth padding between separately assembled chunks
-  - round starts such as `0x8660`, `0x88EA`, `0x8C3C`, `0x9132`, `0x956A`, `0xAD0C`, `0xB1F4`, `0xB2F5`, `0xB55D`, `0xB587`, and `0xB676` behave like genuine module starts
+  - round starts such as `0x8660`, `0x88EA`, `0x8C3C`, `0x9132`, `0x956A`, `0xAD0C`, `0xB1F4`, `0xB55D`, `0xB587`, and `0xB676` behave like genuine module starts
+  - after a closer attract/title pass, `0xB2F5` no longer looks like a real top-level routine boundary; it is better treated as an internal reverse flash/fade entry inside the larger `0xB1F4..0xB343` title sequence
   - a dedicated working note is now maintained in `docs/Code-structure-notes.md`
   - direct-target audit currently finds no `CALL` / `JP` / `JR` target landing in a non-code block
   - inside the main executable span `0x8000..0xB77A`, only two non-code islands remain:
@@ -658,6 +659,18 @@ Working summary of verified facts, local source material, and open questions for
     - the instructions split cleanly into screen/off-screen blits, overlap-fill memset patterns, and calibrated self-copy delays
     - the delay-only `LDIR` sites now carry approximate ms timings in the ctl/skool comments, using 3.5 MHz Z80 timing
   - the `NOP` run at `0xADC4..0xADD3` is now an explicit ignored (`i`) ctl block after `KEMPST`, so it drops out of the generated code view rather than appearing as live `NOP`s
+  - several other clear inter-module `NOP` runs are now also explicit ignored (`i`) ctl blocks:
+    - `0x8640..0x865F`
+    - `0x88D9..0x88E9`
+    - `0x8C06..0x8C3B`
+    - `0x8C85..0x8C9F`
+    - `0x9098..0x90B9`
+    - `0x9130..0x9131`
+    - `0x943D..0x943F`
+    - `0x9533..0x9537`
+    - `0x954C..0x9569`
+    - `0xA0D6..0xA121`
+    - `0xACC0..0xAD0B`
   - `0xADD4` is now labeled `CRASH` directly in the ctl/skool
   - `0xAE90` is now labeled as the current best `BLOOD` match for the final zero-lives branch
     - `0xB0BC` then runs a short transition and jumps into the real game initialisation at `0x956A`, which eventually feeds the main loop at `0x977E`

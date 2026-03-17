@@ -1512,7 +1512,7 @@ c$8000 LD HL,$F97F   ; Start at the end of #R$F800 so the 192-entry row-address 
 ; inside the X-major branches rather than split out as a separate top-level
 ; entrypoint.
 ;
-; Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
+; Used throughout gameplay, crash/death, and attract/title rendering paths.
 @label=LNLPT
 c$805C LD HL,($FE02) ;
  $805F LD A,(HL)     ;
@@ -2536,42 +2536,15 @@ c$805C LD HL,($FE02) ;
  $8638 JP NZ,$806B   ;
  $863B LD SP,($FE00) ;
  $863F RET           ;
- $8640 NOP           ;
- $8641 NOP           ;
- $8642 NOP           ;
- $8643 NOP           ;
- $8644 NOP           ;
- $8645 NOP           ;
- $8646 NOP           ;
- $8647 NOP           ;
- $8648 NOP           ;
- $8649 NOP           ;
- $864A NOP           ;
- $864B NOP           ;
- $864C NOP           ;
- $864D NOP           ;
- $864E NOP           ;
- $864F NOP           ;
- $8650 NOP           ;
- $8651 NOP           ;
- $8652 NOP           ;
- $8653 NOP           ;
- $8654 NOP           ;
- $8655 NOP           ;
- $8656 NOP           ;
- $8657 NOP           ;
- $8658 NOP           ;
- $8659 NOP           ;
- $865A NOP           ;
- $865B NOP           ;
- $865C NOP           ;
- $865D NOP           ;
- $865E NOP           ;
- $865F NOP           ;
+
+; Padding / reserved growth space between `LNLPT` and `PERSP`.
+; This 32-byte `NOP` run follows a hard `RET` and ends on the round boundary
+; at `0x8660`, strongly suggesting separately assembled module padding.
+i$8640
 
 ; PERSP
 ;
-; Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+; Used throughout gameplay and attract/title rendering.
 ; Current best notebook match: `PERSP`.
 ; Shared perspective / clip stage. It consumes transformed coordinate tables,
 ; writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
@@ -2971,27 +2944,15 @@ c$8660 LD ($FE00),SP ;
  $88D2 LD SP,($FE00) ;
  $88D6 LD C,$00      ; Return `C=0`: projection completed and the caller may treat the object as drawable.
  $88D8 RET           ;
- $88D9 NOP           ;
- $88DA NOP           ;
- $88DB NOP           ;
- $88DC NOP           ;
- $88DD NOP           ;
- $88DE NOP           ;
- $88DF NOP           ;
- $88E0 NOP           ;
- $88E1 NOP           ;
- $88E2 NOP           ;
- $88E3 NOP           ;
- $88E4 NOP           ;
- $88E5 NOP           ;
- $88E6 NOP           ;
- $88E7 NOP           ;
- $88E8 NOP           ;
- $88E9 NOP           ;
+
+; Padding / reserved growth space between `PERSP` and `RotateXZLists`.
+; This 17-byte `NOP` run follows a `RET` and ends exactly at the next module
+; boundary `0x88EA`.
+i$88D9
 
 ; Shared X/Z rotation transform
 ;
-; Used by the routines at #R$977E, #R$B1F4 and #R$B2F5.
+; Used throughout gameplay and attract/title rendering.
 ; Current best read: reusable table-driven X/Z rotation stage.
 ; It consumes source coordinate lists plus angle-dependent tables and writes
 ; rotated coordinate lists for later perspective projection.
@@ -3505,64 +3466,15 @@ c$88EA LD ($FE00),SP ;
  $8C00 LD SP,($FE00) ;
  $8C04 EXX           ;
  $8C05 RET           ;
- $8C06 NOP           ;
- $8C07 NOP           ;
- $8C08 NOP           ;
- $8C09 NOP           ;
- $8C0A NOP           ;
- $8C0B NOP           ;
- $8C0C NOP           ;
- $8C0D NOP           ;
- $8C0E NOP           ;
- $8C0F NOP           ;
- $8C10 NOP           ;
- $8C11 NOP           ;
- $8C12 NOP           ;
- $8C13 NOP           ;
- $8C14 NOP           ;
- $8C15 NOP           ;
- $8C16 NOP           ;
- $8C17 NOP           ;
- $8C18 NOP           ;
- $8C19 NOP           ;
- $8C1A NOP           ;
- $8C1B NOP           ;
- $8C1C NOP           ;
- $8C1D NOP           ;
- $8C1E NOP           ;
- $8C1F NOP           ;
- $8C20 NOP           ;
- $8C21 NOP           ;
- $8C22 NOP           ;
- $8C23 NOP           ;
- $8C24 NOP           ;
- $8C25 NOP           ;
- $8C26 NOP           ;
- $8C27 NOP           ;
- $8C28 NOP           ;
- $8C29 NOP           ;
- $8C2A NOP           ;
- $8C2B NOP           ;
- $8C2C NOP           ;
- $8C2D NOP           ;
- $8C2E NOP           ;
- $8C2F NOP           ;
- $8C30 NOP           ;
- $8C31 NOP           ;
- $8C32 NOP           ;
- $8C33 NOP           ;
- $8C34 NOP           ;
- $8C35 NOP           ;
- $8C36 NOP           ;
- $8C37 NOP           ;
- $8C38 NOP           ;
- $8C39 NOP           ;
- $8C3A NOP           ;
- $8C3B NOP           ;
+
+; Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
+; This `NOP` run follows a hard `RET` and ends on the next separately built
+; module boundary at `0x8C3C`.
+i$8C06
 
 ; SDRAW
 ;
-; Used by the routines at #R$977E, #R$AD3E, #R$B1F4 and #R$B2F5.
+; Used throughout gameplay, crash/death, and attract/title/showcase rendering.
 ;
 ; .
 ;
@@ -3590,7 +3502,7 @@ c$8C3C LD HL,$DFA0   ;
  $8C56 LD DE,$4800   ;
  $8C59 LD BC,$1000   ;
  $8C5C LDIR          ;
-; This entry point is used by the routine at #R$B2F5.
+; This entry point is used by the title flash/fade phase inside `AttractModeTitleSequence`.
 ; The crash/death path at `0xADD4` temporarily patches this opcode byte to
 ; `RET` (`0xC9`) and later restores it to `LD HL,nn` (`0x21`) at `0xAE3D`.
 *$8C5E LD HL,$DFA0   ;
@@ -3614,33 +3526,11 @@ c$8C3C LD HL,$DFA0   ;
  $8C80 LD (HL),$00   ;
  $8C82 LDIR          ;
  $8C84 RET           ;
- $8C85 NOP           ;
- $8C86 NOP           ;
- $8C87 NOP           ;
- $8C88 NOP           ;
- $8C89 NOP           ;
- $8C8A NOP           ;
- $8C8B NOP           ;
- $8C8C NOP           ;
- $8C8D NOP           ;
- $8C8E NOP           ;
- $8C8F NOP           ;
- $8C90 NOP           ;
- $8C91 NOP           ;
- $8C92 NOP           ;
- $8C93 NOP           ;
- $8C94 NOP           ;
- $8C95 NOP           ;
- $8C96 NOP           ;
- $8C97 NOP           ;
- $8C98 NOP           ;
- $8C99 NOP           ;
- $8C9A NOP           ;
- $8C9B NOP           ;
- $8C9C NOP           ;
- $8C9D NOP           ;
- $8C9E NOP           ;
- $8C9F NOP           ;
+
+; Padding / reserved growth space between `SDRAW` and `StartupWorkspaceSeedData`.
+; This 27-byte `NOP` run follows a hard `RET` and precedes genuine embedded
+; seed data copied at reset/title start.
+i$8C85
 
 ; StartupWorkspaceSeedData
 ; Copied by `0xAD0C..0xAD16` into `0xF700..0xF723` during the reset/title
@@ -3675,7 +3565,7 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 
 ; Routine at 8D68
 ;
-; Used by the routines at #R$977E and #R$ADC4.
+; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
 ; .
 ;
@@ -3788,7 +3678,7 @@ c$8D68 LD HL,($FE1C) ;
 
 ; Routine at 8E08
 ;
-; Used by the routines at #R$977E and #R$ADC4.
+; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
 ; .
 ;
@@ -3831,7 +3721,7 @@ c$8E08 LD BC,($FE24) ;
 
 ; Routine at 8E38
 ;
-; Used by the routines at #R$977E and #R$ADC4.
+; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
 ; .
 ;
@@ -4062,7 +3952,7 @@ c$8E38 LD ($FE00),SP ;
 
 ; Routine at 8F53
 ;
-; Used by the routines at #R$977E and #R$ADC4.
+; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
 ; .
 ;
@@ -4308,40 +4198,11 @@ c$8F53 CALL $8F61    ;
 @label=SHLPTDone
 *$9093 LD SP,($FE00) ;
  $9097 RET           ;
- $9098 NOP           ;
- $9099 NOP           ;
- $909A NOP           ;
- $909B NOP           ;
- $909C NOP           ;
- $909D NOP           ;
- $909E NOP           ;
- $909F NOP           ;
- $90A0 NOP           ;
- $90A1 NOP           ;
- $90A2 NOP           ;
- $90A3 NOP           ;
- $90A4 NOP           ;
- $90A5 NOP           ;
- $90A6 NOP           ;
- $90A7 NOP           ;
- $90A8 NOP           ;
- $90A9 NOP           ;
- $90AA NOP           ;
- $90AB NOP           ;
- $90AC NOP           ;
- $90AD NOP           ;
- $90AE NOP           ;
- $90AF NOP           ;
- $90B0 NOP           ;
- $90B1 NOP           ;
- $90B2 NOP           ;
- $90B3 NOP           ;
- $90B4 NOP           ;
- $90B5 NOP           ;
- $90B6 NOP           ;
- $90B7 NOP           ;
- $90B8 NOP           ;
- $90B9 NOP           ;
+
+; Padding / reserved growth space between `SHLPT` and `RADAR`.
+; This `NOP` run follows a hard `RET` and ends at the next module boundary
+; `0x90BA`.
+i$9098
 
 ; RADAR
 ;
@@ -4435,12 +4296,15 @@ c$90BA PUSH HL                              ;
  $9121 LD (HL),A                            ;
  $9122 DEFB $C9,$00,$00,$00,$00,$00,$00,$00 ;
  $912A DEFB $00,$00,$00,$00,$00,$00         ;
- $9130 NOP                                  ;
- $9131 NOP                                  ;
+
+; Padding / alignment space between `RADAR` and `KeyboardMovementDecode`.
+; Only two trailing `NOP`s remain visible here after the embedded byte block;
+; they are not referenced and simply align the next helper at `0x9132`.
+i$9130
 
 ; Routine at 9132
 ;
-; Used by the routines at #R$977E and #R$ADC4.
+; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
 ; .
 ;
@@ -4567,7 +4431,7 @@ c$9132 LD D,$00                                         ;
 
 ; Routine at 91E6
 ;
-; Used by the routine at #R$977E.
+; Used by the routine at #R$A0D6.
 ;
 ; .
 ;
@@ -4892,7 +4756,7 @@ c$9312 POP HL                               ;
 
 ; Routine at 938A
 ;
-; Used by the routines at #R$94EC and #R$977E.
+; Used by the routines at #R$956A and #R$977E.
 ;
 ; .
 ;
@@ -4902,132 +4766,136 @@ c$9312 POP HL                               ;
 ; compact 8-bit heading/bearing code used by tank desired-heading logic,
 ; missile orientation refresh, and proximity/range comparisons.
 @label=HeadingFromXZ
-c$938A LD A,H                               ;
- $938B LD B,$00                             ;
- $938D AND A                                ;
- $938E JP P,$939A                           ;
- $9391 LD B,H                               ;
- $9392 LD C,L                               ;
- $9393 LD HL,$0000                          ;
- $9396 SBC HL,BC                            ;
- $9398 LD B,$80                             ;
-*$939A ADD HL,HL                            ;
- $939B PUSH HL                              ;
- $939C LD A,D                               ;
- $939D AND A                                ;
- $939E JP P,$93A9                           ;
- $93A1 LD HL,$0000                          ;
- $93A4 SBC HL,DE                            ;
- $93A6 SET 6,B                              ;
- $93A8 EX DE,HL                             ;
-*$93A9 SLA E                                ;
- $93AB RL D                                 ;
- $93AD EX AF,AF'                            ;
- $93AE LD A,B                               ;
- $93AF EX AF,AF'                            ;
- $93B0 POP BC                               ;
- $93B1 PUSH DE                              ;
- $93B2 EX DE,HL                             ;
- $93B3 AND A                                ;
- $93B4 SBC HL,BC                            ;
- $93B6 POP DE                               ;
- $93B7 JP C,$93C3                           ;
- $93BA LD L,C                               ;
- $93BB LD H,B                               ;
- $93BC EX DE,HL                             ;
- $93BD LD C,L                               ;
- $93BE LD B,H                               ;
- $93BF EX AF,AF'                            ;
- $93C0 OR $20                               ;
- $93C2 EX AF,AF'                            ;
-*$93C3 LD H,$00                             ;
- $93C5 LD A,D                               ;
- $93C6 SLA H                                ;
- $93C8 RLA                                  ;
- $93C9 JR C,$93CE                           ;
- $93CB CP B                                 ;
- $93CC JR C,$93D0                           ;
-*$93CE SUB B                                ;
- $93CF INC H                                ;
-*$93D0 SLA H                                ;
- $93D2 RLA                                  ;
- $93D3 JR C,$93D8                           ;
- $93D5 CP B                                 ;
- $93D6 JR C,$93DA                           ;
-*$93D8 SUB B                                ;
- $93D9 INC H                                ;
-*$93DA SLA H                                ;
- $93DC RLA                                  ;
- $93DD JR C,$93E2                           ;
- $93DF CP B                                 ;
- $93E0 JR C,$93E4                           ;
-*$93E2 SUB B                                ;
- $93E3 INC H                                ;
-*$93E4 SLA H                                ;
- $93E6 RLA                                  ;
- $93E7 JR C,$93EC                           ;
- $93E9 CP B                                 ;
- $93EA JR C,$93EE                           ;
-*$93EC SUB B                                ;
- $93ED INC H                                ;
-*$93EE SLA H                                ;
- $93F0 RLA                                  ;
- $93F1 JR C,$93F6                           ;
- $93F3 CP B                                 ;
- $93F4 JR C,$93F8                           ;
-*$93F6 SUB B                                ;
- $93F7 INC H                                ;
-*$93F8 SLA H                                ;
- $93FA RLA                                  ;
- $93FB JR C,$9400                           ;
- $93FD CP B                                 ;
- $93FE JR C,$9402                           ;
-*$9400 SUB B                                ;
- $9401 INC H                                ;
-*$9402 SLA H                                ;
- $9404 RLA                                  ;
- $9405 JR C,$940A                           ;
- $9407 CP B                                 ;
- $9408 JR C,$940C                           ;
-*$940A SUB B                                ;
- $940B INC H                                ;
-*$940C SLA H                                ;
- $940E RLA                                  ;
- $940F JR C,$9414                           ;
- $9411 CP B                                 ;
- $9412 JR C,$9416                           ;
-*$9414 SUB B                                ;
- $9415 INC H                                ;
-*$9416 LD L,H                               ;
- $9417 LD H,$7B                             ;
- $9419 LD A,(HL)                            ;
- $941A EX AF,AF'                            ;
- $941B LD B,A                               ;
- $941C EX AF,AF'                            ;
- $941D BIT 5,B                              ;
- $941F JP NZ,$9425                          ;
- $9422 LD A,$40                             ;
- $9424 SUB (HL)                             ;
-*$9425 LD C,A                               ;
- $9426 BIT 6,B                              ;
- $9428 JP Z,$9437                           ;
- $942B BIT 7,B                              ;
- $942D JP Z,$9433                           ;
- $9430 ADD A,$80                            ;
- $9432 RET                                  ;
-*$9433 LD A,$80                             ;
- $9435 SUB C                                ;
- $9436 RET                                  ;
-*$9437 BIT 7,B                              ;
- $9439 RET Z                                ;
- $943A NEG                                  ;
- $943C RET                                  ;
- $943D NOP                                  ;
- $943E NOP                                  ;
- $943F NOP                                  ;
- $9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
- $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
- $9450 DEFB $00,$00                         ;
+c$938A LD A,H        ;
+ $938B LD B,$00      ;
+ $938D AND A         ;
+ $938E JP P,$939A    ;
+ $9391 LD B,H        ;
+ $9392 LD C,L        ;
+ $9393 LD HL,$0000   ;
+ $9396 SBC HL,BC     ;
+ $9398 LD B,$80      ;
+*$939A ADD HL,HL     ;
+ $939B PUSH HL       ;
+ $939C LD A,D        ;
+ $939D AND A         ;
+ $939E JP P,$93A9    ;
+ $93A1 LD HL,$0000   ;
+ $93A4 SBC HL,DE     ;
+ $93A6 SET 6,B       ;
+ $93A8 EX DE,HL      ;
+*$93A9 SLA E         ;
+ $93AB RL D          ;
+ $93AD EX AF,AF'     ;
+ $93AE LD A,B        ;
+ $93AF EX AF,AF'     ;
+ $93B0 POP BC        ;
+ $93B1 PUSH DE       ;
+ $93B2 EX DE,HL      ;
+ $93B3 AND A         ;
+ $93B4 SBC HL,BC     ;
+ $93B6 POP DE        ;
+ $93B7 JP C,$93C3    ;
+ $93BA LD L,C        ;
+ $93BB LD H,B        ;
+ $93BC EX DE,HL      ;
+ $93BD LD C,L        ;
+ $93BE LD B,H        ;
+ $93BF EX AF,AF'     ;
+ $93C0 OR $20        ;
+ $93C2 EX AF,AF'     ;
+*$93C3 LD H,$00      ;
+ $93C5 LD A,D        ;
+ $93C6 SLA H         ;
+ $93C8 RLA           ;
+ $93C9 JR C,$93CE    ;
+ $93CB CP B          ;
+ $93CC JR C,$93D0    ;
+*$93CE SUB B         ;
+ $93CF INC H         ;
+*$93D0 SLA H         ;
+ $93D2 RLA           ;
+ $93D3 JR C,$93D8    ;
+ $93D5 CP B          ;
+ $93D6 JR C,$93DA    ;
+*$93D8 SUB B         ;
+ $93D9 INC H         ;
+*$93DA SLA H         ;
+ $93DC RLA           ;
+ $93DD JR C,$93E2    ;
+ $93DF CP B          ;
+ $93E0 JR C,$93E4    ;
+*$93E2 SUB B         ;
+ $93E3 INC H         ;
+*$93E4 SLA H         ;
+ $93E6 RLA           ;
+ $93E7 JR C,$93EC    ;
+ $93E9 CP B          ;
+ $93EA JR C,$93EE    ;
+*$93EC SUB B         ;
+ $93ED INC H         ;
+*$93EE SLA H         ;
+ $93F0 RLA           ;
+ $93F1 JR C,$93F6    ;
+ $93F3 CP B          ;
+ $93F4 JR C,$93F8    ;
+*$93F6 SUB B         ;
+ $93F7 INC H         ;
+*$93F8 SLA H         ;
+ $93FA RLA           ;
+ $93FB JR C,$9400    ;
+ $93FD CP B          ;
+ $93FE JR C,$9402    ;
+*$9400 SUB B         ;
+ $9401 INC H         ;
+*$9402 SLA H         ;
+ $9404 RLA           ;
+ $9405 JR C,$940A    ;
+ $9407 CP B          ;
+ $9408 JR C,$940C    ;
+*$940A SUB B         ;
+ $940B INC H         ;
+*$940C SLA H         ;
+ $940E RLA           ;
+ $940F JR C,$9414    ;
+ $9411 CP B          ;
+ $9412 JR C,$9416    ;
+*$9414 SUB B         ;
+ $9415 INC H         ;
+*$9416 LD L,H        ;
+ $9417 LD H,$7B      ;
+ $9419 LD A,(HL)     ;
+ $941A EX AF,AF'     ;
+ $941B LD B,A        ;
+ $941C EX AF,AF'     ;
+ $941D BIT 5,B       ;
+ $941F JP NZ,$9425   ;
+ $9422 LD A,$40      ;
+ $9424 SUB (HL)      ;
+*$9425 LD C,A        ;
+ $9426 BIT 6,B       ;
+ $9428 JP Z,$9437    ;
+ $942B BIT 7,B       ;
+ $942D JP Z,$9433    ;
+ $9430 ADD A,$80     ;
+ $9432 RET           ;
+*$9433 LD A,$80      ;
+ $9435 SUB C         ;
+ $9436 RET           ;
+*$9437 BIT 7,B       ;
+ $9439 RET Z         ;
+ $943A NEG           ;
+ $943C RET           ;
+
+; Padding / reserved growth space after `HeadingFromXZ`.
+; The 3-byte `NOP` run at `0x943D..0x943F` follows a hard `RET` and precedes
+; a zeroed spacer block before `MESPR`.
+i$943D
+
+; Zeroed padding / spacer block between `HeadingFromXZ` and `MESPR`.
+b$9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $9450 DEFB $00,$00
 
 ; MESPR
 ;
@@ -5181,7 +5049,7 @@ c$94AC LD HL,($FE76) ; Load the current score.
 
 ; NUMBA
 ;
-; Used by the routines at #R$AD3E and #R$B55D.
+; Used by score/life update plus start-transition, attract, and showcase code.
 ; HL Packed BCD value to display
 ; Current best shipped read: generic packed-BCD print helper reused for the
 ; gameplay score strip and several attract/start numeric displays.
@@ -5227,13 +5095,15 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $952E SUB A         ;
  $952F CALL $948C    ;
  $9532 RET           ;
- $9533 NOP           ;
- $9534 NOP           ;
- $9535 NOP           ;
- $9536 NOP           ;
- $9537 NOP           ;
+
+; Padding / reserved growth space before the short score-strip helper at `0x9538`.
+; This 5-byte `NOP` run follows a hard `RET` and is not a live fallthrough path.
+i$9533
+
 ; This entry point is used by the routine at #R$977E.
-*$9538 LD A,$00      ;
+;
+; Used by the routines at #R$977E and #R$A0D6.
+c$9538 LD A,$00      ;
  $953A ADD A,$04     ;
 *$953C LD HL,$0000   ;
  $953F LD DE,$0000   ;
@@ -5244,38 +5114,17 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9547 DEC A         ;
  $9548 JP NZ,$953C   ;
  $954B RET           ;
- $954C NOP           ;
- $954D NOP           ;
- $954E NOP           ;
- $954F NOP           ;
- $9550 NOP           ;
- $9551 NOP           ;
- $9552 NOP           ;
- $9553 NOP           ;
- $9554 NOP           ;
- $9555 NOP           ;
- $9556 NOP           ;
- $9557 NOP           ;
- $9558 NOP           ;
- $9559 NOP           ;
- $955A NOP           ;
- $955B NOP           ;
- $955C NOP           ;
- $955D NOP           ;
- $955E NOP           ;
- $955F NOP           ;
- $9560 NOP           ;
- $9561 NOP           ;
- $9562 NOP           ;
- $9563 NOP           ;
- $9564 NOP           ;
- $9565 NOP           ;
- $9566 NOP           ;
- $9567 NOP           ;
- $9568 NOP           ;
- $9569 NOP           ;
-; This entry point is used by the routines at #R$AD3E and #R$B2F5.
-*$956A LD HL,$0000   ;
+
+; Padding / reserved growth space between the short score-strip helper and the
+; main reset/initialisation block at `0x956A`.
+; This 30-byte `NOP` run follows a hard `RET` and ends at a round-number
+; module boundary.
+i$954C
+
+; Entered from the common start-game transition and the attract/showcase setup patch path.
+;
+; Used by the routines at #R$ADC4 and #R$B1F4.
+c$956A LD HL,$0000   ;
  $956D LD ($FE6A),HL ; Clear probable EXST1 / EXST2 state bytes.
  $9570 LD ($FE6C),HL ;
  $9573 LD ($FE76),HL ;
@@ -6676,590 +6525,462 @@ c$977E LD HL,($FE70) ;
  $A0D1 DEC C         ;
  $A0D2 JP NZ,$A0C7   ;
  $A0D5 RET           ;
- $A0D6 NOP           ;
- $A0D7 NOP           ;
- $A0D8 NOP           ;
- $A0D9 NOP           ;
- $A0DA NOP           ;
- $A0DB NOP           ;
- $A0DC NOP           ;
- $A0DD NOP           ;
- $A0DE NOP           ;
- $A0DF NOP           ;
- $A0E0 NOP           ;
- $A0E1 NOP           ;
- $A0E2 NOP           ;
- $A0E3 NOP           ;
- $A0E4 NOP           ;
- $A0E5 NOP           ;
- $A0E6 NOP           ;
- $A0E7 NOP           ;
- $A0E8 NOP           ;
- $A0E9 NOP           ;
- $A0EA NOP           ;
- $A0EB NOP           ;
- $A0EC NOP           ;
- $A0ED NOP           ;
- $A0EE NOP           ;
- $A0EF NOP           ;
- $A0F0 NOP           ;
- $A0F1 NOP           ;
- $A0F2 NOP           ;
- $A0F3 NOP           ;
- $A0F4 NOP           ;
- $A0F5 NOP           ;
- $A0F6 NOP           ;
- $A0F7 NOP           ;
- $A0F8 NOP           ;
- $A0F9 NOP           ;
- $A0FA NOP           ;
- $A0FB NOP           ;
- $A0FC NOP           ;
- $A0FD NOP           ;
- $A0FE NOP           ;
- $A0FF NOP           ;
- $A100 NOP           ;
- $A101 NOP           ;
- $A102 NOP           ;
- $A103 NOP           ;
- $A104 NOP           ;
- $A105 NOP           ;
- $A106 NOP           ;
- $A107 NOP           ;
- $A108 NOP           ;
- $A109 NOP           ;
- $A10A NOP           ;
- $A10B NOP           ;
- $A10C NOP           ;
- $A10D NOP           ;
- $A10E NOP           ;
- $A10F NOP           ;
- $A110 NOP           ;
- $A111 NOP           ;
- $A112 NOP           ;
- $A113 NOP           ;
- $A114 NOP           ;
- $A115 NOP           ;
- $A116 NOP           ;
- $A117 NOP           ;
- $A118 NOP           ;
- $A119 NOP           ;
- $A11A NOP           ;
- $A11B NOP           ;
- $A11C NOP           ;
- $A11D NOP           ;
- $A11E NOP           ;
- $A11F NOP           ;
- $A120 NOP           ;
- $A121 NOP           ;
+
+; Padding / reserved growth space between the missile block and the shared
+; bullet update/render block.
+; This `NOP` run follows a hard `RET` and ends on the next routine boundary at
+; `0xA122`.
+i$A0D6
 @label=BulletUpdateAndRender
 *$A122 LD A,$18      ; Shared player-bullet / hostile-bullet update, project, draw, and hit-test block.
- $A124 OUT ($FE),A   ;
- $A126 LD A,($FE6A)  ;
+ $A124 OUT ($FE),A
+ $A126 LD A,($FE6A)
  $A129 AND $0C       ; Active player-bullet / hostile-bullet bits.
- $A12B JP Z,$A37B    ;
- $A12E AND $08       ;
- $A130 JP Z,$A234    ;
+ $A12B JP Z,$A37B
+ $A12E AND $08
+ $A130 JP Z,$A234
 @label=PlayerBulletCheckActive
  $A133 LD A,($FEB2)  ; Player-bullet active path: either retire/requeue `PlayerBulletLife` or advance,
                      ; rotate, project, and test hits.
- $A136 AND A         ;
- $A137 JP NZ,$A155   ;
- $A13A LD A,($FE6A)  ;
- $A13D AND $F7       ;
- $A13F LD ($FE6A),A  ;
- $A142 LD A,($FE6E)  ;
- $A145 AND $F7       ;
- $A147 LD ($FE6E),A  ;
- $A14A LD A,($FE6C)  ;
+ $A136
+ $A137 JP NZ,$A155
+ $A13A LD A,($FE6A)
+ $A13D AND $F7
+ $A13F LD ($FE6A),A
+ $A142 LD A,($FE6E)
+ $A145 AND $F7
+ $A147 LD ($FE6E),A
+ $A14A LD A,($FE6C)
  $A14D OR $08        ; Queue the player-bullet deferred/restart bit in `Probable_EXST2`.
- $A14F LD ($FE6C),A  ;
- $A152 JP $A234      ;
+ $A14F LD ($FE6C),A
+ $A152 JP $A234
 @label=PlayerBulletAdvanceAndRotate
 *$A155 LD HL,($FEAC) ; Advance the live player-bullet `PlayerBulletX` / `PlayerBulletZ`, install the
                      ; shared bullet geometry tables, then rotate/project it using `PlayerBulletOrientation`.
- $A158 DEC A         ;
- $A159 LD ($FEB2),A  ;
- $A15C LD DE,($DD1A) ;
- $A160 SBC HL,DE     ;
- $A162 ADD HL,HL     ;
- $A163 ADD HL,HL     ;
- $A164 ADD HL,DE     ;
- $A165 LD ($FEAC),HL ;
- $A168 LD ($FE4A),HL ;
- $A16B LD HL,($FEAE) ;
- $A16E LD DE,($DDCA) ;
- $A172 SBC HL,DE     ;
- $A174 ADD HL,HL     ;
- $A175 ADD HL,HL     ;
- $A176 ADD HL,DE     ;
- $A177 LD ($FEAE),HL ;
- $A17A LD ($FE4C),HL ;
+ $A158
+ $A159 LD ($FEB2),A
+ $A15C LD DE,($DD1A)
+ $A160
+ $A165 LD ($FEAC),HL
+ $A168 LD ($FE4A),HL
+ $A16B LD HL,($FEAE)
+ $A16E LD DE,($DDCA)
+ $A172
+ $A177 LD ($FEAE),HL
+ $A17A LD ($FE4C),HL
  $A17D LD HL,$D9D0   ; XTAB
- $A180 LD ($FE42),HL ;
+ $A180 LD ($FE42),HL
  $A183 LD HL,$DAC4   ; ZTAB
- $A186 LD ($FE46),HL ;
+ $A186 LD ($FE46),HL
  $A189 LD HL,$DD20   ; HBLXLC
- $A18C LD ($FE32),HL ;
+ $A18C LD ($FE32),HL
  $A18F LD HL,$DDD0   ; HBLZLC
- $A192 LD ($FE36),HL ;
- $A195 LD HL,($FEB0) ;
- $A198 SRL H         ;
- $A19A RR L          ;
- $A19C SUB A         ;
- $A19D OUT ($FE),A   ;
- $A19F LD A,$04      ;
- $A1A1 CALL $88EA    ;
- $A1A4 LD A,$18      ;
- $A1A6 OUT ($FE),A   ;
+ $A192 LD ($FE36),HL
+ $A195 LD HL,($FEB0)
+ $A198
+ $A19D OUT ($FE),A
+ $A19F LD A,$04
+ $A1A1 CALL $88EA
+ $A1A4 LD A,$18
+ $A1A6 OUT ($FE),A
  $A1A8 LD HL,$DE98   ; XPERS+$06
- $A1AB LD ($FE38),HL ;
+ $A1AB LD ($FE38),HL
  $A1AE LD HL,$DED0   ; YPERS+$08
- $A1B1 LD ($FE3A),HL ;
+ $A1B1 LD ($FE3A),HL
  $A1B4 LD HL,$DBB8   ; YLOC
- $A1B7 LD ($FE34),HL ;
- $A1BA SUB A         ;
- $A1BB CALL $8660    ;
- $A1BE LD A,C        ;
- $A1BF AND A         ;
- $A1C0 LD A,($FE6E)  ;
- $A1C3 JP Z,$A1D3    ;
+ $A1B7 LD ($FE34),HL
+ $A1BA
+ $A1BB CALL $8660
+ $A1BE
+ $A1C0 LD A,($FE6E)
+ $A1C3 JP Z,$A1D3
  $A1C6 AND $F7       ; Clear the player-bullet visible bit.
- $A1C8 LD ($FE6E),A  ;
- $A1CB LD A,$01      ;
- $A1CD CALL $9538    ;
- $A1D0 JP $A234      ;
+ $A1C8 LD ($FE6E),A
+ $A1CB LD A,$01
+ $A1CD CALL $9538
+ $A1D0 JP $A234
 @label=PlayerBulletVisible
 *$A1D3 OR $08        ; Set the player-bullet visible bit.
  $A1D5 LD ($FE6E),A  ; Visible player-bullet path: center the projected X span, test overlap against the
                      ; current target limits, then either draw or trigger a hit path.
- $A1D8 SUB A         ;
- $A1D9 OUT ($FE),A   ;
- $A1DB LD HL,($FE3C) ;
- $A1DE LD DE,($FE3E) ;
- $A1E2 SBC HL,DE     ;
- $A1E4 SRL H         ;
- $A1E6 RR L          ;
- $A1E8 ADD HL,DE     ;
- $A1E9 EX DE,HL      ;
- $A1EA LD HL,($FE1C) ;
- $A1ED SBC HL,DE     ;
- $A1EF JP M,$A22B    ;
- $A1F2 LD HL,($FE1E) ;
- $A1F5 SBC HL,DE     ;
- $A1F7 JP P,$A22B    ;
- $A1FA LD HL,($FEAE) ;
- $A1FD LD A,($FE6A)  ;
- $A200 LD C,A        ;
+ $A1D8
+ $A1D9 OUT ($FE),A
+ $A1DB LD HL,($FE3C)
+ $A1DE LD DE,($FE3E)
+ $A1E2
+ $A1EA LD HL,($FE1C)
+ $A1ED
+ $A1EF JP M,$A22B
+ $A1F2 LD HL,($FE1E)
+ $A1F5
+ $A1F7 JP P,$A22B
+ $A1FA LD HL,($FEAE)
+ $A1FD LD A,($FE6A)
+ $A200
 @label=PlayerBulletTestSaucerHit
  $A201 BIT 5,A       ; Test active saucer bit for player-bullet hit.
- $A203 JP Z,$A20F    ;
- $A206 LD A,($FE91)  ;
- $A209 SUB H         ;
- $A20A SUB $07       ;
- $A20C JP C,$A934    ;
+ $A203 JP Z,$A20F
+ $A206 LD A,($FE91)
+ $A209
+ $A20A SUB $07
+ $A20C JP C,$A934
 @label=PlayerBulletTestMissileHit
 *$A20F BIT 4,C       ; Test active missile bit for player-bullet hit.
- $A211 JP Z,$A21D    ;
- $A214 LD A,($FE81)  ;
- $A217 SUB H         ;
- $A218 SUB $07       ;
- $A21A JP C,$AA0B    ;
+ $A211 JP Z,$A21D
+ $A214 LD A,($FE81)
+ $A217
+ $A218 SUB $07
+ $A21A JP C,$AA0B
 @label=PlayerBulletTestTankHit
 *$A21D AND $C0       ; Test active tank / supertank bits for player-bullet hit.
- $A21F JP Z,$A22B    ;
- $A222 LD A,($FE61)  ;
- $A225 SUB H         ;
- $A226 SUB $07       ;
- $A228 JP C,$A9AC    ;
+ $A21F JP Z,$A22B
+ $A222 LD A,($FE61)
+ $A225
+ $A226 SUB $07
+ $A228 JP C,$A9AC
 *$A22B LD HL,$D488   ; Probable shared my-bullet / hostile-bullet visible-line
                      ; family (`MBLVU` / `HBLVU` current best read).
- $A22E LD ($FE02),HL ;
- $A231 CALL $805C    ;
+ $A22E LD ($FE02),HL
+ $A231 CALL $805C
 @label=HostileBulletCheckActive
 *$A234 LD A,$18      ; Hostile-bullet active path: either retire/requeue `HostileBulletLife` or advance,
                      ; rotate, project, and draw.
- $A236 OUT ($FE),A   ;
- $A238 LD A,($FE6A)  ;
- $A23B AND $04       ;
- $A23D JP Z,$A37B    ;
- $A240 LD A,($FEBA)  ;
- $A243 AND A         ;
- $A244 JP NZ,$A25A   ;
- $A247 LD A,($FE6A)  ;
- $A24A AND $FB       ;
- $A24C LD ($FE6A),A  ;
- $A24F LD A,($FE6C)  ;
+ $A236 OUT ($FE),A
+ $A238 LD A,($FE6A)
+ $A23B AND $04
+ $A23D JP Z,$A37B
+ $A240 LD A,($FEBA)
+ $A243
+ $A244 JP NZ,$A25A
+ $A247 LD A,($FE6A)
+ $A24A AND $FB
+ $A24C LD ($FE6A),A
+ $A24F LD A,($FE6C)
  $A252 OR $04        ; Queue the hostile-bullet deferred/restart bit in `Probable_EXST2`.
- $A254 LD ($FE6C),A  ;
- $A257 JP $A37B      ;
+ $A254 LD ($FE6C),A
+ $A257 JP $A37B
 @label=HostileBulletAdvanceAndRotate
 *$A25A LD HL,($FEB4) ; Advance the live hostile-bullet `HostileBulletX` / `HostileBulletZ`, install the
                      ; obstacle-family geometry tables, then rotate/project it using `HostileBulletOrientation`
                      ; and test for crash/visibility.
- $A25D LD DE,($DD22) ;
- $A261 DEC A         ;
- $A262 LD ($FEBA),A  ;
- $A265 AND A         ;
- $A266 SBC HL,DE     ;
- $A268 ADD HL,HL     ;
- $A269 ADD HL,HL     ;
- $A26A ADD HL,DE     ;
- $A26B LD ($FEB4),HL ;
- $A26E LD ($FE4A),HL ;
- $A271 LD HL,($FEB6) ;
- $A274 LD DE,($DDD2) ;
- $A278 SBC HL,DE     ;
- $A27A ADD HL,HL     ;
- $A27B ADD HL,HL     ;
- $A27C ADD HL,DE     ;
- $A27D LD ($FEB6),HL ;
- $A280 LD ($FE4C),HL ;
+ $A25D LD DE,($DD22)
+ $A261
+ $A262 LD ($FEBA),A
+ $A265
+ $A26B LD ($FEB4),HL
+ $A26E LD ($FE4A),HL
+ $A271 LD HL,($FEB6)
+ $A274 LD DE,($DDD2)
+ $A278
+ $A27D LD ($FEB6),HL
+ $A280 LD ($FE4C),HL
  $A283 LD HL,$D9D0   ; XTAB
- $A286 LD ($FE42),HL ;
+ $A286 LD ($FE42),HL
  $A289 LD HL,$DAC4   ; ZTAB
- $A28C LD ($FE46),HL ;
+ $A28C LD ($FE46),HL
  $A28F LD HL,$DD28   ; OBXLC
- $A292 LD ($FE32),HL ;
+ $A292 LD ($FE32),HL
  $A295 LD HL,$DDD8   ; OBZLC
- $A298 LD ($FE36),HL ;
- $A29B LD HL,($FEB8) ;
- $A29E SRL H         ;
- $A2A0 RR L          ;
- $A2A2 SUB A         ;
- $A2A3 OUT ($FE),A   ;
- $A2A5 LD A,$04      ;
- $A2A7 CALL $88EA    ;
- $A2AA LD A,$18      ;
- $A2AC OUT ($FE),A   ;
- $A2AE LD A,($FEB5)  ;
- $A2B1 ADD A,$02     ;
- $A2B3 SUB $04       ;
- $A2B5 JP NC,$A2C2   ;
- $A2B8 LD A,($FEB7)  ;
- $A2BB ADD A,$03     ;
- $A2BD SUB $05       ;
- $A2BF JP C,$ADD4    ;
+ $A298 LD ($FE36),HL
+ $A29B LD HL,($FEB8)
+ $A29E
+ $A2A3 OUT ($FE),A
+ $A2A5 LD A,$04
+ $A2A7 CALL $88EA
+ $A2AA LD A,$18
+ $A2AC OUT ($FE),A
+ $A2AE LD A,($FEB5)
+ $A2B1 ADD A,$02
+ $A2B3 SUB $04
+ $A2B5 JP NC,$A2C2
+ $A2B8 LD A,($FEB7)
+ $A2BB ADD A,$03
+ $A2BD SUB $05
+ $A2BF JP C,$ADD4
 *$A2C2 LD HL,$DE98   ; XPERS+$06
- $A2C5 LD ($FE38),HL ;
+ $A2C5 LD ($FE38),HL
  $A2C8 LD HL,$DED0   ; YPERS+$08
- $A2CB LD ($FE3A),HL ;
+ $A2CB LD ($FE3A),HL
  $A2CE LD HL,$DBB8   ; YLOC
- $A2D1 LD ($FE34),HL ;
- $A2D4 SUB A         ;
- $A2D5 CALL $8660    ;
- $A2D8 LD A,C        ;
- $A2D9 AND A         ;
- $A2DA LD A,($FE6E)  ;
- $A2DD JP Z,$A2ED    ;
+ $A2D1 LD ($FE34),HL
+ $A2D4
+ $A2D5 CALL $8660
+ $A2D8
+ $A2DA LD A,($FE6E)
+ $A2DD JP Z,$A2ED
  $A2E0 AND $FB       ; Clear the hostile-bullet visible bit.
- $A2E2 LD ($FE6E),A  ;
- $A2E5 LD A,$01      ;
- $A2E7 CALL $9538    ;
- $A2EA JP $A37B      ;
+ $A2E2 LD ($FE6E),A
+ $A2E5 LD A,$01
+ $A2E7 CALL $9538
+ $A2EA JP $A37B
 @label=HostileBulletVisible
 *$A2ED OR $04        ; Set the hostile-bullet visible bit.
  $A2EF LD ($FE6E),A  ; Visible hostile-bullet path: install the shared bullet line family and continue to
                      ; the obstacle/render block after drawing.
- $A2F2 BIT 1,A       ;
- $A2F4 JP Z,$A33E    ;
- $A2F7 AND $01       ;
- $A2F9 JP Z,$A323    ;
- $A2FC LD HL,($FE20) ;
- $A2FF LD DE,($FE22) ;
- $A303 SBC HL,DE     ;
- $A305 SRL H         ;
- $A307 RR L          ;
- $A309 EX DE,HL      ;
- $A30A PUSH HL       ;
- $A30B LD BC,($FE3C) ;
- $A30F SBC HL,BC     ;
- $A311 POP HL        ;
- $A312 JP P,$A36F    ;
- $A315 ADD HL,DE     ;
- $A316 ADD HL,DE     ;
- $A317 LD BC,($FE3E) ;
- $A31B SBC HL,BC     ;
- $A31D JP M,$A36F    ;
- $A320 JP $A34D      ;
-*$A323 LD HL,($FE20) ;
- $A326 LD DE,($FE3E) ;
- $A32A SBC HL,DE     ;
- $A32C JP M,$A36F    ;
- $A32F LD HL,($FE22) ;
- $A332 LD DE,($FE3C) ;
- $A336 SBC HL,DE     ;
- $A338 JP P,$A36F    ;
- $A33B JP $A34D      ;
-*$A33E LD A,($FEE9)  ;
- $A341 LD B,A        ;
- $A342 LD A,($FEB5)  ;
- $A345 SUB B         ;
- $A346 ADD A,$02     ;
- $A348 SUB $04       ;
- $A34A JP NC,$A36F   ;
-*$A34D LD A,($FEEB)  ;
- $A350 LD B,A        ;
- $A351 LD A,($FEB7)  ;
- $A354 SUB B         ;
- $A355 ADD A,$03     ;
- $A357 SUB $06       ;
- $A359 JP NC,$A36F   ;
- $A35C LD A,($FE6A)  ;
- $A35F AND $FB       ;
- $A361 LD ($FE6A),A  ;
- $A364 LD A,($FE6C)  ;
+ $A2F2
+ $A2F4 JP Z,$A33E
+ $A2F7 AND $01
+ $A2F9 JP Z,$A323
+ $A2FC LD HL,($FE20)
+ $A2FF LD DE,($FE22)
+ $A303
+ $A30B LD BC,($FE3C)
+ $A30F
+ $A312 JP P,$A36F
+ $A315
+ $A317 LD BC,($FE3E)
+ $A31B
+ $A31D JP M,$A36F
+ $A320 JP $A34D
+*$A323 LD HL,($FE20)
+ $A326 LD DE,($FE3E)
+ $A32A
+ $A32C JP M,$A36F
+ $A32F LD HL,($FE22)
+ $A332 LD DE,($FE3C)
+ $A336
+ $A338 JP P,$A36F
+ $A33B JP $A34D
+*$A33E LD A,($FEE9)
+ $A341
+ $A342 LD A,($FEB5)
+ $A345
+ $A346 ADD A,$02
+ $A348 SUB $04
+ $A34A JP NC,$A36F
+*$A34D LD A,($FEEB)
+ $A350
+ $A351 LD A,($FEB7)
+ $A354
+ $A355 ADD A,$03
+ $A357 SUB $06
+ $A359 JP NC,$A36F
+ $A35C LD A,($FE6A)
+ $A35F AND $FB
+ $A361 LD ($FE6A),A
+ $A364 LD A,($FE6C)
  $A367 OR $04        ; Queue the hostile-bullet deferred/restart bit after a player hit.
- $A369 LD ($FE6C),A  ;
- $A36C JP $A37B      ;
+ $A369 LD ($FE6C),A
+ $A36C JP $A37B
 *$A36F LD HL,$D488   ; Same probable shared bullet visible-line family.
- $A372 SUB A         ;
- $A373 OUT ($FE),A   ;
- $A375 LD ($FE02),HL ;
- $A378 CALL $805C    ;
+ $A372
+ $A373 OUT ($FE),A
+ $A375 LD ($FE02),HL
+ $A378 CALL $805C
 @label=ObstacleSelectAndRender
 *$A37B LD A,$18      ; Select the current obstacle/object family, seed its raw `(X,Z)` position and line-data
                      ; base, and either continue into obstacle projection or fall straight into the SCREEN phase.
- $A37D OUT ($FE),A   ;
- $A37F LD B,$7C      ;
- $A381 LD H,$A0      ;
- $A383 LD ($FEEA),HL ;
+ $A37D OUT ($FE),A
+ $A37F LD B,$7C
+ $A381 LD H,$A0
+ $A383 LD ($FEEA),HL
  $A386 LD HL,$D554   ; Probable OB3VU / pyramid line-data family.
- $A389 LD C,$00      ;
- $A38B LD A,($FE9B)  ;
- $A38E CP B          ;
- $A38F JP NC,$A3AF   ;
- $A392 LD A,($FE99)  ;
- $A395 ADD A,$23     ;
- $A397 SUB $46       ;
- $A399 JP NC,$A3AF   ;
- $A39C LD HL,($FE98) ;
- $A39F LD ($FEE8),HL ;
- $A3A2 LD DE,($FE9A) ;
- $A3A6 LD ($FEEA),HL ;
- $A3A9 LD B,D        ;
+ $A389 LD C,$00
+ $A38B LD A,($FE9B)
+ $A38E
+ $A38F JP NC,$A3AF
+ $A392 LD A,($FE99)
+ $A395 ADD A,$23
+ $A397 SUB $46
+ $A399 JP NC,$A3AF
+ $A39C LD HL,($FE98)
+ $A39F LD ($FEE8),HL
+ $A3A2 LD DE,($FE9A)
+ $A3A6 LD ($FEEA),HL
+ $A3A9
  $A3AA LD C,$02      ; Cube-family low-bit selector.
  $A3AC LD HL,$D4A2   ; Shared `OB1VU` / `OB2VU` cube line-data family base
                      ; (`OB1VU_View0` / `OB2VU_View0`, `OB1VU_View1` / `OB2VU_View1`,
                      ; `OB1VU_View2` / `OB2VU_View2`).
-*$A3AF LD A,($FE9F)  ;
- $A3B2 CP B          ;
- $A3B3 JP NC,$A3D0   ;
- $A3B6 LD A,($FE9D)  ;
- $A3B9 ADD A,$23     ;
- $A3BB SUB $46       ;
- $A3BD JP NC,$A3D0   ;
- $A3C0 LD HL,($FE9C) ;
- $A3C3 LD ($FEE8),HL ;
- $A3C6 LD DE,($FE9E) ;
- $A3CA LD B,D        ;
+*$A3AF LD A,($FE9F)
+ $A3B2
+ $A3B3 JP NC,$A3D0
+ $A3B6 LD A,($FE9D)
+ $A3B9 ADD A,$23
+ $A3BB SUB $46
+ $A3BD JP NC,$A3D0
+ $A3C0 LD HL,($FE9C)
+ $A3C3 LD ($FEE8),HL
+ $A3C6 LD DE,($FE9E)
+ $A3CA
  $A3CB LD C,$02      ; Cube-family low-bit selector.
  $A3CD LD HL,$D4A2   ; Same cube-family line-data base and view-slot scheme.
-*$A3D0 LD A,($FEA3)  ;
- $A3D3 CP B          ;
- $A3D4 JP NC,$A3F1   ;
- $A3D7 LD A,($FEA1)  ;
- $A3DA ADD A,$23     ;
- $A3DC SUB $46       ;
- $A3DE JP NC,$A3F1   ;
- $A3E1 LD HL,($FEA0) ;
- $A3E4 LD ($FEE8),HL ;
- $A3E7 LD DE,($FEA2) ;
+*$A3D0 LD A,($FEA3)
+ $A3D3
+ $A3D4 JP NC,$A3F1
+ $A3D7 LD A,($FEA1)
+ $A3DA ADD A,$23
+ $A3DC SUB $46
+ $A3DE JP NC,$A3F1
+ $A3E1 LD HL,($FEA0)
+ $A3E4 LD ($FEE8),HL
+ $A3E7 LD DE,($FEA2)
  $A3EB LD C,$03      ; Pyramid-family low-bit selector.
- $A3ED LD B,D        ;
+ $A3ED
  $A3EE LD HL,$D554   ; `OB3VU` / pyramid line-data family base
                      ; (`OB3VU_View0`, `OB3VU_View1`, `OB3VU_View2`).
-*$A3F1 LD A,($FEA7)  ;
- $A3F4 CP B          ;
- $A3F5 JP NC,$A411   ;
- $A3F8 LD A,($FEA5)  ;
- $A3FB ADD A,$23     ;
- $A3FD SUB $46       ;
- $A3FF JP NC,$A411   ;
- $A402 LD HL,($FEA4) ;
- $A405 LD ($FEE8),HL ;
- $A408 LD DE,($FEA6) ;
+*$A3F1 LD A,($FEA7)
+ $A3F4
+ $A3F5 JP NC,$A411
+ $A3F8 LD A,($FEA5)
+ $A3FB ADD A,$23
+ $A3FD SUB $46
+ $A3FF JP NC,$A411
+ $A402 LD HL,($FEA4)
+ $A405 LD ($FEE8),HL
+ $A408 LD DE,($FEA6)
  $A40C LD C,$01      ; Low-block-family low-bit selector.
  $A40E LD HL,$D5F6   ; `OB4VU` / low-block line-data family base
                      ; (`OB4VU_View0`, `OB4VU_View1`, `OB4VU_View2`).
-*$A411 LD ($FE02),HL ;
- $A414 LD HL,$84D0   ;
- $A417 LD ($FE20),HL ;
- $A41A DEC L         ;
- $A41B LD ($FE22),HL ;
- $A41E LD A,C        ;
- $A41F AND A         ;
- $A420 JP Z,$A5AE    ;
+*$A411 LD ($FE02),HL
+ $A414 LD HL,$84D0
+ $A417 LD ($FE20),HL
+ $A41A
+ $A41B LD ($FE22),HL
+ $A41E
+ $A420 JP Z,$A5AE
 @label=ObstacleRotateAndProject
  $A423 LD HL,($FEE8) ; Rotate/project the selected obstacle/object, update the low-bit selector in `EXST1`,
                      ; and split into hidden vs visible paths.
- $A426 LD ($FEEA),DE ;
- $A42A LD ($FE4A),HL ;
- $A42D LD ($FE4C),DE ;
- $A431 LD A,($FE6A)  ;
+ $A426 LD ($FEEA),DE
+ $A42A LD ($FE4A),HL
+ $A42D LD ($FE4C),DE
+ $A431 LD A,($FE6A)
  $A434 AND $FC       ; Replace the current obstacle/object low-bit selector.
- $A436 OR C          ;
- $A437 LD ($FE6A),A  ;
- $A43A LD DE,$0000   ;
- $A43D LD A,H        ;
- $A43E AND A         ;
- $A43F JP P,$A463    ;
- $A442 LD HL,($FEA8) ;
- $A445 SRL H         ;
- $A447 LD A,L        ;
- $A448 RRA           ;
- $A449 AND A         ;
- $A44A JP P,$A458    ;
- $A44D CP $FB        ;
- $A44F JP NC,$A47C   ;
- $A452 LD DE,$0080   ;
- $A455 JP $A47C      ;
-*$A458 CP $40        ;
- $A45A JP C,$A47C    ;
- $A45D LD DE,$FF80   ;
- $A460 JP $A47C      ;
-*$A463 LD HL,($FEA8) ;
- $A466 SRL H         ;
- $A468 LD A,L        ;
- $A469 RRA           ;
- $A46A AND A         ;
- $A46B JP P,$A474    ;
- $A46E LD DE,$0080   ;
- $A471 JP $A47C      ;
-*$A474 CP $44        ;
- $A476 JP C,$A47C    ;
- $A479 LD DE,$FF80   ;
-*$A47C LD HL,($FEA8) ;
- $A47F ADD HL,DE     ;
- $A480 LD A,H        ;
- $A481 AND $01       ;
- $A483 LD H,A        ;
- $A484 LD ($FEA8),HL ;
+ $A436
+ $A437 LD ($FE6A),A
+ $A43A LD DE,$0000
+ $A43D
+ $A43F JP P,$A463
+ $A442 LD HL,($FEA8)
+ $A445
+ $A44A JP P,$A458
+ $A44D CP $FB
+ $A44F JP NC,$A47C
+ $A452 LD DE,$0080
+ $A455 JP $A47C
+*$A458 CP $40
+ $A45A JP C,$A47C
+ $A45D LD DE,$FF80
+ $A460 JP $A47C
+*$A463 LD HL,($FEA8)
+ $A466
+ $A46B JP P,$A474
+ $A46E LD DE,$0080
+ $A471 JP $A47C
+*$A474 CP $44
+ $A476 JP C,$A47C
+ $A479 LD DE,$FF80
+*$A47C LD HL,($FEA8)
+ $A47F
+ $A481 AND $01
+ $A483
+ $A484 LD ($FEA8),HL
  $A487 LD HL,$D9D8   ; XTAB+$08
- $A48A LD ($FE42),HL ;
+ $A48A LD ($FE42),HL
  $A48D LD HL,$DACC   ; ZTAB+$08
- $A490 LD ($FE46),HL ;
+ $A490 LD ($FE46),HL
  $A493 LD HL,$DD36   ; EXXLC
- $A496 LD ($FE32),HL ;
+ $A496 LD ($FE32),HL
  $A499 LD HL,$DDE6   ; EXZLC
- $A49C LD ($FE36),HL ;
- $A49F LD HL,($FEA8) ;
- $A4A2 SRL H         ;
- $A4A4 RR L          ;
- $A4A6 LD A,$07      ;
- $A4A8 CALL $88EA    ;
+ $A49C LD ($FE36),HL
+ $A49F LD HL,($FEA8)
+ $A4A2
+ $A4A6 LD A,$07
+ $A4A8 CALL $88EA
  $A4AB LD HL,$DBC0   ; YLOC+$08
- $A4AE LD ($FE34),HL ;
+ $A4AE LD ($FE34),HL
  $A4B1 LD HL,$DE9E   ; XPERS+$0C
- $A4B4 LD ($FE38),HL ;
+ $A4B4 LD ($FE38),HL
  $A4B7 LD HL,$DED6   ; YPERS+$0E
- $A4BA LD ($FE3A),HL ;
- $A4BD LD A,$03      ;
- $A4BF CALL $8660    ;
- $A4C2 LD A,C        ;
- $A4C3 AND A         ;
- $A4C4 LD A,($FE6E)  ;
- $A4C7 JP Z,$A4E1    ;
+ $A4BA LD ($FE3A),HL
+ $A4BD LD A,$03
+ $A4BF CALL $8660
+ $A4C2
+ $A4C4 LD A,($FE6E)
+ $A4C7 JP Z,$A4E1
 @label=ObstacleHidden
  $A4CA AND $FC       ; Clear the obstacle/object low-bit selector in PRSTA.
  $A4CC LD ($FE6E),A  ; Hidden path: clear the visible low bits, restore neutral limits, and return to the SCREEN phase.
- $A4CF LD HL,$84D0   ;
- $A4D2 LD ($FE20),HL ;
- $A4D5 DEC L         ;
- $A4D6 LD ($FE22),HL ;
- $A4D9 LD A,$03      ;
- $A4DB CALL $9538    ;
- $A4DE JP $A5AE      ;
+ $A4CF LD HL,$84D0
+ $A4D2 LD ($FE20),HL
+ $A4D5
+ $A4D6 LD ($FE22),HL
+ $A4D9 LD A,$03
+ $A4DB CALL $9538
+ $A4DE JP $A5AE
 @label=ObstacleVisible
 *$A4E1 AND $FC       ; Visible path: copy the active obstacle/object selector into `PRSTA`, seed the visible
                      ; limits from `PERSP`, apply the hill-edge stop hack if needed, then choose the current view.
- $A4E3 LD C,A        ;
- $A4E4 LD A,($FE6A)  ;
+ $A4E3
+ $A4E4 LD A,($FE6A)
  $A4E7 AND $03       ; Copy the active obstacle/object low-bit selector into PRSTA.
- $A4E9 OR C          ;
- $A4EA LD ($FE6E),A  ;
- $A4ED LD HL,($FE3C) ;
- $A4F0 LD ($FE20),HL ;
- $A4F3 LD HL,($FE3E) ;
- $A4F6 LD ($FE22),HL ;
- $A4F9 BIT 1,A       ;
- $A4FB JP Z,$A576    ;
- $A4FE BIT 0,A       ;
- $A500 JP Z,$A526    ;
- $A503 LD HL,($DECE) ;
- $A506 LD DE,($DED4) ;
- $A50A AND A         ;
- $A50B SBC HL,DE     ;
- $A50D ADD HL,HL     ;
- $A50E ADD HL,DE     ;
- $A50F LD ($DECE),HL ;
- $A512 LD DE,($DE96) ;
+ $A4E9
+ $A4EA LD ($FE6E),A
+ $A4ED LD HL,($FE3C)
+ $A4F0 LD ($FE20),HL
+ $A4F3 LD HL,($FE3E)
+ $A4F6 LD ($FE22),HL
+ $A4F9
+ $A4FB JP Z,$A576
+ $A4FE
+ $A500 JP Z,$A526
+ $A503 LD HL,($DECE)
+ $A506 LD DE,($DED4)
+ $A50A
+ $A50F LD ($DECE),HL
+ $A512 LD DE,($DE96)
  $A516 LD HL,($DE92) ; XPERS
- $A519 SBC HL,DE     ;
- $A51B SRL H         ;
- $A51D RR L          ;
- $A51F ADD HL,DE     ;
- $A520 LD ($DE96),HL ;
- $A523 JP $A576      ;
-*$A526 LD HL,($DECE) ;
- $A529 LD DE,($DED4) ;
- $A52D AND A         ;
- $A52E SBC HL,DE     ;
- $A530 ADD HL,HL     ;
- $A531 ADD HL,DE     ;
- $A532 LD ($DECE),HL ;
- $A535 LD HL,($DECC) ;
- $A538 LD DE,($DED2) ;
- $A53C AND A         ;
- $A53D SBC HL,DE     ;
- $A53F ADD HL,HL     ;
- $A540 ADD HL,DE     ;
- $A541 LD ($DECC),HL ;
- $A544 LD HL,($DECA) ;
- $A547 LD DE,($DED0) ;
- $A54B AND A         ;
- $A54C SBC HL,DE     ;
- $A54E ADD HL,HL     ;
- $A54F ADD HL,DE     ;
- $A550 LD ($DECA),HL ;
- $A553 LD DE,$0080   ;
- $A556 LD HL,($FE20) ;
- $A559 ADD HL,DE     ;
- $A55A LD A,H        ;
- $A55B CP $01        ;
- $A55D JP P,$A571    ;
- $A560 LD HL,($FE22) ;
- $A563 ADD HL,DE     ;
- $A564 LD A,H        ;
- $A565 AND A         ;
- $A566 JP P,$A576    ;
+ $A519
+ $A520 LD ($DE96),HL
+ $A523 JP $A576
+*$A526 LD HL,($DECE)
+ $A529 LD DE,($DED4)
+ $A52D
+ $A532 LD ($DECE),HL
+ $A535 LD HL,($DECC)
+ $A538 LD DE,($DED2)
+ $A53C
+ $A541 LD ($DECC),HL
+ $A544 LD HL,($DECA)
+ $A547 LD DE,($DED0)
+ $A54B
+ $A550 LD ($DECA),HL
+ $A553 LD DE,$0080
+ $A556 LD HL,($FE20)
+ $A559
+ $A55B CP $01
+ $A55D JP P,$A571
+ $A560 LD HL,($FE22)
+ $A563
+ $A566 JP P,$A576
  $A569 LD HL,$E740   ; Probable left-edge hill-stop hack in the off-screen
  $A56C SET 7,(HL)    ; playfield buffer.
- $A56E JP $A576      ;
+ $A56E JP $A576
 *$A571 LD HL,$E75F   ; Probable matching right-edge hill-stop hack.
- $A574 SET 7,(HL)    ;
+ $A574
 @label=ObstacleSelectVisibleLineData
 *$A576 LD HL,($DE9C) ; Choose the current obstacle/object visible-line view by projected X ordering, then draw.
- $A579 LD DE,($DE9A) ;
- $A57D SBC HL,DE     ;
- $A57F JP P,$A596    ;
+ $A579 LD DE,($DE9A)
+ $A57D
+ $A57F JP P,$A596
  $A582 LD HL,($DE98) ; XPERS+$06
- $A585 SBC HL,DE     ;
- $A587 JP P,$A590    ;
- $A58A LD HL,$003C   ;
- $A58D JP $A59C      ;
-*$A590 LD HL,$0078   ;
- $A593 JP $A59C      ;
-*$A596 LD HL,$0000   ;
- $A599 LD DE,$FF80   ;
-*$A59C LD BC,($FE02) ;
- $A5A0 ADD HL,BC     ;
- $A5A1 LD ($FE02),HL ;
- $A5A4 SUB A         ;
- $A5A5 OUT ($FE),A   ;
- $A5A7 CALL $805C    ;
- $A5AA LD A,$18      ;
- $A5AC OUT ($FE),A   ;
+ $A585
+ $A587 JP P,$A590
+ $A58A LD HL,$003C
+ $A58D JP $A59C
+*$A590 LD HL,$0078
+ $A593 JP $A59C
+*$A596 LD HL,$0000
+ $A599 LD DE,$FF80
+*$A59C LD BC,($FE02)
+ $A5A0
+ $A5A1 LD ($FE02),HL
+ $A5A4
+ $A5A5 OUT ($FE),A
+ $A5A7 CALL $805C
+ $A5AA LD A,$18
+ $A5AC OUT ($FE),A
 ; SCREEN phase
 ; .
 ; Probable late-frame overlay/hill/status pipeline from the notebook's
@@ -7269,115 +6990,91 @@ c$977E LD HL,($FE70) ;
 ; - #R$8E38: probable MHLPT
 ; - #R$8F53: probable SHLPT
 ; - #R$8C3C: SDRAW / present-and-clear
-*$A5AE CALL $8D68    ;
- $A5B1 CALL $8E08    ;
- $A5B4 CALL $8E38    ;
- $A5B7 CALL $8F53    ;
- $A5BA SUB A         ;
- $A5BB OUT ($FE),A   ;
- $A5BD LD A,($FE6C)  ;
- $A5C0 AND A         ;
- $A5C1 CALL NZ,$AA5D ;
+*$A5AE CALL $8D68
+ $A5B1 CALL $8E08
+ $A5B4 CALL $8E38
+ $A5B7 CALL $8F53
+ $A5BA
+ $A5BB OUT ($FE),A
+ $A5BD LD A,($FE6C)
+ $A5C0
+ $A5C1 CALL NZ,$AA5D
  $A5C4 LD HL,$E740   ; Clear the temporary edge-stop hack bit.
- $A5C7 RES 7,(HL)    ;
+ $A5C7
  $A5C9 LD HL,$E75F   ; Clear the matching right-edge stop bit.
- $A5CC RES 7,(HL)    ;
- $A5CE CALL $8C3C    ;
- $A5D1 LD HL,$84D0   ;
- $A5D4 LD ($FE1C),HL ;
- $A5D7 DEC L         ;
- $A5D8 LD ($FE1E),HL ;
- $A5DB LD A,($FE58)  ;
- $A5DE AND A         ;
- $A5DF JP Z,$A625    ;
- $A5E2 SUB A         ;
- $A5E3 LD ($FE58),A  ;
- $A5E6 LD HL,$E82C   ;
- $A5E9 LD B,$07      ;
- $A5EB LD C,$40      ;
-*$A5ED LD A,C        ;
- $A5EE RR C          ;
- $A5F0 OR (HL)       ;
- $A5F1 LD (HL),A     ;
- $A5F2 INC H         ;
- $A5F3 DJNZ $A5ED    ;
- $A5F5 LD HL,$E833   ;
- $A5F8 LD C,$02      ;
- $A5FA LD B,$07      ;
-*$A5FC LD A,C        ;
- $A5FD RL C          ;
- $A5FF OR (HL)       ;
- $A600 LD (HL),A     ;
- $A601 INC H         ;
- $A602 DJNZ $A5FC    ;
- $A604 LD HL,$EF0C   ;
- $A607 LD C,$01      ;
- $A609 LD B,$08      ;
-*$A60B LD A,C        ;
- $A60C RL C          ;
- $A60E OR (HL)       ;
- $A60F LD (HL),A     ;
- $A610 INC H         ;
- $A611 DJNZ $A60B    ;
- $A613 LD HL,$EF13   ;
- $A616 LD C,$80      ;
- $A618 LD B,$08      ;
-*$A61A LD A,C        ;
- $A61B RR C          ;
- $A61D OR (HL)       ;
- $A61E LD (HL),A     ;
- $A61F INC H         ;
- $A620 DJNZ $A61A    ;
- $A622 JP $A64D      ;
-*$A625 LD HL,$E82C   ;
- $A628 LD B,$07      ;
-*$A62A SET 7,(HL)    ;
- $A62C INC H         ;
- $A62D DJNZ $A62A    ;
- $A62F LD HL,$EF0C   ;
- $A632 LD B,$08      ;
-*$A634 SET 7,(HL)    ;
- $A636 INC H         ;
- $A637 DJNZ $A634    ;
- $A639 LD HL,$E833   ;
- $A63C LD B,$07      ;
-*$A63E SET 0,(HL)    ;
- $A640 INC H         ;
- $A641 DJNZ $A63E    ;
- $A643 LD HL,$EF13   ;
- $A646 LD B,$08      ;
-*$A648 SET 0,(HL)    ;
- $A64A INC H         ;
- $A64B DJNZ $A648    ;
-*$A64D LD HL,$E72C   ;
- $A650 LD B,$08      ;
- $A652 LD A,$FF      ;
-*$A654 LD (HL),A     ;
- $A655 INC L         ;
- $A656 DJNZ $A654    ;
- $A658 LD HL,$EF2C   ;
- $A65B LD B,$08      ;
-*$A65D LD (HL),A     ;
- $A65E INC L         ;
- $A65F DJNZ $A65D    ;
- $A661 LD HL,$E710   ;
- $A664 LD B,$08      ;
-*$A666 SET 7,(HL)    ;
- $A668 INC H         ;
- $A669 DJNZ $A666    ;
- $A66B LD HL,$F030   ;
- $A66E LD B,$07      ;
-*$A670 SET 7,(HL)    ;
- $A672 INC H         ;
- $A673 DJNZ $A670    ;
- $A675 LD A,$18      ;
- $A677 OUT ($FE),A   ;
- $A679 LD A,($FEEC)  ;
- $A67C AND A         ;
- $A67D JP P,$A685    ;
- $A680 RET           ;
- $A681 JP $A692      ;
- $A684 SUB A         ;
+ $A5CC
+ $A5CE CALL $8C3C
+ $A5D1 LD HL,$84D0
+ $A5D4 LD ($FE1C),HL
+ $A5D7
+ $A5D8 LD ($FE1E),HL
+ $A5DB LD A,($FE58)
+ $A5DE
+ $A5DF JP Z,$A625
+ $A5E2
+ $A5E3 LD ($FE58),A
+ $A5E6 LD HL,$E82C
+ $A5E9 LD B,$07
+ $A5EB LD C,$40
+*$A5ED
+ $A5F3 DJNZ $A5ED
+ $A5F5 LD HL,$E833
+ $A5F8 LD C,$02
+ $A5FA LD B,$07
+*$A5FC
+ $A602 DJNZ $A5FC
+ $A604 LD HL,$EF0C
+ $A607 LD C,$01
+ $A609 LD B,$08
+*$A60B
+ $A611 DJNZ $A60B
+ $A613 LD HL,$EF13
+ $A616 LD C,$80
+ $A618 LD B,$08
+*$A61A
+ $A620 DJNZ $A61A
+ $A622 JP $A64D
+*$A625 LD HL,$E82C
+ $A628 LD B,$07
+*$A62A
+ $A62D DJNZ $A62A
+ $A62F LD HL,$EF0C
+ $A632 LD B,$08
+*$A634
+ $A637 DJNZ $A634
+ $A639 LD HL,$E833
+ $A63C LD B,$07
+*$A63E
+ $A641 DJNZ $A63E
+ $A643 LD HL,$EF13
+ $A646 LD B,$08
+*$A648
+ $A64B DJNZ $A648
+*$A64D LD HL,$E72C
+ $A650 LD B,$08
+ $A652 LD A,$FF
+*$A654
+ $A656 DJNZ $A654
+ $A658 LD HL,$EF2C
+ $A65B LD B,$08
+*$A65D
+ $A65F DJNZ $A65D
+ $A661 LD HL,$E710
+ $A664 LD B,$08
+*$A666
+ $A669 DJNZ $A666
+ $A66B LD HL,$F030
+ $A66E LD B,$07
+*$A670
+ $A673 DJNZ $A670
+ $A675 LD A,$18
+ $A677 OUT ($FE),A
+ $A679 LD A,($FEEC)
+ $A67C
+ $A67D JP P,$A685
+ $A680
+ $A681 JP $A692
+ $A684
 ; KEYIN / KBORD INTERPRETATION
 ; .
 ; This block merges Kempston and keyboard input, masks movement against nearby
@@ -7385,73 +7082,72 @@ c$977E LD HL,($FE70) ;
 @label=KEYIN
 @label=InputDecodeAndMask
 *$A685 CALL $AD3E    ; Read Kempston movement bits if present.
- $A688 PUSH AF       ;
- $A689 LD A,$08      ;
- $A68B OUT ($FE),A   ;
- $A68D CALL $9132    ;
- $A690 POP BC        ;
- $A691 OR B          ;
+ $A688
+ $A689 LD A,$08
+ $A68B OUT ($FE),A
+ $A68D CALL $9132
+ $A690
 @label=InputStoreKMOV
 *$A692 LD ($FE56),A  ; KMOV
                      ; Store the merged keyboard/Kempston movement code in `KMOV` before obstacle masking.
 @label=InputMaskAgainstObstacles
  $A695 LD A,($FE99)  ; Test the four packed obstacle `(X,Z)` pairs and mask out disallowed movement bits when
                      ; the player is too close for a clear move/turn.
- $A698 ADD A,$03     ;
- $A69A SUB $06       ;
- $A69C JP NC,$A6B0   ;
- $A69F LD A,($FE9B)  ;
- $A6A2 ADD A,$05     ;
- $A6A4 LD C,$BF      ;
- $A6A6 JP C,$A70C    ;
- $A6A9 SUB $0E       ;
- $A6AB LD C,$7F      ;
- $A6AD JP C,$A70C    ;
-*$A6B0 LD A,($FE9D)  ;
- $A6B3 ADD A,$03     ;
- $A6B5 SUB $06       ;
- $A6B7 JP NC,$A6CB   ;
- $A6BA LD A,($FE9F)  ;
- $A6BD ADD A,$05     ;
- $A6BF LD C,$BF      ;
- $A6C1 JP C,$A70C    ;
- $A6C4 SUB $0E       ;
- $A6C6 LD C,$7F      ;
- $A6C8 JP C,$A70C    ;
-*$A6CB LD A,($FEA1)  ;
- $A6CE ADD A,$03     ;
- $A6D0 SUB $06       ;
- $A6D2 JP NC,$A6E6   ;
- $A6D5 LD A,($FEA3)  ;
- $A6D8 ADD A,$05     ;
- $A6DA LD C,$BF      ;
- $A6DC JP C,$A70C    ;
- $A6DF SUB $0E       ;
- $A6E1 LD C,$7F      ;
- $A6E3 JP C,$A70C    ;
-*$A6E6 LD A,($FEA5)  ;
- $A6E9 ADD A,$03     ;
- $A6EB SUB $06       ;
- $A6ED JP NC,$A701   ;
- $A6F0 LD A,($FEA7)  ;
- $A6F3 ADD A,$05     ;
- $A6F5 LD C,$BF      ;
- $A6F7 JP C,$A70C    ;
- $A6FA SUB $0E       ;
- $A6FC LD C,$7F      ;
- $A6FE JP C,$A70C    ;
+ $A698 ADD A,$03
+ $A69A SUB $06
+ $A69C JP NC,$A6B0
+ $A69F LD A,($FE9B)
+ $A6A2 ADD A,$05
+ $A6A4 LD C,$BF
+ $A6A6 JP C,$A70C
+ $A6A9 SUB $0E
+ $A6AB LD C,$7F
+ $A6AD JP C,$A70C
+*$A6B0 LD A,($FE9D)
+ $A6B3 ADD A,$03
+ $A6B5 SUB $06
+ $A6B7 JP NC,$A6CB
+ $A6BA LD A,($FE9F)
+ $A6BD ADD A,$05
+ $A6BF LD C,$BF
+ $A6C1 JP C,$A70C
+ $A6C4 SUB $0E
+ $A6C6 LD C,$7F
+ $A6C8 JP C,$A70C
+*$A6CB LD A,($FEA1)
+ $A6CE ADD A,$03
+ $A6D0 SUB $06
+ $A6D2 JP NC,$A6E6
+ $A6D5 LD A,($FEA3)
+ $A6D8 ADD A,$05
+ $A6DA LD C,$BF
+ $A6DC JP C,$A70C
+ $A6DF SUB $0E
+ $A6E1 LD C,$7F
+ $A6E3 JP C,$A70C
+*$A6E6 LD A,($FEA5)
+ $A6E9 ADD A,$03
+ $A6EB SUB $06
+ $A6ED JP NC,$A701
+ $A6F0 LD A,($FEA7)
+ $A6F3 ADD A,$05
+ $A6F5 LD C,$BF
+ $A6F7 JP C,$A70C
+ $A6FA SUB $0E
+ $A6FC LD C,$7F
+ $A6FE JP C,$A70C
 @label=InputNoObstacleWarning
 *$A701 LD HL,$CF9E   ; No obstacle-block warning needed: erase the message and allow all movement bits.
                      ; Erase the obstacle-block warning rectangle from `CF9E`.
- $A704 CALL $9476    ;
- $A707 LD C,$FF      ;
- $A709 JP $A714      ;
+ $A704 CALL $9476
+ $A707 LD C,$FF
+ $A709 JP $A714
 @label=InputBlockedWarning
 *$A70C LD HL,$CF9E   ; Obstacle-block warning path: print the warning and restrict surviving movement bits via `C`.
                      ; Print the obstacle-block warning rectangle from `CF9E`.
- $A70F PUSH BC       ;
- $A710 CALL $9452    ;
- $A713 POP BC        ;
+ $A70F
+ $A710 CALL $9452
+ $A713
 @label=KMOVTurnDecode
 *$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
                      ; delta that matches the chosen turn rate/direction.
@@ -7463,721 +7159,575 @@ c$977E LD HL,($FE70) ;
                      ; - no turn bits -> no explicit turn handler selected here
                      ; This is the sole writer of the indirect `TURN` dispatch pointer used by
                      ; `TurnTransformDispatcher`.
- $A717 AND C         ;
- $A718 LD ($FE56),A  ;
- $A71B BIT 5,A       ;
- $A71D LD DE,$0000   ;
- $A720 JR Z,$A728    ;
- $A722 LD BC,$91EB   ;
- $A725 LD DE,$FFF0   ;
-*$A728 BIT 4,A       ;
- $A72A JR Z,$A732    ;
- $A72C LD BC,$924A   ;
- $A72F LD DE,$0010   ;
-*$A732 BIT 3,A       ;
- $A734 JR Z,$A73C    ;
- $A736 LD BC,$92AE   ;
- $A739 LD DE,$FFE0   ;
-*$A73C BIT 2,A       ;
- $A73E JR Z,$A746    ;
- $A740 LD BC,$9312   ;
- $A743 LD DE,$0020   ;
-*$A746 LD HL,($FE2C) ;
- $A749 ADD HL,DE     ;
+ $A717
+ $A718 LD ($FE56),A
+ $A71B
+ $A71D LD DE,$0000
+ $A720 JR Z,$A728
+ $A722 LD BC,$91EB
+ $A725 LD DE,$FFF0
+*$A728
+ $A72A JR Z,$A732
+ $A72C LD BC,$924A
+ $A72F LD DE,$0010
+*$A732
+ $A734 JR Z,$A73C
+ $A736 LD BC,$92AE
+ $A739 LD DE,$FFE0
+*$A73C
+ $A73E JR Z,$A746
+ $A740 LD BC,$9312
+ $A743 LD DE,$0020
+*$A746 LD HL,($FE2C)
+ $A749
  $A74A LD ($FE5C),BC ; Store the selected turn-handler entry in `TURN` and clamp the hill pointer
                      ; before the later forward/back world-Z scroll and shared world-turn transform.
- $A74E LD C,A        ;
- $A74F LD A,H        ;
- $A750 CP $79        ;
- $A752 JP M,$A757    ;
- $A755 LD H,$69      ;
-*$A757 CP $69        ;
- $A759 JP P,$A75E    ;
- $A75C LD H,$78      ;
-*$A75E LD ($FE2C),HL ;
- $A761 BIT 7,C       ;
- $A763 JP Z,$A76C    ;
- $A766 LD DE,$FF80   ;
- $A769 JP $A774      ;
-*$A76C BIT 6,C       ;
- $A76E JP Z,$A7C8    ;
- $A771 LD DE,$0080   ;
+ $A74E
+ $A750 CP $79
+ $A752 JP M,$A757
+ $A755 LD H,$69
+*$A757 CP $69
+ $A759 JP P,$A75E
+ $A75C LD H,$78
+*$A75E LD ($FE2C),HL
+ $A761
+ $A763 JP Z,$A76C
+ $A766 LD DE,$FF80
+ $A769 JP $A774
+*$A76C
+ $A76E JP Z,$A7C8
+ $A771 LD DE,$0080
 @label=WorldZScroll
 *$A774 LD HL,($FE9A) ; Straight world-Z scroll pass after forward/back movement.
                      ; The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
                      ; other world-space entity Z positions so the player remains effectively
                      ; centred while the world moves.
- $A777 ADD HL,DE     ;
- $A778 LD ($FE9A),HL ;
- $A77B LD HL,($FE9E) ;
- $A77E ADD HL,DE     ;
- $A77F LD ($FE9E),HL ;
- $A782 LD HL,($FEA2) ;
- $A785 ADD HL,DE     ;
- $A786 LD ($FEA2),HL ;
- $A789 LD HL,($FEA6) ;
- $A78C ADD HL,DE     ;
- $A78D LD ($FEA6),HL ;
- $A790 LD HL,($FE60) ;
- $A793 ADD HL,DE     ;
- $A794 LD ($FE60),HL ;
- $A797 LD HL,($FE90) ;
- $A79A ADD HL,DE     ;
- $A79B LD ($FE90),HL ;
- $A79E LD HL,($DDBA) ;
- $A7A1 ADD HL,DE     ;
- $A7A2 LD ($DDBA),HL ;
- $A7A5 LD HL,($FED0) ;
- $A7A8 ADD HL,DE     ;
- $A7A9 LD ($FED0),HL ;
- $A7AC LD HL,($DDCA) ;
- $A7AF ADD HL,DE     ;
- $A7B0 LD ($DDCA),HL ;
- $A7B3 LD HL,($FEAE) ;
- $A7B6 ADD HL,DE     ;
- $A7B7 LD ($FEAE),HL ;
- $A7BA LD HL,($DDD2) ;
- $A7BD ADD HL,DE     ;
- $A7BE LD ($DDD2),HL ;
- $A7C1 LD HL,($FEB6) ;
- $A7C4 ADD HL,DE     ;
- $A7C5 LD ($FEB6),HL ;
+ $A777
+ $A778 LD ($FE9A),HL
+ $A77B LD HL,($FE9E)
+ $A77E
+ $A77F LD ($FE9E),HL
+ $A782 LD HL,($FEA2)
+ $A785
+ $A786 LD ($FEA2),HL
+ $A789 LD HL,($FEA6)
+ $A78C
+ $A78D LD ($FEA6),HL
+ $A790 LD HL,($FE60)
+ $A793
+ $A794 LD ($FE60),HL
+ $A797 LD HL,($FE90)
+ $A79A
+ $A79B LD ($FE90),HL
+ $A79E LD HL,($DDBA)
+ $A7A1
+ $A7A2 LD ($DDBA),HL
+ $A7A5 LD HL,($FED0)
+ $A7A8
+ $A7A9 LD ($FED0),HL
+ $A7AC LD HL,($DDCA)
+ $A7AF
+ $A7B0 LD ($DDCA),HL
+ $A7B3 LD HL,($FEAE)
+ $A7B6
+ $A7B7 LD ($FEAE),HL
+ $A7BA LD HL,($DDD2)
+ $A7BD
+ $A7BE LD ($DDD2),HL
+ $A7C1 LD HL,($FEB6)
+ $A7C4
+ $A7C5 LD ($FEB6),HL
 @label=WorldTurnGate
-*$A7C8 LD A,C        ;
- $A7C9 AND $3F       ;
+*$A7C8
+ $A7C9 AND $3F
  $A7CB JP Z,$A911    ; Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
- $A7CE LD HL,($FEA8) ;
+ $A7CE LD HL,($FEA8)
 @label=SharedWorldTurnPass
  $A7D1 LD DE,($FE98) ; Shared world-turn rotation pass.
                      ; `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn
                      ; transform to each `(X,Z)` pair, and returns updated coordinates. The pass is
                      ; used first on the four obstacle pairs, then on tank/saucer/missile/bullet
                      ; world positions.
- $A7D5 LD BC,($FE9A) ;
- $A7D9 CALL $91E6    ;
- $A7DC LD ($FEA8),HL ;
- $A7DF LD ($FE98),DE ;
- $A7E3 LD ($FE9A),BC ;
- $A7E7 LD A,$18      ;
- $A7E9 OUT ($FE),A   ;
- $A7EB LD DE,($FE9C) ;
- $A7EF LD BC,($FE9E) ;
- $A7F3 CALL $91E6    ;
- $A7F6 LD ($FE9C),DE ;
- $A7FA LD ($FE9E),BC ;
- $A7FE LD DE,($FEA0) ;
- $A802 LD BC,($FEA2) ;
- $A806 CALL $91E6    ;
- $A809 LD ($FEA0),DE ;
- $A80D LD ($FEA2),BC ;
- $A811 LD DE,($FEA4) ;
- $A815 LD BC,($FEA6) ;
- $A819 CALL $91E6    ;
- $A81C LD ($FEA4),DE ;
- $A820 LD ($FEA6),BC ;
- $A824 SUB A         ;
- $A825 OUT ($FE),A   ;
- $A827 LD A,($FE6A)  ;
- $A82A AND $C0       ;
- $A82C JP Z,$A848    ;
+ $A7D5 LD BC,($FE9A)
+ $A7D9 CALL $91E6
+ $A7DC LD ($FEA8),HL
+ $A7DF LD ($FE98),DE
+ $A7E3 LD ($FE9A),BC
+ $A7E7 LD A,$18
+ $A7E9 OUT ($FE),A
+ $A7EB LD DE,($FE9C)
+ $A7EF LD BC,($FE9E)
+ $A7F3 CALL $91E6
+ $A7F6 LD ($FE9C),DE
+ $A7FA LD ($FE9E),BC
+ $A7FE LD DE,($FEA0)
+ $A802 LD BC,($FEA2)
+ $A806 CALL $91E6
+ $A809 LD ($FEA0),DE
+ $A80D LD ($FEA2),BC
+ $A811 LD DE,($FEA4)
+ $A815 LD BC,($FEA6)
+ $A819 CALL $91E6
+ $A81C LD ($FEA4),DE
+ $A820 LD ($FEA6),BC
+ $A824
+ $A825 OUT ($FE),A
+ $A827 LD A,($FE6A)
+ $A82A AND $C0
+ $A82C JP Z,$A848
 @label=SharedTurnTankFamily
  $A82F LD DE,($FE5E) ; Transform the active tank/supertank world `(X,Z,orientation)` tuple.
- $A833 LD BC,($FE60) ;
- $A837 LD HL,($FE62) ;
- $A83A CALL $91E6    ;
- $A83D LD ($FE62),HL ;
- $A840 LD ($FE5E),DE ;
- $A844 LD ($FE60),BC ;
-*$A848 LD A,($FE6A)  ;
- $A84B BIT 4,A       ;
- $A84D JP Z,$A871    ;
+ $A833 LD BC,($FE60)
+ $A837 LD HL,($FE62)
+ $A83A CALL $91E6
+ $A83D LD ($FE62),HL
+ $A840 LD ($FE5E),DE
+ $A844 LD ($FE60),BC
+*$A848 LD A,($FE6A)
+ $A84B
+ $A84D JP Z,$A871
 @label=SharedTurnMissile
  $A850 LD DE,($DD0A) ; Transform the active missile world position and signed lateral/orientation slot.
- $A854 LD BC,($DDBA) ;
- $A858 BIT 7,B       ;
- $A85A JP NZ,$A889   ;
- $A85D LD HL,($FE86) ;
- $A860 CALL $91E6    ;
- $A863 LD ($FE86),HL ;
- $A866 LD ($DDBA),BC ;
- $A86A LD ($DD0A),DE ;
- $A86E JP $A889      ;
-*$A871 AND $20       ;
- $A873 JP Z,$A889    ;
+ $A854 LD BC,($DDBA)
+ $A858
+ $A85A JP NZ,$A889
+ $A85D LD HL,($FE86)
+ $A860 CALL $91E6
+ $A863 LD ($FE86),HL
+ $A866 LD ($DDBA),BC
+ $A86A LD ($DD0A),DE
+ $A86E JP $A889
+*$A871 AND $20
+ $A873 JP Z,$A889
 @label=SharedTurnSaucer
  $A876 LD DE,($FE8E) ; Transform the active saucer world `(X,Z)` pair.
- $A87A LD BC,($FE90) ;
- $A87E CALL $91E6    ;
- $A881 LD ($FE8E),DE ;
- $A885 LD ($FE90),BC ;
-*$A889 LD A,($FE6A)  ;
- $A88C AND $08       ;
- $A88E JP Z,$A8C0    ;
+ $A87A LD BC,($FE90)
+ $A87E CALL $91E6
+ $A881 LD ($FE8E),DE
+ $A885 LD ($FE90),BC
+*$A889 LD A,($FE6A)
+ $A88C AND $08
+ $A88E JP Z,$A8C0
 @label=SharedTurnPlayerBullet
  $A891 LD DE,($DD1A) ; Transform the active player-bullet world position and heading delta.
- $A895 LD HL,($FEAC) ;
- $A898 SBC HL,DE     ;
- $A89A PUSH HL       ;
- $A89B LD BC,($DDCA) ;
- $A89F LD HL,($FEAE) ;
- $A8A2 SBC HL,BC     ;
- $A8A4 PUSH HL       ;
- $A8A5 LD HL,($FEB0) ;
- $A8A8 CALL $91E6    ;
- $A8AB LD ($FEB0),HL ;
- $A8AE LD ($DD1A),DE ;
- $A8B2 LD ($DDCA),BC ;
- $A8B6 POP HL        ;
- $A8B7 ADD HL,BC     ;
- $A8B8 LD ($FEAE),HL ;
- $A8BB POP HL        ;
- $A8BC ADD HL,DE     ;
- $A8BD LD ($FEAC),HL ;
-*$A8C0 LD A,($FE6A)  ;
- $A8C3 AND $04       ;
- $A8C5 JP Z,$A8F7    ;
+ $A895 LD HL,($FEAC)
+ $A898
+ $A89B LD BC,($DDCA)
+ $A89F LD HL,($FEAE)
+ $A8A2
+ $A8A5 LD HL,($FEB0)
+ $A8A8 CALL $91E6
+ $A8AB LD ($FEB0),HL
+ $A8AE LD ($DD1A),DE
+ $A8B2 LD ($DDCA),BC
+ $A8B6
+ $A8B8 LD ($FEAE),HL
+ $A8BB
+ $A8BD LD ($FEAC),HL
+*$A8C0 LD A,($FE6A)
+ $A8C3 AND $04
+ $A8C5 JP Z,$A8F7
 @label=SharedTurnHostileBullet
  $A8C8 LD DE,($DD22) ; Transform the active hostile-bullet world position and heading delta.
- $A8CC LD HL,($FEB4) ;
- $A8CF SBC HL,DE     ;
- $A8D1 PUSH HL       ;
- $A8D2 LD BC,($DDD2) ;
- $A8D6 LD HL,($FEB6) ;
- $A8D9 SBC HL,BC     ;
- $A8DB PUSH HL       ;
- $A8DC LD HL,($FEB8) ;
- $A8DF CALL $91E6    ;
- $A8E2 LD ($FEB8),HL ;
- $A8E5 LD ($DDD2),BC ;
- $A8E9 LD ($DD22),DE ;
- $A8ED POP HL        ;
- $A8EE ADD HL,BC     ;
- $A8EF LD ($FEB6),HL ;
- $A8F2 POP HL        ;
- $A8F3 ADD HL,DE     ;
- $A8F4 LD ($FEB4),HL ;
-*$A8F7 LD A,($FE6C)  ;
- $A8FA AND A         ;
- $A8FB JP Z,$A911    ;
+ $A8CC LD HL,($FEB4)
+ $A8CF
+ $A8D2 LD BC,($DDD2)
+ $A8D6 LD HL,($FEB6)
+ $A8D9
+ $A8DC LD HL,($FEB8)
+ $A8DF CALL $91E6
+ $A8E2 LD ($FEB8),HL
+ $A8E5 LD ($DDD2),BC
+ $A8E9 LD ($DD22),DE
+ $A8ED
+ $A8EF LD ($FEB6),HL
+ $A8F2
+ $A8F4 LD ($FEB4),HL
+*$A8F7 LD A,($FE6C)
+ $A8FA
+ $A8FB JP Z,$A911
 @label=SharedTurnDeferredEffect
  $A8FE LD DE,($FECC) ; Transform the queued deferred effect/explosion `(X,Z)` pair in `FECC/FED0`.
- $A902 LD BC,($FED0) ;
- $A906 CALL $91E6    ;
- $A909 LD ($FECC),DE ;
- $A90D LD ($FED0),BC ;
+ $A902 LD BC,($FED0)
+ $A906 CALL $91E6
+ $A909 LD ($FECC),DE
+ $A90D LD ($FED0),BC
 @label=GameplayHoldLoop
 *$A911 LD BC,$BFFE   ; Read the `ENTER L K J H` keyboard row.
- $A914 IN A,(C)      ;
+ $A914
  $A916 AND $10       ; `H` pressed?
- $A918 JP NZ,$A931   ;
+ $A918 JP NZ,$A931
  $A91B LD A,$FE      ; Read the `CAPS SHIFT Z X C V` keyboard row.
- $A91D IN A,($FE)    ;
+ $A91D IN A,($FE)
  $A91F AND $01       ; `CAPS SHIFT` pressed with hold active?
  $A921 JP Z,$B1F4    ; Abort back to the title/instructions flow.
  $A924 LD BC,$FDFE   ; Read the `A S D F G` keyboard row.
-*$A927 IN A,(C)      ;
+*$A927
  $A929 AND $02       ; `S` pressed?
  $A92B JP Z,$A931    ; Leave hold state and resume the main loop.
  $A92E JP $A927      ; Stay paused until `S` is pressed.
-*$A931 JP $977E      ;
+*$A931 JP $977E
 ; Probable saucer explosion setup:
 ; - awards score increment `5`
 ; - seeds the later animated explosion path with `SAEXV`, `SAEX_XTAB`,
 ;   `SAEX_ZTAB`, and `SAEX_YLOC`
 ; - current best notebook match: `SAEXV`
 @label=SaucerExplosionSetup
-*$A934 LD A,($FE6A)  ;
+*$A934 LD A,($FE6A)
  $A937 AND $D7       ; Clear the active saucer and player-bullet bits.
- $A939 LD ($FE6A),A  ;
- $A93C LD B,$05      ;
- $A93E CALL $94AC    ;
- $A941 LD A,$18      ;
- $A943 OUT ($FE),A   ;
- $A945 LD A,($FE6C)  ;
+ $A939 LD ($FE6A),A
+ $A93C LD B,$05
+ $A93E CALL $94AC
+ $A941 LD A,$18
+ $A943 OUT ($FE),A
+ $A945 LD A,($FE6C)
  $A948 OR $20        ; Queue the matching deferred saucer/effect bit.
- $A94A LD ($FE6C),A  ;
- $A94D LD HL,($FE8E) ;
+ $A94A LD ($FE6C),A
+ $A94D LD HL,($FE8E)
  $A950 LD ($FECC),HL ; Store the deferred effect source X/Z pair in `DeferredEffectSourceX` /
                      ; `DeferredEffectSourceZ`.
- $A953 LD HL,($FE90) ;
- $A956 LD ($FED0),HL ;
- $A959 LD HL,$0505   ;
+ $A953 LD HL,($FE90)
+ $A956 LD ($FED0),HL
+ $A959 LD HL,$0505
  $A95C LD ($FED8),HL ; Install `DeferredEffectPrimaryCounts`, `DeferredEffectSecondaryCounts`,
                      ; `DeferredEffectLineData`, and the `DeferredEffectXTAB/ZTAB/YLOC` companions.
- $A95F LD ($FEDA),HL ;
- $A962 LD HL,$D7CC   ;
- $A965 LD ($FEDC),HL ;
- $A968 LD HL,$DA1E   ;
- $A96B LD ($FEDE),HL ;
- $A96E LD HL,$DB12   ;
- $A971 LD ($FEE0),HL ;
- $A974 LD HL,$DC06   ;
- $A977 LD ($FEE2),HL ;
-*$A97A LD HL,$0000   ;
- $A97D LD ($FECE),HL ;
+ $A95F LD ($FEDA),HL
+ $A962 LD HL,$D7CC
+ $A965 LD ($FEDC),HL
+ $A968 LD HL,$DA1E
+ $A96B LD ($FEDE),HL
+ $A96E LD HL,$DB12
+ $A971 LD ($FEE0),HL
+ $A974 LD HL,$DC06
+ $A977 LD ($FEE2),HL
+*$A97A LD HL,$0000
+ $A97D LD ($FECE),HL
  $A980 LD HL,$00E0   ; Seed `DeferredEffectYBias` and `DeferredEffectYBase`.
- $A983 LD ($FED2),HL ;
- $A986 LD HL,$0000   ;
+ $A983 LD ($FED2),HL
+ $A986 LD HL,$0000
  $A989 LD ($FEBC),HL ; Clear the staged `DeferredEffectXOffset*` / `DeferredEffectZOffset*` terms.
- $A98C LD ($FEC0),HL ;
- $A98F LD ($FEC4),HL ;
- $A992 LD ($FEC8),HL ;
- $A995 LD ($FEBE),HL ;
- $A998 LD ($FEC2),HL ;
- $A99B LD ($FEC6),HL ;
- $A99E LD ($FECA),HL ;
- $A9A1 LD A,$18      ;
- $A9A3 LD ($FED6),A  ;
- $A9A6 SUB A         ;
- $A9A7 OUT ($FE),A   ;
- $A9A9 JP $A36F      ;
+ $A98C LD ($FEC0),HL
+ $A98F LD ($FEC4),HL
+ $A992 LD ($FEC8),HL
+ $A995 LD ($FEBE),HL
+ $A998 LD ($FEC2),HL
+ $A99B LD ($FEC6),HL
+ $A99E LD ($FECA),HL
+ $A9A1 LD A,$18
+ $A9A3 LD ($FED6),A
+ $A9A6
+ $A9A7 OUT ($FE),A
+ $A9A9 JP $A36F
 ; Probable tank / supertank explosion setup:
 ; - awards score increment `1` or `3`
 ; - seeds the later animated explosion path with `TKEXV`, `TKEX_XTAB`,
 ;   `TKEX_ZTAB`, and `TKEX_YLOC`
 ; - current best notebook match: `TKEXV`
 @label=TankExplosionSetup
-*$A9AC LD A,($FE6A)  ;
- $A9AF AND $C0       ;
- $A9B1 JP Z,$A36F    ;
- $A9B4 LD B,$01      ;
- $A9B6 JP M,$A9BB    ;
- $A9B9 LD B,$03      ;
-*$A9BB CALL $94AC    ;
- $A9BE LD A,$18      ;
- $A9C0 OUT ($FE),A   ;
- $A9C2 LD A,($FE6A)  ;
+*$A9AC LD A,($FE6A)
+ $A9AF AND $C0
+ $A9B1 JP Z,$A36F
+ $A9B4 LD B,$01
+ $A9B6 JP M,$A9BB
+ $A9B9 LD B,$03
+*$A9BB CALL $94AC
+ $A9BE LD A,$18
+ $A9C0 OUT ($FE),A
+ $A9C2 LD A,($FE6A)
  $A9C5 AND $37       ; Clear the active tank/supertank and player-bullet bits.
- $A9C7 LD ($FE6A),A  ;
- $A9CA LD A,($FE6C)  ;
+ $A9C7 LD ($FE6A),A
+ $A9CA LD A,($FE6C)
  $A9CD OR $80        ; Queue the matching deferred tank/supertank effect bit.
- $A9CF LD ($FE6C),A  ;
- $A9D2 LD HL,($FE5E) ;
- $A9D5 LD ($FECC),HL ;
- $A9D8 LD HL,($FE60) ;
- $A9DB LD ($FED0),HL ;
- $A9DE LD HL,$0806   ;
+ $A9CF LD ($FE6C),A
+ $A9D2 LD HL,($FE5E)
+ $A9D5 LD ($FECC),HL
+ $A9D8 LD HL,($FE60)
+ $A9DB LD ($FED0),HL
+ $A9DE LD HL,$0806
  $A9E1 LD ($FEDA),HL ; Install the tank-effect count pairs, line data, and XTAB/ZTAB/YLOC companions.
- $A9E4 LD HL,$0608   ;
- $A9E7 LD ($FED8),HL ;
- $A9EA LD HL,$D6B8   ;
- $A9ED LD ($FEDC),HL ;
- $A9F0 LD HL,$D9E6   ;
- $A9F3 LD ($FEDE),HL ;
- $A9F6 LD HL,$DADA   ;
- $A9F9 LD ($FEE0),HL ;
- $A9FC LD HL,$DBCE   ;
- $A9FF LD ($FEE2),HL ;
- $AA02 LD HL,($FE62) ;
- $AA05 LD ($FED4),HL ;
- $AA08 JP $A97A      ;
+ $A9E4 LD HL,$0608
+ $A9E7 LD ($FED8),HL
+ $A9EA LD HL,$D6B8
+ $A9ED LD ($FEDC),HL
+ $A9F0 LD HL,$D9E6
+ $A9F3 LD ($FEDE),HL
+ $A9F6 LD HL,$DADA
+ $A9F9 LD ($FEE0),HL
+ $A9FC LD HL,$DBCE
+ $A9FF LD ($FEE2),HL
+ $AA02 LD HL,($FE62)
+ $AA05 LD ($FED4),HL
+ $AA08 JP $A97A
 @label=MissileExplosionSetup
-*$AA0B LD A,($FE6A)  ;
+*$AA0B LD A,($FE6A)
  $AA0E AND $E7       ; Clear the active missile and player-bullet bits.
- $AA10 LD ($FE6A),A  ;
- $AA13 LD A,$18      ;
- $AA15 OUT ($FE),A   ;
- $AA17 LD A,($FE6C)  ;
+ $AA10 LD ($FE6A),A
+ $AA13 LD A,$18
+ $AA15 OUT ($FE),A
+ $AA17 LD A,($FE6C)
  $AA1A OR $10        ; Queue the matching deferred missile/effect bit.
- $AA1C LD ($FE6C),A  ;
- $AA1F LD B,$02      ;
- $AA21 CALL $94AC    ;
- $AA24 LD HL,($FE7C) ;
- $AA27 LD ($FECC),HL ;
- $AA2A LD HL,($FE80) ;
- $AA2D LD ($FED0),HL ;
+ $AA1C LD ($FE6C),A
+ $AA1F LD B,$02
+ $AA21 CALL $94AC
+ $AA24 LD HL,($FE7C)
+ $AA27 LD ($FECC),HL
+ $AA2A LD HL,($FE80)
+ $AA2D LD ($FED0),HL
  $AA30 LD HL,$0404   ; Install the missile-effect count pairs, line data, and XTAB/ZTAB/YLOC companions.
- $AA33 LD ($FED8),HL ;
- $AA36 LD HL,$0604   ;
- $AA39 LD ($FEDA),HL ;
- $AA3C LD HL,$D8B0   ;
- $AA3F LD ($FEDC),HL ;
- $AA42 LD HL,$DA46   ;
- $AA45 LD ($FEDE),HL ;
- $AA48 LD HL,$DB3A   ;
- $AA4B LD ($FEE0),HL ;
- $AA4E LD HL,$DC2E   ;
- $AA51 LD ($FEE2),HL ;
- $AA54 LD HL,($FE86) ;
- $AA57 LD ($FED4),HL ;
- $AA5A JP $A97A      ;
+ $AA33 LD ($FED8),HL
+ $AA36 LD HL,$0604
+ $AA39 LD ($FEDA),HL
+ $AA3C LD HL,$D8B0
+ $AA3F LD ($FEDC),HL
+ $AA42 LD HL,$DA46
+ $AA45 LD ($FEDE),HL
+ $AA48 LD HL,$DB3A
+ $AA4B LD ($FEE0),HL
+ $AA4E LD HL,$DC2E
+ $AA51 LD ($FEE2),HL
+ $AA54 LD HL,($FE86)
+ $AA57 LD ($FED4),HL
+ $AA5A JP $A97A
 ; Probable missile explosion / impact setup:
 ; - awards score increment `2`
 ; - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
 ;   `MSEX_ZTAB`, and `MSEX_YLOC`
 ; - current best notebook match: `MSEXV`
 @label=DeferredEffectAnimator
-*$AA5D AND $0C       ;
+*$AA5D AND $0C
  $AA5F CALL NZ,$AC22 ; If the active source was a bullet, refresh the shared impact-effect seed first.
- $AA62 LD A,$18      ;
- $AA64 OUT ($FE),A   ;
- $AA66 LD A,($FE6C)  ;
- $AA69 AND A         ;
- $AA6A RET Z         ;
+ $AA62 LD A,$18
+ $AA64 OUT ($FE),A
+ $AA66 LD A,($FE6C)
+ $AA69
 @label=DeferredEffectAdvanceState
- $AA6B LD DE,$0050   ;
- $AA6E LD HL,($FEC6) ;
- $AA71 ADD HL,DE     ;
- $AA72 LD ($FEC6),HL ;
- $AA75 LD HL,($FEC8) ;
- $AA78 ADD HL,DE     ;
- $AA79 LD ($FEC8),HL ;
- $AA7C LD DE,$001E   ;
- $AA7F LD HL,($FECA) ;
- $AA82 ADD HL,DE     ;
- $AA83 LD ($FECA),HL ;
- $AA86 LD HL,($FEBC) ;
- $AA89 ADD HL,DE     ;
- $AA8A LD ($FEBC),HL ;
- $AA8D LD DE,$FFB0   ;
- $AA90 LD HL,($FEBE) ;
- $AA93 ADD HL,DE     ;
- $AA94 LD ($FEBE),HL ;
- $AA97 LD HL,($FEC0) ;
- $AA9A ADD HL,DE     ;
- $AA9B LD ($FEC0),HL ;
- $AA9E LD DE,$FFE2   ;
- $AAA1 LD HL,($FEC2) ;
- $AAA4 ADD HL,DE     ;
- $AAA5 LD ($FEC2),HL ;
- $AAA8 LD HL,($FEC4) ;
- $AAAB ADD HL,DE     ;
- $AAAC LD ($FEC4),HL ;
+ $AA6B LD DE,$0050
+ $AA6E LD HL,($FEC6)
+ $AA71
+ $AA72 LD ($FEC6),HL
+ $AA75 LD HL,($FEC8)
+ $AA78
+ $AA79 LD ($FEC8),HL
+ $AA7C LD DE,$001E
+ $AA7F LD HL,($FECA)
+ $AA82
+ $AA83 LD ($FECA),HL
+ $AA86 LD HL,($FEBC)
+ $AA89
+ $AA8A LD ($FEBC),HL
+ $AA8D LD DE,$FFB0
+ $AA90 LD HL,($FEBE)
+ $AA93
+ $AA94 LD ($FEBE),HL
+ $AA97 LD HL,($FEC0)
+ $AA9A
+ $AA9B LD ($FEC0),HL
+ $AA9E LD DE,$FFE2
+ $AAA1 LD HL,($FEC2)
+ $AAA4
+ $AAA5 LD ($FEC2),HL
+ $AAA8 LD HL,($FEC4)
+ $AAAB
+ $AAAC LD ($FEC4),HL
  $AAAF LD HL,($FEDE) ; Install the current `DeferredEffectXTAB` / `DeferredEffectZTAB` pair.
- $AAB2 LD ($FE42),HL ;
- $AAB5 LD HL,($FEE0) ;
- $AAB8 LD ($FE46),HL ;
+ $AAB2 LD ($FE42),HL
+ $AAB5 LD HL,($FEE0)
+ $AAB8 LD ($FE46),HL
  $AABB LD HL,$DD6E   ; `EXBXL`
- $AABE LD ($FE32),HL ;
+ $AABE LD ($FE32),HL
  $AAC1 LD HL,$DE1E   ; `EXBZL`
- $AAC4 LD ($FE36),HL ;
- $AAC7 LD A,($FED6)  ;
- $AACA DEC A         ;
- $AACB LD ($FED6),A  ;
- $AACE JP Z,$AC01    ;
+ $AAC4 LD ($FE36),HL
+ $AAC7 LD A,($FED6)
+ $AACA
+ $AACB LD ($FED6),A
+ $AACE JP Z,$AC01
 @label=DeferredEffectPhaseSetup
- $AAD1 LD HL,($FED4) ;
- $AAD4 LD DE,$0034   ;
- $AAD7 ADD HL,DE     ;
- $AAD8 LD ($FED4),HL ;
- $AADB LD DE,($FED8) ;
- $AADF LD A,D        ;
- $AAE0 ADD A,E       ;
- $AAE1 LD DE,($FEDA) ;
- $AAE5 ADD A,D       ;
- $AAE6 ADD A,E       ;
- $AAE7 LD HL,($FECC) ;
- $AAEA LD ($FE4A),HL ;
- $AAED LD HL,($FED0) ;
- $AAF0 LD ($FE4C),HL ;
- $AAF3 LD HL,($FED4) ;
- $AAF6 SRL H         ;
- $AAF8 RR L          ;
- $AAFA LD H,$00      ;
- $AAFC CALL $88EA    ;
- $AAFF LD A,($FE6A)  ;
- $AB02 AND $D0       ;
- $AB04 JP NZ,$AB13   ;
- $AB07 LD HL,$0000   ;
- $AB0A LD DE,$0400   ;
- $AB0D CALL $90BA    ;
- $AB10 SUB A         ;
- $AB11 OUT ($FE),A   ;
+ $AAD1 LD HL,($FED4)
+ $AAD4 LD DE,$0034
+ $AAD7
+ $AAD8 LD ($FED4),HL
+ $AADB LD DE,($FED8)
+ $AADF
+ $AAE1 LD DE,($FEDA)
+ $AAE5
+ $AAE7 LD HL,($FECC)
+ $AAEA LD ($FE4A),HL
+ $AAED LD HL,($FED0)
+ $AAF0 LD ($FE4C),HL
+ $AAF3 LD HL,($FED4)
+ $AAF6
+ $AAFA LD H,$00
+ $AAFC CALL $88EA
+ $AAFF LD A,($FE6A)
+ $AB02 AND $D0
+ $AB04 JP NZ,$AB13
+ $AB07 LD HL,$0000
+ $AB0A LD DE,$0400
+ $AB0D CALL $90BA
+ $AB10
+ $AB11 OUT ($FE),A
 @label=DeferredEffectRewriteGeometry
 *$AB13 LD HL,$DEC8   ; YPERS
- $AB16 LD ($FE38),HL ;
- $AB19 LD HL,$DF00   ;
- $AB1C LD ($FE3A),HL ;
- $AB1F LD ($FE00),SP ;
+ $AB16 LD ($FE38),HL
+ $AB19 LD HL,$DF00
+ $AB1C LD ($FE3A),HL
+ $AB1F LD ($FE00),SP
  $AB23 LD SP,$DD6E   ; EXBXL
- $AB26 LD DE,($FEBC) ;
- $AB2A LD BC,($FED8) ;
- $AB2E LD A,B        ;
- $AB2F LD B,C        ;
-*$AB30 DEC SP        ;
- $AB31 DEC SP        ;
- $AB32 POP HL        ;
- $AB33 ADD HL,DE     ;
- $AB34 PUSH HL       ;
- $AB35 DJNZ $AB30    ;
- $AB37 LD DE,($FEC0) ;
- $AB3B LD B,A        ;
-*$AB3C DEC SP        ;
- $AB3D DEC SP        ;
- $AB3E POP HL        ;
- $AB3F ADD HL,DE     ;
- $AB40 PUSH HL       ;
- $AB41 DJNZ $AB3C    ;
- $AB43 LD DE,($FEC4) ;
- $AB47 LD BC,($FEDA) ;
- $AB4B LD A,B        ;
- $AB4C LD B,C        ;
-*$AB4D DEC SP        ;
- $AB4E DEC SP        ;
- $AB4F POP HL        ;
- $AB50 ADD HL,DE     ;
- $AB51 PUSH HL       ;
- $AB52 DJNZ $AB4D    ;
- $AB54 LD B,A        ;
- $AB55 LD DE,($FEC8) ;
-*$AB59 DEC SP        ;
- $AB5A DEC SP        ;
- $AB5B POP HL        ;
- $AB5C ADD HL,DE     ;
- $AB5D PUSH HL       ;
- $AB5E DJNZ $AB59    ;
+ $AB26 LD DE,($FEBC)
+ $AB2A LD BC,($FED8)
+ $AB2E
+ $AB35 DJNZ $AB30
+ $AB37 LD DE,($FEC0)
+ $AB3B
+ $AB41 DJNZ $AB3C
+ $AB43 LD DE,($FEC4)
+ $AB47 LD BC,($FEDA)
+ $AB4B
+ $AB52 DJNZ $AB4D
+ $AB54
+ $AB55 LD DE,($FEC8)
+*$AB59
+ $AB5E DJNZ $AB59
  $AB60 LD SP,$DE1E   ; EXBZL
- $AB63 LD DE,($FEBE) ;
- $AB67 LD BC,($FED8) ;
- $AB6B LD A,B        ;
- $AB6C LD B,C        ;
-*$AB6D DEC SP        ;
- $AB6E DEC SP        ;
- $AB6F POP HL        ;
- $AB70 ADD HL,DE     ;
- $AB71 PUSH HL       ;
- $AB72 DJNZ $AB6D    ;
- $AB74 LD DE,($FEC2) ;
- $AB78 LD B,A        ;
-*$AB79 DEC SP        ;
- $AB7A DEC SP        ;
- $AB7B POP HL        ;
- $AB7C ADD HL,DE     ;
- $AB7D PUSH HL       ;
- $AB7E DJNZ $AB79    ;
- $AB80 LD DE,($FEC6) ;
- $AB84 LD BC,($FEDA) ;
- $AB88 LD A,B        ;
- $AB89 LD B,C        ;
-*$AB8A DEC SP        ;
- $AB8B DEC SP        ;
- $AB8C POP HL        ;
- $AB8D ADD HL,DE     ;
- $AB8E PUSH HL       ;
- $AB8F DJNZ $AB8A    ;
- $AB91 LD B,A        ;
- $AB92 LD DE,($FECA) ;
-*$AB96 DEC SP        ;
- $AB97 DEC SP        ;
- $AB98 POP HL        ;
- $AB99 ADD HL,DE     ;
- $AB9A PUSH HL       ;
- $AB9B DJNZ $AB96    ;
- $AB9D LD HL,($FED2) ;
- $ABA0 LD DE,$0013   ;
- $ABA3 SBC HL,DE     ;
- $ABA5 LD ($FED2),HL ;
- $ABA8 LD DE,($FECE) ;
- $ABAC ADD HL,DE     ;
- $ABAD LD ($FECE),HL ;
- $ABB0 LD DE,($FECE) ;
- $ABB4 LD SP,$DE90   ;
- $ABB7 LD BC,($FED8) ;
- $ABBB LD A,B        ;
- $ABBC ADD A,C       ;
- $ABBD LD BC,($FEDA) ;
- $ABC1 ADD A,B       ;
- $ABC2 ADD A,C       ;
- $ABC3 LD BC,($FEE2) ;
- $ABC7 EXX           ;
- $ABC8 LD B,A        ;
-*$ABC9 EXX           ;
- $ABCA LD A,(BC)     ;
- $ABCB INC BC        ;
- $ABCC LD L,A        ;
- $ABCD LD A,(BC)     ;
- $ABCE INC BC        ;
- $ABCF LD H,A        ;
- $ABD0 ADD HL,DE     ;
- $ABD1 PUSH HL       ;
- $ABD2 EXX           ;
- $ABD3 DJNZ $ABC9    ;
- $ABD5 EXX           ;
- $ABD6 LD ($FE34),SP ;
- $ABDA LD SP,($FE00) ;
+ $AB63 LD DE,($FEBE)
+ $AB67 LD BC,($FED8)
+ $AB6B
+ $AB72 DJNZ $AB6D
+ $AB74 LD DE,($FEC2)
+ $AB78
+ $AB7E DJNZ $AB79
+ $AB80 LD DE,($FEC6)
+ $AB84 LD BC,($FEDA)
+ $AB88
+ $AB8F DJNZ $AB8A
+ $AB91
+ $AB92 LD DE,($FECA)
+*$AB96
+ $AB9B DJNZ $AB96
+ $AB9D LD HL,($FED2)
+ $ABA0 LD DE,$0013
+ $ABA3
+ $ABA5 LD ($FED2),HL
+ $ABA8 LD DE,($FECE)
+ $ABAC
+ $ABAD LD ($FECE),HL
+ $ABB0 LD DE,($FECE)
+ $ABB4 LD SP,$DE90
+ $ABB7 LD BC,($FED8)
+ $ABBB
+ $ABBD LD BC,($FEDA)
+ $ABC1
+ $ABC3 LD BC,($FEE2)
+ $ABC7
+ $ABD3 DJNZ $ABC9
+ $ABD5
+ $ABD6 LD ($FE34),SP
+ $ABDA LD SP,($FE00)
 @label=DeferredEffectDraw
- $ABDE LD HL,($FEDC) ;
- $ABE1 LD ($FE02),HL ;
- $ABE4 LD HL,($FED8) ;
- $ABE7 LD A,$18      ;
- $ABE9 OUT ($FE),A   ;
- $ABEB LD A,H        ;
- $ABEC ADD A,L       ;
- $ABED LD HL,($FEDA) ;
- $ABF0 ADD A,H       ;
- $ABF1 ADD A,L       ;
- $ABF2 SUB $04       ;
- $ABF4 CALL $8660    ;
- $ABF7 LD A,C        ;
- $ABF8 AND A         ;
- $ABF9 RET NZ        ;
- $ABFA CALL $805C    ;
- $ABFD SUB A         ;
- $ABFE OUT ($FE),A   ;
- $AC00 RET           ;
-@label=DeferredEffectComplete
-*$AC01 SUB A         ;
- $AC02 LD ($FED6),A  ;
- $AC05 LD A,($FE6C)  ;
- $AC08 AND $D0       ;
- $AC0A JP NZ,$AC12   ;
- $AC0D SUB A         ;
- $AC0E LD ($FE6C),A  ;
- $AC11 RET           ;
-@label=DeferredEffectRespawn
-*$AC12 LD C,A        ;
- $AC13 LD A,($FE6A)  ;
+ $ABDE LD HL,($FEDC)
+ $ABE1 LD ($FE02),HL
+ $ABE4 LD HL,($FED8)
+ $ABE7 LD A,$18
+ $ABE9 OUT ($FE),A
+ $ABEB
+ $ABED LD HL,($FEDA)
+ $ABF0
+ $ABF2 SUB $04
+ $ABF4 CALL $8660
+ $ABF7
+ $ABFA CALL $805C
+ $ABFD
+ $ABFE OUT ($FE),A
+ $AC00
+ $AC02 LD ($FED6),A
+ $AC05 LD A,($FE6C)
+ $AC08 AND $D0
+ $AC0A JP NZ,$AC12
+ $AC0D
+ $AC0E LD ($FE6C),A
+ $AC11
+ $AC13 LD A,($FE6A)
  $AC16 OR C          ; Restore the deferred major-entity bit to probable EXST1
  $AC17 LD ($FE6A),A  ; before jumping into the reinitialisation path at #R$9644.
- $AC1A SUB A         ;
- $AC1B LD ($FE6C),A  ;
- $AC1E POP HL        ;
- $AC1F JP $9644      ;
+ $AC1A
+ $AC1B LD ($FE6C),A
+ $AC1E
+ $AC1F JP $9644
 @label=BulletImpactEffectSetup
-*$AC22 AND $08       ;
+*$AC22 AND $08
 ; Probable bullet-impact / bullet-explosion setup.
 ; Entry at `0xAC22` selects player-bullet vs hostile-bullet source coordinates
 ; and then falls into this shared setup.
- $AC24 JP Z,$AC48    ;
- $AC27 LD A,($FE6A)  ;
- $AC2A AND $F7       ;
- $AC2C LD ($FE6A),A  ;
- $AC2F LD A,$18      ;
- $AC31 OUT ($FE),A   ;
- $AC33 LD HL,($DD1A) ;
- $AC36 LD ($FEEE),HL ;
- $AC39 LD HL,($DDCA) ;
- $AC3C LD ($FEF0),HL ;
- $AC3F LD HL,($FEB0) ;
- $AC42 LD ($FEF2),HL ;
- $AC45 JP $AC5A      ;
-*$AC48 LD HL,($DD22) ;
- $AC4B LD ($FEEE),HL ;
- $AC4E LD HL,($DDD2) ;
- $AC51 LD ($FEF0),HL ;
- $AC54 LD HL,($FEB8) ;
- $AC57 LD ($FEF2),HL ;
-*$AC5A LD HL,$DA6A   ;
- $AC5D LD ($FE42),HL ;
- $AC60 LD A,($FE6C)  ;
- $AC63 AND $F0       ;
- $AC65 LD ($FE6C),A  ;
- $AC68 LD HL,$DB5E   ;
- $AC6B LD ($FE46),HL ;
- $AC6E LD HL,$DD82   ;
- $AC71 LD ($FE32),HL ;
- $AC74 LD HL,$DE32   ;
- $AC77 LD ($FE36),HL ;
- $AC7A LD A,$0A      ;
- $AC7C LD HL,($FEEE) ;
- $AC7F LD ($FE4A),HL ;
- $AC82 LD HL,($FEF0) ;
- $AC85 LD ($FE4C),HL ;
- $AC88 LD HL,($FEF2) ;
- $AC8B SRL H         ;
- $AC8D RR L          ;
- $AC8F CALL $88EA    ;
- $AC92 SUB A         ;
- $AC93 OUT ($FE),A   ;
- $AC95 LD HL,$DEA4   ;
- $AC98 LD ($FE38),HL ;
- $AC9B LD HL,$DEDC   ;
- $AC9E LD ($FE3A),HL ;
- $ACA1 LD A,$06      ;
- $ACA3 LD HL,$DC52   ;
- $ACA6 LD ($FE34),HL ;
- $ACA9 CALL $8660    ;
- $ACAC LD A,C        ;
- $ACAD AND A         ;
- $ACAE RET NZ        ;
+ $AC24 JP Z,$AC48
+ $AC27 LD A,($FE6A)
+ $AC2A AND $F7
+ $AC2C LD ($FE6A),A
+ $AC2F LD A,$18
+ $AC31 OUT ($FE),A
+ $AC33 LD HL,($DD1A)
+ $AC36 LD ($FEEE),HL
+ $AC39 LD HL,($DDCA)
+ $AC3C LD ($FEF0),HL
+ $AC3F LD HL,($FEB0)
+ $AC42 LD ($FEF2),HL
+ $AC45 JP $AC5A
+*$AC48 LD HL,($DD22)
+ $AC4B LD ($FEEE),HL
+ $AC4E LD HL,($DDD2)
+ $AC51 LD ($FEF0),HL
+ $AC54 LD HL,($FEB8)
+ $AC57 LD ($FEF2),HL
+*$AC5A LD HL,$DA6A
+ $AC5D LD ($FE42),HL
+ $AC60 LD A,($FE6C)
+ $AC63 AND $F0
+ $AC65 LD ($FE6C),A
+ $AC68 LD HL,$DB5E
+ $AC6B LD ($FE46),HL
+ $AC6E LD HL,$DD82
+ $AC71 LD ($FE32),HL
+ $AC74 LD HL,$DE32
+ $AC77 LD ($FE36),HL
+ $AC7A LD A,$0A
+ $AC7C LD HL,($FEEE)
+ $AC7F LD ($FE4A),HL
+ $AC82 LD HL,($FEF0)
+ $AC85 LD ($FE4C),HL
+ $AC88 LD HL,($FEF2)
+ $AC8B
+ $AC8F CALL $88EA
+ $AC92
+ $AC93 OUT ($FE),A
+ $AC95 LD HL,$DEA4
+ $AC98 LD ($FE38),HL
+ $AC9B LD HL,$DEDC
+ $AC9E LD ($FE3A),HL
+ $ACA1 LD A,$06
+ $ACA3 LD HL,$DC52
+ $ACA6 LD ($FE34),HL
+ $ACA9 CALL $8660
+ $ACAC
  $ACAF LD HL,$D95C   ; `EXBLT` line-data family.
- $ACB2 LD ($FE02),HL ;
- $ACB5 LD A,$18      ;
- $ACB7 OUT ($FE),A   ;
- $ACB9 CALL $805C    ;
- $ACBC SUB A         ;
- $ACBD OUT ($FE),A   ;
- $ACBF RET           ;
- $ACC0 NOP           ;
- $ACC1 NOP           ;
- $ACC2 NOP           ;
- $ACC3 NOP           ;
- $ACC4 NOP           ;
- $ACC5 NOP           ;
- $ACC6 NOP           ;
- $ACC7 NOP           ;
- $ACC8 NOP           ;
- $ACC9 NOP           ;
- $ACCA NOP           ;
- $ACCB NOP           ;
- $ACCC NOP           ;
- $ACCD NOP           ;
- $ACCE NOP           ;
- $ACCF NOP           ;
- $ACD0 NOP           ;
- $ACD1 NOP           ;
- $ACD2 NOP           ;
- $ACD3 NOP           ;
- $ACD4 NOP           ;
- $ACD5 NOP           ;
- $ACD6 NOP           ;
- $ACD7 NOP           ;
- $ACD8 NOP           ;
- $ACD9 NOP           ;
- $ACDA NOP           ;
- $ACDB NOP           ;
- $ACDC NOP           ;
- $ACDD NOP           ;
- $ACDE NOP           ;
- $ACDF NOP           ;
- $ACE0 NOP           ;
- $ACE1 NOP           ;
- $ACE2 NOP           ;
- $ACE3 NOP           ;
- $ACE4 NOP           ;
- $ACE5 NOP           ;
- $ACE6 NOP           ;
- $ACE7 NOP           ;
- $ACE8 NOP           ;
- $ACE9 NOP           ;
- $ACEA NOP           ;
- $ACEB NOP           ;
- $ACEC NOP           ;
- $ACED NOP           ;
- $ACEE NOP           ;
- $ACEF NOP           ;
- $ACF0 NOP           ;
- $ACF1 NOP           ;
- $ACF2 NOP           ;
- $ACF3 NOP           ;
- $ACF4 NOP           ;
- $ACF5 NOP           ;
- $ACF6 NOP           ;
- $ACF7 NOP           ;
- $ACF8 NOP           ;
- $ACF9 NOP           ;
- $ACFA NOP           ;
- $ACFB NOP           ;
- $ACFC NOP           ;
- $ACFD NOP           ;
- $ACFE NOP           ;
- $ACFF NOP           ;
- $AD00 NOP           ;
- $AD01 NOP           ;
- $AD02 NOP           ;
- $AD03 NOP           ;
- $AD04 NOP           ;
- $AD05 NOP           ;
- $AD06 NOP           ;
- $AD07 NOP           ;
- $AD08 NOP           ;
- $AD09 NOP           ;
- $AD0A NOP           ;
- $AD0B NOP           ;
+ $ACB2 LD ($FE02),HL
+ $ACB5 LD A,$18
+ $ACB7 OUT ($FE),A
+ $ACB9 CALL $805C
+ $ACBC
+ $ACBD OUT ($FE),A
+ $ACBF
 
-; Routine at AD0C
+; Padding / reserved growth space between the deferred-effect block and the
+; startup/title copy helper at `0xAD0C`.
+; This `NOP` run follows a hard `RET` and ends at the next round-number helper
+; boundary.
+i$ACC0
+
+; Game Entry Point
 ;
-; Used by the routine at #R$B77A.
+; Primary reset/title entrypoint.
+; Disables interrupts, copies the startup seed data into working RAM, and then
+; jumps into `AttractModeTitleSequence`.
+@label=GameEntryPoint
 c$AD0C DI            ; Disable interrupts.
  $AD0D LD HL,$8CA0   ; {Copy #N($0024,$04,$04) bytes from #R$8CA0 to #R$F700.
  $AD10 LD DE,$F700   ;
@@ -8573,8 +8123,8 @@ i$ADC4
 *$B0B3 LD HL,($FE14)
  $B0B6
  $B0B9 JP $B14C
-; This entry point is used by the routines at #R$B1F4, #R$B2F5, #R$B587 and
-; #R$B676.
+; This entry point is used by the attract/title sequence, the showcase stage,
+; and the instructions loop.
 ; Common start-game transition from the attract/title/instructions flow.
 ; Multiple raw `S`-key checks in the intro code jump here; this path runs a
 ; short visual/audio transition, restores the score display, and then jumps
@@ -8719,7 +8269,7 @@ i$ADC4
 
 ; Routine at B1F4
 ;
-; Used by the routines at #R$977E, #R$AD0C, #R$AD3E and #R$B676.
+; Used by the primary entrypoint, gameplay abort/back-to-title paths, and the instructions loop.
 ; Current best read: attract-mode stage A/B.
 ; It clears the screen, prepares title/demo resources, runs the tumbling
 ; title/logo animation blocks, and checks `S` at multiple points so the player
@@ -8828,7 +8378,11 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B2D0 INC HL        ;
  $B2D1 DJNZ $B2CA    ;
  $B2D3 LD A,$14      ;
-; This entry point is used by the routine at #R$B2F5.
+; Current best read: forward title flash/fade pass.
+; This is not a separate top-level routine; it is an internal phase of
+; `AttractModeTitleSequence`, entered from the preceding QS/logo stage and
+; paired with the reverse pass at `0xB2F5`.
+@label=AttractModeTitleFlashForward
 *$B2D5 LD HL,$5800   ;
  $B2D8 INC (HL)      ;
  $B2D9 BIT 3,(HL)    ;
@@ -8844,11 +8398,12 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B2ED BIT 1,C       ; `S` pressed?
  $B2EF JP Z,$B0BC    ; Start game.
  $B2F2 JP $B2D5      ; Jump to #R$B2D5.
-
-; Routine at B2F5
-;
-; Used by the routine at #R$B1F4.
-c$B2F5 DEC (HL)      ;
+; Current best read: reverse title flash/fade pass.
+; This is an internal entry point within `AttractModeTitleSequence`, not a
+; distinct top-level routine: `0xB2D5..0xB343` forms one cohesive flash/fade,
+; restore, and pre-separation prelude.
+@label=AttractModeTitleFlashReverse
+*$B2F5 DEC (HL)      ;
 *$B2F6 LD HL,$5800   ;
  $B2F9 DEC (HL)      ;
  $B2FA BIT 3,(HL)    ;
@@ -8866,6 +8421,10 @@ c$B2F5 DEC (HL)      ;
  $B317 LD BC,$02FF   ;
  $B31A LDIR          ; Restore the full attribute buffer to `0x44`.
  $B31C LD A,$08      ;
+; Current best read: title pre-separation wipe/delay pass.
+; Applies the coarse screen wipe, then runs the calibrated delay before
+; jumping into `AttractModeTitleSeparationAndFlyoff`.
+@label=AttractModeTitleWipePrelude
 *$B31E LD HL,$57FF   ;
 *$B321 SRL (HL)      ;
  $B323 DEC HL        ;
@@ -9179,7 +8738,7 @@ c$B55D CALL $977E    ; Call #R$977E.
 
 ; Routine at B587
 ;
-; Used by the routine at #R$B2F5.
+; Entered from the attract/title sequence after the title flyoff/setup path.
 ; Current best read: attract-mode stage C.
 ; This block appears to force selected entity states and repeatedly call the
 ; main game loop to showcase tank / supertank / saucer / missile examples,
@@ -9444,11 +9003,11 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
                      ; }
  $B777 JP $B1F4      ; Jump to #R$B1F4.
 
-; Game Entry Point
+; Game Entry Vector
 ;
 ; Used by the routine at #R$FF27.
-@label=GameEntryPoint
-c$B77A JP $AD0C      ; Jump to #R$AD0C.
+@label=GameEntryVector
+c$B77A JP $AD0C      ; Jump to the primary `GameEntryPoint` at #R$AD0C.
 
 ; Data block at B77D
 b$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -13626,8 +13185,8 @@ g$FEE5 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FF1D DEFB $C2,$11,$1D,$1A,$3E,$FF,$37,$CD
  $FF25 DEFB $56,$FD
 
-; Game Entry Point Alias
-@label=Alias_GameEntryPoint
+; Game Entry Vector Alias
+@label=Alias_GameEntryVector
 c$FF27 JP $B77A      ; Jump to #R$B77A.
 
 ; Unused
