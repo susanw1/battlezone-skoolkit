@@ -1935,8 +1935,11 @@ C $8C3C,h3
 C $8C3F,h3
 C $8C42,h2
 C $8C44,h3
+. Copy one 0x60-byte off-screen status/top row from `DFA0` to visible `40A0`;
+. the enclosing loop repeats this 8 times.
 C $8C50,h3
 C $8C53,h3
+. Copy the full off-screen playfield buffer `E700..F6FF` to visible `4800..57FF`.
 C $8C56,h3
 C $8C59,h3
 N $8C5E
@@ -1947,9 +1950,12 @@ C $8C5E,h3
 C $8C61,h3
 C $8C64,h2
 C $8C66,h3
+. Overlap-fill one 0x60-byte row of the off-screen status/top buffer with zero;
+. the enclosing loop repeats this 8 times.
 C $8C69,h2
 C $8C74,h3
 C $8C77,h3
+. Clear the full off-screen playfield buffer `E700..F6FF`.
 C $8C7A,h3
 C $8C7D,h3
 C $8C80,h2
@@ -2680,6 +2686,10 @@ C $953A,h2
 C $953C,h3
 C $953F,h3
 C $9542,h3
+C $9545,h2
+. Calibrated 4-pass self-copy delay (`HL=DE=0`, `BC=0x0334`).
+. About 4.92 ms per `LDIR` pass, or about 19.73 ms for the whole 4-pass block
+. at 3.5 MHz.
 C $9548,h3
 N $956A
 . This entry point is used by the routines at #R$AD3E and #R$B2F5.
@@ -2743,7 +2753,9 @@ C $9603,h3
 C $9606,h3
 C $9609,h3
 C $960C,h2
+. Fill the first attribute region from `5800` with colour `0x43`.
 C $9611,h3
+. Continue the initial attribute layout with colour `0x44`.
 C $9616,h3
 C $9619,h3
 C $961C,h3
@@ -5016,6 +5028,10 @@ C $ADB4,h2
 C $ADB6,h3
 C $ADBB,h3
 C $ADBF,h3
+i $ADC4
+. Padding / reserved growth space after `KEMPST`.
+. This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
+. callers/jumpers landing in it.
 N $ADD4
 . Probable `CRASH` / lose-life and game-over sequence.
 . This is the current best code match for the notebook's page-17 `CRASH`
@@ -5030,6 +5046,7 @@ N $ADD4
 . - `CC5C` is reused as a mutable table/workspace during the blood/end-screen
 .   effect rather than as a static text block
 . This entry point is used by the routine at #R$977E.
+@ $ADD4 label=CRASH
 C $ADD4,h2
 C $ADD6,h3
 C $ADD9,h3
@@ -5048,6 +5065,9 @@ C $ADFD,h3
 C $AE00,h3
 C $AE03,h3
 C $AE06,h3
+C $AE09,h2
+. Calibrated delay (`HL=DE=0`, `BC=0x2710`) between early crash-overlay passes.
+. About 60.00 ms at 3.5 MHz.
 C $AE0B,h3
 C $AE0E,h3
 C $AE11,h3
@@ -5059,6 +5079,9 @@ C $AE20,h3
 C $AE23,h3
 C $AE26,h3
 C $AE29,h3
+C $AE2C,h2
+. Second calibrated delay (`HL=DE=0`, `BC=0x2710`) in the same crash sequence.
+. About 60.00 ms at 3.5 MHz.
 C $AE2E,h3
 C $AE31,h3
 C $AE34,h3
@@ -5073,6 +5096,9 @@ C $AE4B,h3
 C $AE4E,h3
 C $AE51,h3
 C $AE56,h3
+C $AE59,h2
+. Calibrated delay (`HL=DE=0`, `BC=0x4E20`) inside the non-final death flash/rumble loop.
+. About 120.00 ms per pass at 3.5 MHz, before the enclosing 20-iteration loop.
 C $AE5C,h2
 C $AE5E,h3
 . Load lives (`SHIPS` in the notebook).
@@ -5092,18 +5118,27 @@ C $AE84,h3
 C $AE87,h3
 C $AE8A,h3
 C $AE8D,h3
+N $AE90
+. Current best `BLOOD` / final zero-lives branch match.
+. This is the late branch of `CRASH`: it enters the blood/end-screen effect,
+. then prints `GAME OVER` and later the `TODAYS GREATEST` heading.
+@ $AE90 label=BLOOD
 C $AE90,h2
 C $AE92,h3
 C $AE95,h3
 C $AE98,h3
+C $AE9B,h2
+. Calibrated delay (`HL=DE=0`, `BC=0x4E20`) before the blood/drip setup starts.
 C $AE9D,h3
 C $AEA0,h3
 C $AEA3,h3
 C $AEA6,h2
+. Fill 0x20 screen bytes at `0x4000` with `0x7E` for the zero-lives blood/drip setup.
 C $AEAA,h3
 C $AEAD,h3
 C $AEB0,h3
 C $AEB3,h2
+. Fill 0x20 attribute bytes at `0x5800` with `0x42` for the same zero-lives setup.
 C $AEB7,h3
 . Overlap-copy trick:
 C $AEBA,h3
@@ -5113,6 +5148,7 @@ C $AEBD,h2
 C $AEBF,h3
 . drip-length values.
 C $AEC4,h2
+. `LDIR` at `0xAEC2` performs the actual 32-byte overlap-fill with `0xBF`.
 . Number of outer drip frames to generate.
 C $AEC6,h3
 C $AECA,h2
@@ -5149,6 +5185,9 @@ C $AF31,h3
 C $AF34,h3
 C $AF37,h3
 C $AF3A,h3
+C $AF3D,h2
+. Calibrated delay (`HL=DE=0`, `BC=0x1194`) between blood-drip frames.
+. About 27.00 ms at 3.5 MHz.
 C $AF3F,h3
 C $AF43,h3
 C $AF46,h3
@@ -5159,6 +5198,10 @@ C $AF54,h2
 C $AF56,h3
 C $AF59,h3
 C $AF5C,h3
+C $AF5F,h2
+. 4-pass calibrated delay (`HL=DE=0`, `BC=0x9C40`) after `GAME OVER`.
+. About 240.00 ms per `LDIR` pass, or about 960.00 ms for the whole 4-pass block
+. at 3.5 MHz.
 C $AF62,h3
 C $AF65,h3
 C $AF68,h2
@@ -5179,17 +5222,26 @@ C $AFAB,h3
 C $AFAE,h3
 C $AFB1,h3
 C $AFB4,h3
+C $AFB7,h2
+. Full-length `BC=0` self-copy delay before the game-over/high-score clear.
+. About 393.21 ms at 3.5 MHz.
 C $AFB9,h3
 C $AFBC,h3
 C $AFBF,h3
 C $AFC2,h2
+. Clear the full pixel screen from `0x4000`.
 C $AFC6,h2
 C $AFC8,h3
+C $AFCB,h2
+. Fill the attribute buffer with `0x44` for the post-game-over text phase.
 C $AFCD,h3
 C $AFD0,h2
 C $AFD5,h1
 C $AFD6,h3
 C $AFDB,h3
+C $AFDE,h2
+. Calibrated per-character delay (`HL=DE=0`, `BC=0x07D0`) while printing the later game-over/high-score text.
+. About 12.00 ms at 3.5 MHz.
 C $AFE0,h2
 C $AFE2,h2
 C $AFE6,h2
@@ -5215,6 +5267,9 @@ C $B01C,h1
 C $B01D,h3
 C $B020,h3
 C $B023,h3
+C $B026,h2
+. Calibrated self-copy delay (`HL=DE=0`, `BC=0x9C40`) in the name-entry/input loop.
+. About 240.00 ms at 3.5 MHz.
 C $B028,h2
 C $B02A,h2
 C $B02D,h3
@@ -5264,8 +5319,13 @@ C $B0BC,h3
 C $B0BF,h3
 C $B0C2,h3
 C $B0C5,h3
+C $B0CA,h2
+. Clear the full pixel screen during the common start-game transition.
 C $B0CC,h3
 C $B0CF,h3
+C $B0D2,h2
+. Full-length `BC=0` self-copy delay inside the same transition.
+. About 393.21 ms at 3.5 MHz.
 C $B0D4,h3
 C $B0D7,h3
 . Patch `NUMBA` to the temporary start-transition heading position.
@@ -5318,11 +5378,16 @@ C $B135,h3
 C $B138,h3
 C $B13B,h3
 C $B13E,h3
+C $B141,h2
+. Calibrated inter-phrase delay (`HL=DE=0`, `BC=0x09C4`) inside the `1812` start-theme player.
+. About 15.00 ms at 3.5 MHz.
 C $B144,h3
 C $B147,h4
 C $B14C,h3
 C $B14F,h3
 C $B152,h3
+C $B155,h2
+. Clear the full pixel screen before the later `TODAYS GREATEST` text path.
 C $B157,h2
 C $B159,h3
 C $B15F,h1
@@ -5363,6 +5428,9 @@ C $B1D7,h2
 C $B1D9,h3
 C $B1DC,h3
 C $B1DF,h3
+C $B1E2,h2
+. Full-length `BC=0` attract/title dwell delay after the intro numeric list.
+. About 393.21 ms at 3.5 MHz.
 C $B1E5,h2
 . Read the `A S D F G` keyboard row.
 C $B1E7,h2
@@ -5480,6 +5548,8 @@ C $B2D5,h3
 C $B2DB,h3
 C $B2DE,h3
 C $B2E1,h3
+C $B2E4,h2
+. Flood the full attribute buffer from the current `0x5800` value during the title flash/fade phase.
 C $B2E7,h2
 . Read the `A S D F G` keyboard row.
 C $B2E9,h2
@@ -5497,11 +5567,15 @@ C $B2F6,h3
 C $B2FC,h3
 C $B2FF,h3
 C $B302,h3
+C $B305,h2
+. Repeat the same full-attribute flood during the reverse phase.
 C $B307,h3
 C $B30C,h3
 C $B30F,h3
 C $B312,h3
 C $B315,h2
+C $B31A,h2
+. Restore the full attribute buffer to `0x44`.
 C $B317,h3
 C $B31C,h2
 C $B31E,h3
@@ -5510,6 +5584,9 @@ C $B331,h3
 C $B334,h3
 C $B337,h3
 C $B33A,h3
+C $B33D,h2
+. Calibrated delay (`HL=DE=0`, `BC=0x4E20`) in the title-separation prelude.
+. About 120.00 ms at 3.5 MHz.
 C $B340,h3
 C $B343,h3
 N $B346
@@ -5663,8 +5740,17 @@ C $B470,h3
 C $B474,h3
 C $B478,h2
 C $B47A,h3
+C $B483,h2
+. First full-length `BC=0` delay before the footer/credits stage.
+. About 393.21 ms at 3.5 MHz.
 C $B47D,h3
 C $B480,h3
+C $B485,h2
+. Second full-length `BC=0` delay in the same pause block.
+. About 393.21 ms at 3.5 MHz.
+C $B487,h2
+. Third full-length `BC=0` delay in the same pause block.
+. About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
 C $B489,h3
 N $B48C
 . Current best read: attract-mode credits/footer text stage.
@@ -5687,9 +5773,20 @@ C $B4B2,h3
 C $B4B5,h3
 C $B4B8,h3
 C $B4BB,h3
+C $B4BE,h2
+. First full-length `BC=0` delay before the flyoff/footer clear.
+. About 393.21 ms at 3.5 MHz.
+C $B4C0,h2
+. Second full-length `BC=0` delay in the same block.
+. About 393.21 ms at 3.5 MHz.
+C $B4C2,h2
+. Third full-length `BC=0` delay in the same block.
+. About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
 C $B4C4,h3
 C $B4C7,h3
 C $B4CA,h3
+C $B4CD,h2
+. Clear the top `0x0800` bytes of the pixel screen before the long flyoff/footer phase.
 C $B4CF,h2
 N $B4D1
 . Current best read: long flyoff pass with the credits/footer redrawn each
@@ -5714,6 +5811,8 @@ C $B4FC,h3
 C $B4FF,h3
 C $B502,h3
 C $B505,h2
+C $B507,h2
+. Clear the full pixel screen after the title flyoff completes.
 C $B509,h2
 C $B50B,h3
 C $B50E,h2
@@ -5733,9 +5832,15 @@ C $B527,h3
 C $B52A,h3
 C $B52D,h3
 C $B530,h2
+C $B532,h2
+. Clear the pixel screen and seed the first attribute byte to zero for the split-colour showcase layout.
 C $B534,h3
+C $B537,h2
+. Continue zero-filling the first status-panel attribute region.
 C $B539,h2
 C $B53B,h3
+C $B53E,h2
+. Fill the remaining attribute area with `0x44`.
 C $B540,h3
 C $B543,h3
 C $B546,h3
@@ -5904,7 +6009,11 @@ C $B651,h3
 C $B654,h3
 C $B657,h3
 C $B65A,h2
+C $B65C,h2
+. Clear the full pixel screen and seed the first attribute byte before the instructions pages.
 C $B65E,h3
+C $B661,h2
+. Continue zero-filling the full attribute buffer.
 C $B663,h6
 . #HTML(Write <a rel="noopener nofollow"
 . href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a>
@@ -5967,11 +6076,16 @@ C $B68B,h3
 C $B68F,h3
 C $B692,h3
 C $B695,h3
+C $B698,h2
+. Full-length `BC=0` dwell delay after the first instructions page.
+. About 393.21 ms at 3.5 MHz.
 C $B69B,h2
 C $B69D,h3
 C $B6A0,h3
 C $B6A3,h3
 C $B6A6,h2
+C $B6A8,h2
+. Clear the full pixel screen before the second instructions page.
 C $B6AA,h3
 . #REGhl=#R$C3EF.
 C $B6AD,h2
@@ -5991,6 +6105,9 @@ C $B6BF,h3
 C $B6C3,h3
 C $B6C6,h3
 C $B6C9,h3
+C $B6CC,h2
+. Full-length `BC=0` dwell delay after the second instructions page.
+. About 393.21 ms at 3.5 MHz.
 C $B6CF,h2
 C $B6D1,h3
 C $B6D4,h3
@@ -6008,7 +6125,11 @@ C $B6F1,h3
 C $B6F4,h3
 C $B6F7,h3
 C $B6FA,h2
+C $B6FC,h2
+. Clear the full pixel screen and seed the first attribute byte before the later instructions/text phase.
 C $B6FE,h3
+C $B701,h2
+. Continue zero-filling the full attribute buffer.
 C $B703,h3
 C $B706,h3
 C $B709,h3
@@ -6027,11 +6148,16 @@ C $B72B,h3
 C $B72F,h3
 C $B732,h3
 C $B735,h3
+C $B738,h2
+. Full-length `BC=0` dwell delay in the later instructions/text phase.
+. About 393.21 ms at 3.5 MHz.
 C $B73B,h2
 C $B73D,h3
 C $B740,h3
 C $B743,h3
 C $B746,h2
+C $B748,h2
+. Clear the full pixel screen before the final instructions text.
 C $B74A,h3
 C $B74D,h2
 C $B74F,h3
@@ -6045,6 +6171,9 @@ C $B75F,h3
 C $B763,h3
 C $B766,h3
 C $B769,h3
+C $B76C,h2
+. Full-length `BC=0` dwell delay after the final instructions text.
+. About 393.21 ms at 3.5 MHz.
 C $B76F,h2
 C $B771,h6
 . #HTML(Write #R$C9B4(#N$C8B4) to *<a rel="noopener

@@ -3575,7 +3575,8 @@ c$88EA LD ($FE00),SP ;
 c$8C3C LD HL,$DFA0   ;
  $8C3F LD DE,$40A0   ;
  $8C42 LD A,$08      ;
-*$8C44 LD BC,$0060   ;
+*$8C44 LD BC,$0060   ; Copy one 0x60-byte off-screen status/top row from `DFA0` to visible `40A0`;
+                     ; the enclosing loop repeats this 8 times.
  $8C47 PUSH HL       ;
  $8C48 PUSH DE       ;
  $8C49 LDIR          ;
@@ -3585,7 +3586,7 @@ c$8C3C LD HL,$DFA0   ;
  $8C4E INC H         ;
  $8C4F DEC A         ;
  $8C50 JP NZ,$8C44   ;
- $8C53 LD HL,$E700   ;
+ $8C53 LD HL,$E700   ; Copy the full off-screen playfield buffer `E700..F6FF` to visible `4800..57FF`.
  $8C56 LD DE,$4800   ;
  $8C59 LD BC,$1000   ;
  $8C5C LDIR          ;
@@ -3595,7 +3596,8 @@ c$8C3C LD HL,$DFA0   ;
 *$8C5E LD HL,$DFA0   ;
  $8C61 LD DE,$DFA1   ;
  $8C64 LD A,$08      ;
-*$8C66 LD BC,$005F   ;
+*$8C66 LD BC,$005F   ; Overlap-fill one 0x60-byte row of the off-screen status/top buffer with zero;
+                     ; the enclosing loop repeats this 8 times.
  $8C69 LD (HL),$00   ;
  $8C6B PUSH HL       ;
  $8C6C PUSH DE       ;
@@ -3606,7 +3608,7 @@ c$8C3C LD HL,$DFA0   ;
  $8C72 INC D         ;
  $8C73 DEC A         ;
  $8C74 JP NZ,$8C66   ;
- $8C77 LD HL,$E700   ;
+ $8C77 LD HL,$E700   ; Clear the full off-screen playfield buffer `E700..F6FF`.
  $8C7A LD DE,$E701   ;
  $8C7D LD BC,$0FFF   ;
  $8C80 LD (HL),$00   ;
@@ -3673,7 +3675,7 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 
 ; Routine at 8D68
 ;
-; Used by the routines at #R$977E and #R$AD3E.
+; Used by the routines at #R$977E and #R$ADC4.
 ;
 ; .
 ;
@@ -3786,7 +3788,7 @@ c$8D68 LD HL,($FE1C) ;
 
 ; Routine at 8E08
 ;
-; Used by the routines at #R$977E and #R$AD3E.
+; Used by the routines at #R$977E and #R$ADC4.
 ;
 ; .
 ;
@@ -3829,7 +3831,7 @@ c$8E08 LD BC,($FE24) ;
 
 ; Routine at 8E38
 ;
-; Used by the routines at #R$977E and #R$AD3E.
+; Used by the routines at #R$977E and #R$ADC4.
 ;
 ; .
 ;
@@ -4060,7 +4062,7 @@ c$8E38 LD ($FE00),SP ;
 
 ; Routine at 8F53
 ;
-; Used by the routines at #R$977E and #R$AD3E.
+; Used by the routines at #R$977E and #R$ADC4.
 ;
 ; .
 ;
@@ -4438,7 +4440,7 @@ c$90BA PUSH HL                              ;
 
 ; Routine at 9132
 ;
-; Used by the routines at #R$977E and #R$AD3E.
+; Used by the routines at #R$977E and #R$ADC4.
 ;
 ; .
 ;
@@ -5236,7 +5238,9 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
 *$953C LD HL,$0000   ;
  $953F LD DE,$0000   ;
  $9542 LD BC,$0334   ;
- $9545 LDIR          ;
+ $9545 LDIR          ; Calibrated 4-pass self-copy delay (`HL=DE=0`, `BC=0x0334`).
+                     ; About 4.92 ms per `LDIR` pass, or about 19.73 ms for the whole 4-pass block
+                     ; at 3.5 MHz.
  $9547 DEC A         ;
  $9548 JP NZ,$953C   ;
  $954B RET           ;
@@ -5344,10 +5348,10 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $9603 LD BC,$00A0   ;
  $9606 LD HL,$5800   ;
  $9609 LD DE,$5801   ;
- $960C LD (HL),$43   ;
+ $960C LD (HL),$43   ; Fill the first attribute region from `5800` with colour `0x43`.
  $960E LDIR          ;
  $9610 INC (HL)      ;
- $9611 LD BC,$025F   ;
+ $9611 LD BC,$025F   ; Continue the initial attribute layout with colour `0x44`.
  $9614 LDIR          ;
  $9616 LD HL,$CE40   ;
  $9619 CALL $9452    ;
@@ -8253,22 +8257,11 @@ c$AD3E LD BC,$0000   ;
  $ADBF LD ($FE54),A  ;
  $ADC2 LD A,C        ;
  $ADC3 RET           ;
- $ADC4 NOP           ;
- $ADC5 NOP           ;
- $ADC6 NOP           ;
- $ADC7 NOP           ;
- $ADC8 NOP           ;
- $ADC9 NOP           ;
- $ADCA NOP           ;
- $ADCB NOP           ;
- $ADCC NOP           ;
- $ADCD NOP           ;
- $ADCE NOP           ;
- $ADCF NOP           ;
- $ADD0 NOP           ;
- $ADD1 NOP           ;
- $ADD2 NOP           ;
- $ADD3 NOP           ;
+
+; Padding / reserved growth space after `KEMPST`.
+; This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
+; callers/jumpers landing in it.
+i$ADC4
 ; Probable `CRASH` / lose-life and game-over sequence.
 ; This is the current best code match for the notebook's page-17 `CRASH`
 ; heading: repeated animation/display work, decrement lives at `FEE4`, branch
@@ -8282,380 +8275,304 @@ c$AD3E LD BC,$0000   ;
 ; - `CC5C` is reused as a mutable table/workspace during the blood/end-screen
 ;   effect rather than as a static text block
 ; This entry point is used by the routine at #R$977E.
-*$ADD4 LD A,$C9      ;
- $ADD6 LD ($8C5E),A  ;
- $ADD9 LD HL,$C8B4   ;
- $ADDC LD ($5C36),HL ;
- $ADDF LD HL,$CC9C   ;
- $ADE2 LD ($FE02),HL ;
- $ADE5 CALL $8D68    ;
- $ADE8 CALL $8E08    ;
- $ADEB CALL $8E38    ;
- $ADEE CALL $805C    ;
- $ADF1 CALL $8F53    ;
- $ADF4 CALL $8C3C    ;
- $ADF7 LD HL,$0000   ;
- $ADFA LD DE,$0400   ;
- $ADFD CALL $90BA    ;
- $AE00 LD HL,$0000   ;
- $AE03 LD DE,$0000   ;
- $AE06 LD BC,$2710   ;
- $AE09 LDIR          ;
- $AE0B LD HL,$CC9C   ;
- $AE0E LD ($FE02),HL ;
- $AE11 CALL $805C    ;
- $AE14 CALL $805C    ;
- $AE17 CALL $8C3C    ;
- $AE1A LD HL,$0000   ;
- $AE1D LD DE,$0400   ;
- $AE20 CALL $90BA    ;
- $AE23 LD HL,$0000   ;
- $AE26 LD DE,$0000   ;
- $AE29 LD BC,$2710   ;
- $AE2C LDIR          ;
- $AE2E LD HL,$CC9C   ;
- $AE31 LD ($FE02),HL ;
- $AE34 CALL $805C    ;
- $AE37 CALL $805C    ;
- $AE3A CALL $805C    ;
- $AE3D LD A,$21      ;
- $AE3F LD ($8C5E),A  ;
- $AE42 CALL $8C3C    ;
- $AE45 LD B,$14      ;
-*$AE47 PUSH BC       ;
- $AE48 LD HL,$0000   ;
- $AE4B LD DE,$0400   ;
- $AE4E CALL $90BA    ;
- $AE51 LD HL,$0000   ;
- $AE54 LD D,H        ;
- $AE55 LD E,L        ;
- $AE56 LD BC,$4E20   ;
- $AE59 LDIR          ;
- $AE5B POP BC        ;
- $AE5C DJNZ $AE47    ;
+@label=CRASH
+*$ADD4 LD A,$C9
+ $ADD6 LD ($8C5E),A
+ $ADD9 LD HL,$C8B4
+ $ADDC LD ($5C36),HL
+ $ADDF LD HL,$CC9C
+ $ADE2 LD ($FE02),HL
+ $ADE5 CALL $8D68
+ $ADE8 CALL $8E08
+ $ADEB CALL $8E38
+ $ADEE CALL $805C
+ $ADF1 CALL $8F53
+ $ADF4 CALL $8C3C
+ $ADF7 LD HL,$0000
+ $ADFA LD DE,$0400
+ $ADFD CALL $90BA
+ $AE00 LD HL,$0000
+ $AE03 LD DE,$0000
+ $AE06 LD BC,$2710
+ $AE09 LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x2710`) between early crash-overlay passes.
+                     ; About 60.00 ms at 3.5 MHz.
+ $AE0B LD HL,$CC9C
+ $AE0E LD ($FE02),HL
+ $AE11 CALL $805C
+ $AE14 CALL $805C
+ $AE17 CALL $8C3C
+ $AE1A LD HL,$0000
+ $AE1D LD DE,$0400
+ $AE20 CALL $90BA
+ $AE23 LD HL,$0000
+ $AE26 LD DE,$0000
+ $AE29 LD BC,$2710
+ $AE2C LDIR          ; Second calibrated delay (`HL=DE=0`, `BC=0x2710`) in the same crash sequence.
+                     ; About 60.00 ms at 3.5 MHz.
+ $AE2E LD HL,$CC9C
+ $AE31 LD ($FE02),HL
+ $AE34 CALL $805C
+ $AE37 CALL $805C
+ $AE3A CALL $805C
+ $AE3D LD A,$21
+ $AE3F LD ($8C5E),A
+ $AE42 CALL $8C3C
+ $AE45 LD B,$14
+*$AE47
+ $AE48 LD HL,$0000
+ $AE4B LD DE,$0400
+ $AE4E CALL $90BA
+ $AE51 LD HL,$0000
+ $AE54
+ $AE56 LD BC,$4E20
+ $AE59 LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x4E20`) inside the non-final death flash/rumble loop.
+                     ; About 120.00 ms per pass at 3.5 MHz, before the enclosing 20-iteration loop.
+ $AE5B
+ $AE5C DJNZ $AE47
  $AE5E LD A,($FEE4)  ; Load lives (`SHIPS` in the notebook).
- $AE61 DEC A         ;
+ $AE61
  $AE62 LD ($FEE4),A  ; Store decremented lives.
- $AE65 JP Z,$AE90    ;
- $AE68 CP $07        ;
- $AE6A JP NC,$AE81   ;
- $AE6D LD BC,$4012   ;
- $AE70 LD L,A        ;
- $AE71 LD H,$00      ;
- $AE73 ADD HL,HL     ;
- $AE74 ADD HL,BC     ;
- $AE75 LD B,H        ;
- $AE76 LD C,L        ;
- $AE77 LD A,$0C      ;
- $AE79 CALL $948C    ;
- $AE7C LD A,$0C      ;
- $AE7E CALL $948C    ;
-*$AE81 LD B,$18      ;
- $AE83 SUB A         ;
- $AE84 LD ($FE6A),A  ;
- $AE87 LD ($FE6C),A  ;
- $AE8A LD ($FE6E),A  ;
- $AE8D JP $9644      ;
-*$AE90 LD A,$02      ;
- $AE92 LD HL,$0000   ;
- $AE95 LD DE,$0000   ;
- $AE98 LD BC,$4E20   ;
- $AE9B LDIR          ;
- $AE9D LD HL,$4000   ;
- $AEA0 LD DE,$4001   ;
- $AEA3 LD BC,$001F   ;
- $AEA6 LD (HL),$7E   ;
- $AEA8 LDIR          ;
- $AEAA LD HL,$5800   ;
- $AEAD LD DE,$5801   ;
- $AEB0 LD BC,$001F   ;
- $AEB3 LD (HL),$42   ;
- $AEB5 LDIR          ;
+ $AE65 JP Z,$AE90
+ $AE68 CP $07
+ $AE6A JP NC,$AE81
+ $AE6D LD BC,$4012
+ $AE70
+ $AE71 LD H,$00
+ $AE73
+ $AE77 LD A,$0C
+ $AE79 CALL $948C
+ $AE7C LD A,$0C
+ $AE7E CALL $948C
+*$AE81 LD B,$18
+ $AE83
+ $AE84 LD ($FE6A),A
+ $AE87 LD ($FE6C),A
+ $AE8A LD ($FE6E),A
+ $AE8D JP $9644
+; Current best `BLOOD` / final zero-lives branch match.
+; This is the late branch of `CRASH`: it enters the blood/end-screen effect,
+; then prints `GAME OVER` and later the `TODAYS GREATEST` heading.
+@label=BLOOD
+*$AE90 LD A,$02
+ $AE92 LD HL,$0000
+ $AE95 LD DE,$0000
+ $AE98 LD BC,$4E20
+ $AE9B LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x4E20`) before the blood/drip setup starts.
+ $AE9D LD HL,$4000
+ $AEA0 LD DE,$4001
+ $AEA3 LD BC,$001F
+ $AEA6 LD (HL),$7E   ; Fill 0x20 screen bytes at `0x4000` with `0x7E` for the zero-lives blood/drip setup.
+ $AEA8
+ $AEAA LD HL,$5800
+ $AEAD LD DE,$5801
+ $AEB0 LD BC,$001F
+ $AEB3 LD (HL),$42   ; Fill 0x20 attribute bytes at `0x5800` with `0x42` for the same zero-lives setup.
+ $AEB5
  $AEB7 LD HL,$CC5C   ; Overlap-copy trick:
  $AEBA LD DE,$CC5D   ; seed the first 32 bytes with `$BF`, leaving the second
  $AEBD LD (HL),$BF   ; 32-byte half as the original handwritten `02..06`
  $AEBF LD BC,$001F   ; drip-length values.
- $AEC2 LDIR          ;
- $AEC4 LD A,$62      ; Number of outer drip frames to generate.
-*$AEC6 LD ($FE4E),A  ;
- $AEC9 EXX           ;
- $AECA LD C,$00      ;
- $AECC EXX           ;
-*$AECD LD H,$CC      ;
- $AECF EXX           ;
- $AED0 LD A,C        ;
- $AED1 EXX           ;
- $AED2 ADD A,$5C     ;
+ $AEC2
+ $AEC4 LD A,$62      ; `LDIR` at `0xAEC2` performs the actual 32-byte overlap-fill with `0xBF`.
+                     ; Number of outer drip frames to generate.
+*$AEC6 LD ($FE4E),A
+ $AEC9
+ $AECA LD C,$00
+ $AECC
+*$AECD LD H,$CC
+ $AECF
+ $AED2 ADD A,$5C
  $AED4 LD L,A        ; First half: mutable current row / byte-row for this
  $AED5 LD C,(HL)     ; column.
  $AED6 LD ($FE14),HL ; Remember the per-column row slot so it can be updated.
- $AED9 ADD A,$20     ;
+ $AED9 ADD A,$20
  $AEDB LD L,A        ; Second half: remaining drip length / life for this
  $AEDC LD B,(HL)     ; column.
- $AEDD LD A,C        ;
- $AEDE AND A         ;
- $AEDF JP Z,$AF2B    ;
- $AEE2 LD H,$7C      ;
- $AEE4 LD L,C        ;
- $AEE5 ADD HL,HL     ;
- $AEE6 INC HL        ;
-*$AEE7 LD A,(HL)     ;
- $AEE8 EXX           ;
- $AEE9 OR C          ;
- $AEEA EXX           ;
- $AEEB LD E,A        ;
- $AEEC DEC HL        ;
- $AEED LD A,(HL)     ;
- $AEEE DEC HL        ;
- $AEEF SUB $9F       ;
- $AEF1 LD D,A        ;
- $AEF2 LD A,$FF      ;
- $AEF4 LD (DE),A     ;
- $AEF5 DEC C         ;
- $AEF6 JP Z,$AF2B    ;
- $AEF9 DJNZ $AEE7    ;
- $AEFB LD A,(HL)     ;
- $AEFC DEC HL        ;
- $AEFD EXX           ;
- $AEFE OR C          ;
- $AEFF EXX           ;
- $AF00 LD E,A        ;
- $AF01 LD A,(HL)     ;
- $AF02 DEC HL        ;
- $AF03 SUB $9F       ;
- $AF05 LD D,A        ;
- $AF06 LD A,$7E      ;
- $AF08 LD (DE),A     ;
- $AF09 DEC C         ;
- $AF0A JP Z,$AF2B    ;
- $AF0D LD A,(HL)     ;
- $AF0E DEC HL        ;
- $AF0F EXX           ;
- $AF10 OR C          ;
- $AF11 EXX           ;
- $AF12 LD E,A        ;
- $AF13 LD A,(HL)     ;
- $AF14 SUB $9F       ;
- $AF16 LD D,A        ;
- $AF17 LD A,$18      ;
- $AF19 LD (DE),A     ;
- $AF1A LD A,D        ;
- $AF1B RRCA          ;
- $AF1C RRCA          ;
- $AF1D RRCA          ;
- $AF1E AND $03       ;
- $AF20 ADD A,$58     ;
- $AF22 LD H,A        ;
- $AF23 LD L,E        ;
- $AF24 LD (HL),$42   ;
- $AF26 LD HL,($FE14) ;
- $AF29 INC C         ;
- $AF2A LD (HL),C     ;
-*$AF2B EXX           ;
- $AF2C INC C         ;
- $AF2D LD A,C        ;
- $AF2E EXX           ;
- $AF2F CP $20        ;
- $AF31 JP NZ,$AECD   ;
- $AF34 LD HL,$0000   ;
- $AF37 LD DE,$0000   ;
- $AF3A LD BC,$1194   ;
- $AF3D LDIR          ;
- $AF3F LD A,($FE4E)  ;
- $AF42 DEC A         ;
- $AF43 JP NZ,$AEC6   ;
- $AF46 LD HL,$CDE8   ;
- $AF49 LD B,$11      ;
-*$AF4B LD A,(HL)     ;
- $AF4C PUSH HL       ;
- $AF4D PUSH BC       ;
- $AF4E RST $10       ;
- $AF4F POP BC        ;
- $AF50 POP HL        ;
- $AF51 INC HL        ;
- $AF52 DJNZ $AF4B    ;
- $AF54 LD A,$04      ;
-*$AF56 LD HL,$0000   ;
- $AF59 LD DE,$0000   ;
- $AF5C LD BC,$9C40   ;
- $AF5F LDIR          ;
- $AF61 DEC A         ;
- $AF62 JP NZ,$AF56   ;
- $AF65 LD HL,$F700   ;
- $AF68 LD B,$08      ;
- $AF6A LD DE,($FE76) ;
-*$AF6E LD C,(HL)     ;
- $AF6F INC HL        ;
- $AF70 LD A,(HL)     ;
- $AF71 INC HL        ;
- $AF72 LD ($FE14),HL ;
- $AF75 LD L,C        ;
- $AF76 LD H,A        ;
- $AF77 PUSH HL       ;
- $AF78 AND A         ;
- $AF79 SBC HL,DE     ;
- $AF7B POP HL        ;
- $AF7C JP C,$AF87    ;
- $AF7F LD HL,($FE14) ;
- $AF82 DJNZ $AF6E    ;
- $AF84 JP $B1F4      ;
-*$AF87 PUSH DE       ;
- $AF88 LD HL,$F70E   ;
- $AF8B LD DE,$F710   ;
- $AF8E SLA B         ;
- $AF90 LD C,B        ;
- $AF91 LD B,$00      ;
- $AF93 PUSH BC       ;
- $AF94 LDDR          ;
- $AF96 POP BC        ;
- $AF97 EX DE,HL      ;
- $AF98 POP DE        ;
- $AF99 LD (HL),E     ;
- $AF9A INC HL        ;
- $AF9B LD (HL),D     ;
- $AF9C LD HL,$F720   ;
- $AF9F LD DE,$F722   ;
- $AFA2 LDDR          ;
- $AFA4 EX DE,HL      ;
- $AFA5 LD (HL),$5A   ;
- $AFA7 INC HL        ;
- $AFA8 LD (HL),$6B   ;
- $AFAA DEC HL        ;
- $AFAB LD ($FE14),HL ;
- $AFAE LD HL,$0000   ;
- $AFB1 LD DE,$0000   ;
- $AFB4 LD BC,$0000   ;
- $AFB7 LDIR          ;
- $AFB9 LD HL,$4000   ;
- $AFBC LD DE,$4001   ;
- $AFBF LD BC,$1800   ;
- $AFC2 LD (HL),$00   ;
- $AFC4 LDIR          ;
- $AFC6 LD (HL),$44   ;
- $AFC8 LD BC,$02FF   ;
- $AFCB LDIR          ;
- $AFCD LD HL,$CB9C   ;
- $AFD0 LD B,$B3      ;
-*$AFD2 LD A,(HL)     ;
- $AFD3 PUSH HL       ;
- $AFD4 PUSH BC       ;
- $AFD5 RST $10       ;
- $AFD6 LD HL,$0000   ;
- $AFD9 LD D,H        ;
- $AFDA LD E,L        ;
- $AFDB LD BC,$07D0   ;
- $AFDE LDIR          ;
- $AFE0 LD A,$FD      ;
- $AFE2 IN A,($FE)    ;
- $AFE4 POP BC        ;
- $AFE5 POP HL        ;
- $AFE6 AND $02       ;
- $AFE8 JP Z,$B0BC    ;
- $AFEB INC HL        ;
- $AFEC DJNZ $AFD2    ;
- $AFEE LD HL,$500D   ;
- $AFF1 LD (HL),$FE   ;
- $AFF3 INC HL        ;
- $AFF4 INC HL        ;
- $AFF5 LD (HL),$FE   ;
- $AFF7 INC HL        ;
- $AFF8 INC HL        ;
- $AFF9 LD (HL),$FE   ;
- $AFFB LD HL,$0000   ;
- $AFFE LD ($FE18),HL ;
- $B001 LD BC,$0041   ;
- $B004 LD ($FE16),BC ;
-*$B008 LD A,$16      ;
- $B00A RST $10       ;
- $B00B LD A,$0F      ;
- $B00D RST $10       ;
- $B00E LD BC,($FE16) ;
- $B012 LD A,B        ;
- $B013 RLCA          ;
- $B014 ADD A,$0D     ;
- $B016 RST $10       ;
- $B017 LD BC,($FE16) ;
- $B01B LD A,C        ;
- $B01C RST $10       ;
- $B01D LD HL,$0000   ;
- $B020 LD DE,$0000   ;
- $B023 LD BC,$9C40   ;
- $B026 LDIR          ;
- $B028 LD A,$18      ;
- $B02A OUT ($FE),A   ;
- $B02C SUB A         ;
- $B02D CALL $9132    ;
- $B030 PUSH AF       ;
- $B031 SUB A         ;
- $B032 CALL $AD3E    ;
- $B035 POP BC        ;
- $B036 OR B          ;
- $B037 BIT 6,A       ;
- $B039 LD BC,($FE16) ;
- $B03D JP Z,$B041    ;
- $B040 DEC C         ;
-*$B041 BIT 7,A       ;
- $B043 JP Z,$B047    ;
- $B046 INC C         ;
-*$B047 LD A,C        ;
- $B048 CP $41        ;
- $B04A JP NC,$B04F   ;
- $B04D LD A,$5B      ;
-*$B04F CP $5C        ;
- $B051 JP C,$B056    ;
- $B054 LD A,$41      ;
-*$B056 LD C,A        ;
- $B057 LD ($FE16),BC ;
- $B05B PUSH BC       ;
- $B05C LD A,$FD      ;
- $B05E IN A,($FE)    ;
- $B060 AND $02       ;
- $B062 POP BC        ;
- $B063 JP Z,$B0BC    ;
- $B066 LD A,($FE54)  ;
- $B069 AND A         ;
- $B06A JP Z,$B008    ;
- $B06D INC B         ;
- $B06E SUB A         ;
- $B06F LD ($FE54),A  ;
- $B072 LD HL,($FE18) ;
- $B075 LD A,C        ;
- $B076 SUB $41       ;
- $B078 RLCA          ;
- $B079 RLCA          ;
- $B07A RLCA          ;
- $B07B RLCA          ;
- $B07C ADC HL,HL     ;
- $B07E RLCA          ;
- $B07F ADC HL,HL     ;
- $B081 RLCA          ;
- $B082 ADC HL,HL     ;
- $B084 RLCA          ;
- $B085 ADC HL,HL     ;
- $B087 RLCA          ;
- $B088 ADC HL,HL     ;
- $B08A LD C,$41      ;
- $B08C LD ($FE18),HL ;
- $B08F LD A,B        ;
- $B090 CP $03        ;
- $B092 JP NC,$B0A6   ;
- $B095 LD ($FE16),BC ;
- $B099 LD BC,$EFFE   ;
-*$B09C IN A,(C)      ;
- $B09E AND $01       ;
- $B0A0 JP Z,$B09C    ;
- $B0A3 JP $B008      ;
-*$B0A6 EX DE,HL      ;
- $B0A7 LD HL,$2412   ;
- $B0AA AND A         ;
- $B0AB SBC HL,DE     ;
- $B0AD JP NZ,$B0B3   ;
- $B0B0 LD DE,$310A   ;
-*$B0B3 LD HL,($FE14) ;
- $B0B6 LD (HL),E     ;
- $B0B7 INC HL        ;
- $B0B8 LD (HL),D     ;
- $B0B9 JP $B14C      ;
+ $AEDD
+ $AEDF JP Z,$AF2B
+ $AEE2 LD H,$7C
+ $AEE4
+ $AEEF SUB $9F
+ $AEF1
+ $AEF2 LD A,$FF
+ $AEF4
+ $AEF6 JP Z,$AF2B
+ $AEF9 DJNZ $AEE7
+ $AEFB
+ $AF03 SUB $9F
+ $AF05
+ $AF06 LD A,$7E
+ $AF08
+ $AF0A JP Z,$AF2B
+ $AF0D
+ $AF14 SUB $9F
+ $AF16
+ $AF17 LD A,$18
+ $AF19
+ $AF1E AND $03
+ $AF20 ADD A,$58
+ $AF22
+ $AF24 LD (HL),$42
+ $AF26 LD HL,($FE14)
+ $AF29
+ $AF2F CP $20
+ $AF31 JP NZ,$AECD
+ $AF34 LD HL,$0000
+ $AF37 LD DE,$0000
+ $AF3A LD BC,$1194
+ $AF3D LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x1194`) between blood-drip frames.
+                     ; About 27.00 ms at 3.5 MHz.
+ $AF3F LD A,($FE4E)
+ $AF42
+ $AF43 JP NZ,$AEC6
+ $AF46 LD HL,$CDE8
+ $AF49 LD B,$11
+*$AF4B
+ $AF4E RST $10
+ $AF4F
+ $AF52 DJNZ $AF4B
+ $AF54 LD A,$04
+*$AF56 LD HL,$0000
+ $AF59 LD DE,$0000
+ $AF5C LD BC,$9C40
+ $AF5F LDIR          ; 4-pass calibrated delay (`HL=DE=0`, `BC=0x9C40`) after `GAME OVER`.
+                     ; About 240.00 ms per `LDIR` pass, or about 960.00 ms for the whole 4-pass block
+                     ; at 3.5 MHz.
+ $AF61
+ $AF62 JP NZ,$AF56
+ $AF65 LD HL,$F700
+ $AF68 LD B,$08
+ $AF6A LD DE,($FE76)
+*$AF6E
+ $AF72 LD ($FE14),HL
+ $AF75
+ $AF7C JP C,$AF87
+ $AF7F LD HL,($FE14)
+ $AF82 DJNZ $AF6E
+ $AF84 JP $B1F4
+*$AF87
+ $AF88 LD HL,$F70E
+ $AF8B LD DE,$F710
+ $AF8E
+ $AF91 LD B,$00
+ $AF93
+ $AF9C LD HL,$F720
+ $AF9F LD DE,$F722
+ $AFA2
+ $AFA5 LD (HL),$5A
+ $AFA7
+ $AFA8 LD (HL),$6B
+ $AFAA
+ $AFAB LD ($FE14),HL
+ $AFAE LD HL,$0000
+ $AFB1 LD DE,$0000
+ $AFB4 LD BC,$0000
+ $AFB7 LDIR          ; Full-length `BC=0` self-copy delay before the game-over/high-score clear.
+                     ; About 393.21 ms at 3.5 MHz.
+ $AFB9 LD HL,$4000
+ $AFBC LD DE,$4001
+ $AFBF LD BC,$1800
+ $AFC2 LD (HL),$00   ; Clear the full pixel screen from `0x4000`.
+ $AFC4
+ $AFC6 LD (HL),$44
+ $AFC8 LD BC,$02FF
+ $AFCB LDIR          ; Fill the attribute buffer with `0x44` for the post-game-over text phase.
+ $AFCD LD HL,$CB9C
+ $AFD0 LD B,$B3
+*$AFD2
+ $AFD5 RST $10
+ $AFD6 LD HL,$0000
+ $AFD9
+ $AFDB LD BC,$07D0
+ $AFDE LDIR          ; Calibrated per-character delay (`HL=DE=0`, `BC=0x07D0`) while printing the later game-over/high-score text.
+                     ; About 12.00 ms at 3.5 MHz.
+ $AFE0 LD A,$FD
+ $AFE2 IN A,($FE)
+ $AFE4
+ $AFE6 AND $02
+ $AFE8 JP Z,$B0BC
+ $AFEB
+ $AFEC DJNZ $AFD2
+ $AFEE LD HL,$500D
+ $AFF1 LD (HL),$FE
+ $AFF3
+ $AFF5 LD (HL),$FE
+ $AFF7
+ $AFF9 LD (HL),$FE
+ $AFFB LD HL,$0000
+ $AFFE LD ($FE18),HL
+ $B001 LD BC,$0041
+ $B004 LD ($FE16),BC
+*$B008 LD A,$16
+ $B00A RST $10
+ $B00B LD A,$0F
+ $B00D RST $10
+ $B00E LD BC,($FE16)
+ $B012
+ $B014 ADD A,$0D
+ $B016 RST $10
+ $B017 LD BC,($FE16)
+ $B01B
+ $B01C RST $10
+ $B01D LD HL,$0000
+ $B020 LD DE,$0000
+ $B023 LD BC,$9C40
+ $B026 LDIR          ; Calibrated self-copy delay (`HL=DE=0`, `BC=0x9C40`) in the name-entry/input loop.
+                     ; About 240.00 ms at 3.5 MHz.
+ $B028 LD A,$18
+ $B02A OUT ($FE),A
+ $B02C
+ $B02D CALL $9132
+ $B030
+ $B032 CALL $AD3E
+ $B035
+ $B039 LD BC,($FE16)
+ $B03D JP Z,$B041
+ $B040
+ $B043 JP Z,$B047
+ $B046
+ $B048 CP $41
+ $B04A JP NC,$B04F
+ $B04D LD A,$5B
+*$B04F CP $5C
+ $B051 JP C,$B056
+ $B054 LD A,$41
+*$B056
+ $B057 LD ($FE16),BC
+ $B05B
+ $B05C LD A,$FD
+ $B05E IN A,($FE)
+ $B060 AND $02
+ $B062
+ $B063 JP Z,$B0BC
+ $B066 LD A,($FE54)
+ $B069
+ $B06A JP Z,$B008
+ $B06D
+ $B06F LD ($FE54),A
+ $B072 LD HL,($FE18)
+ $B075
+ $B076 SUB $41
+ $B078
+ $B08A LD C,$41
+ $B08C LD ($FE18),HL
+ $B08F
+ $B090 CP $03
+ $B092 JP NC,$B0A6
+ $B095 LD ($FE16),BC
+ $B099 LD BC,$EFFE
+*$B09C
+ $B09E AND $01
+ $B0A0 JP Z,$B09C
+ $B0A3 JP $B008
+*$B0A6
+ $B0A7 LD HL,$2412
+ $B0AA
+ $B0AD JP NZ,$B0B3
+ $B0B0 LD DE,$310A
+*$B0B3 LD HL,($FE14)
+ $B0B6
+ $B0B9 JP $B14C
 ; This entry point is used by the routines at #R$B1F4, #R$B2F5, #R$B587 and
 ; #R$B676.
 ; Common start-game transition from the attract/title/instructions flow.
@@ -8663,25 +8580,25 @@ c$AD3E LD BC,$0000   ;
 ; short visual/audio transition, restores the score display, and then jumps
 ; into the main game initialisation at #R$956A.
 @label=StartGameTransition
-*$B0BC CALL $B0EF    ;
- $B0BF LD HL,$4000   ;
- $B0C2 LD DE,$4001   ;
- $B0C5 LD BC,$17FF   ;
- $B0C8 SUB A         ;
- $B0C9 LD (HL),A     ;
- $B0CA LDIR          ;
- $B0CC LD HL,$0000   ;
- $B0CF LD DE,$0000   ;
- $B0D2 LDIR          ;
- $B0D4 LD ($FEEC),A  ;
+*$B0BC CALL $B0EF
+ $B0BF LD HL,$4000
+ $B0C2 LD DE,$4001
+ $B0C5 LD BC,$17FF
+ $B0C8
+ $B0CA LDIR          ; Clear the full pixel screen during the common start-game transition.
+ $B0CC LD HL,$0000
+ $B0CF LD DE,$0000
+ $B0D2 LDIR          ; Full-length `BC=0` self-copy delay inside the same transition.
+                     ; About 393.21 ms at 3.5 MHz.
+ $B0D4 LD ($FEEC),A
  $B0D7 LD HL,$4099   ; Patch `NUMBA` to the temporary start-transition heading position.
- $B0DA LD ($94F0),HL ;
- $B0DD LD HL,($F700) ;
- $B0E0 LD ($FE76),HL ;
+ $B0DA LD ($94F0),HL
+ $B0DD LD HL,($F700)
+ $B0E0 LD ($FE76),HL
  $B0E3 CALL $94EC    ; Restore `NUMBA` to the normal gameplay score-strip position.
- $B0E6 LD HL,$4059   ;
- $B0E9 LD ($94F0),HL ;
- $B0EC JP $956A      ;
+ $B0E6 LD HL,$4059
+ $B0E9 LD ($94F0),HL
+ $B0EC JP $956A
 ; Current best read: start-game `1812` theme player.
 ; Evidence:
 ; - no non-`RST $10` ROM calls are used here
@@ -8699,165 +8616,106 @@ c$AD3E LD BC,$0000   ;
 ; - the repeat counter is decremented on every other toggle, so a phrase lasts
 ;   roughly `(DE+1)` full cycles
 @label=PlayStartTheme
-*$B0EF LD ($FE00),SP ;
+*$B0EF LD ($FE00),SP
  $B0F3 LD SP,$CA94   ; Current best read: `StartThemeData`.
- $B0F6 LD A,$0A      ;
-*$B0F8 LD ($FE4E),A  ;
- $B0FB POP HL        ;
- $B0FC POP DE        ;
- $B0FD LD A,L        ;
- $B0FE SRL L         ;
- $B100 SRL L         ;
- $B102 CPL           ;
- $B103 AND $03       ;
- $B105 LD C,A        ;
- $B106 LD B,$00      ;
+ $B0F6 LD A,$0A
+*$B0F8 LD ($FE4E),A
+ $B0FB
+ $B103 AND $03
+ $B105
+ $B106 LD B,$00
  $B108 LD IX,$B110   ; `IX` is set to `0xB110 + (period-derived low 2 bits)`, so the later `JP (IX)`
                      ; lands at one of `0xB110..0xB113` inside this same timing pad. This is a
                      ; cycle-alignment trick, not a hidden secondary routine entry.
- $B10C ADD IX,BC     ;
- $B10E LD A,$08      ;
- $B110 NOP           ;
- $B111 NOP           ;
- $B112 NOP           ;
- $B113 INC B         ;
- $B114 INC C         ;
-*$B115 DEC C         ;
- $B116 JR NZ,$B115   ;
- $B118 LD C,$3F      ;
- $B11A DEC B         ;
- $B11B JP NZ,$B115   ;
- $B11E XOR $10       ;
- $B120 OUT ($FE),A   ;
- $B122 LD B,H        ;
- $B123 LD C,A        ;
- $B124 BIT 4,A       ;
- $B126 JR NZ,$B131   ;
- $B128 LD A,D        ;
- $B129 OR E          ;
- $B12A JR Z,$B135    ;
- $B12C LD A,C        ;
- $B12D LD C,L        ;
- $B12E DEC DE        ;
- $B12F JP (IX)       ;
-*$B131 LD C,L        ;
- $B132 INC C         ;
- $B133 JP (IX)       ;
-*$B135 LD A,($FE4E)  ;
- $B138 LD HL,$0000   ;
- $B13B LD DE,$0000   ;
- $B13E LD BC,$09C4   ;
- $B141 LDIR          ;
- $B143 DEC A         ;
- $B144 JP NZ,$B0F8   ;
- $B147 LD SP,($FE00) ;
- $B14B RET           ;
-*$B14C LD HL,$4000   ;
- $B14F LD DE,$4001   ;
- $B152 LD BC,$17FF   ;
- $B155 LDIR          ;
- $B157 LD B,$12      ;
- $B159 LD HL,$CDFA   ;
-*$B15C LD A,(HL)     ;
- $B15D PUSH HL       ;
- $B15E PUSH BC       ;
- $B15F RST $10       ;
- $B160 POP BC        ;
- $B161 POP HL        ;
- $B162 INC HL        ;
- $B163 DJNZ $B15C    ;
- $B165 LD B,$08      ;
- $B167 LD C,$06      ;
- $B169 LD HL,$F712   ;
-*$B16C LD E,(HL)     ;
- $B16D INC HL        ;
- $B16E LD D,(HL)     ;
- $B16F INC HL        ;
- $B170 PUSH HL       ;
- $B171 PUSH BC       ;
- $B172 PUSH DE       ;
- $B173 PUSH BC       ;
- $B174 LD A,$16      ;
- $B176 RST $10       ;
- $B177 POP BC        ;
- $B178 LD A,C        ;
- $B179 RST $10       ;
- $B17A LD A,$0A      ;
- $B17C RST $10       ;
- $B17D POP DE        ;
- $B17E PUSH DE       ;
- $B17F LD A,D        ;
- $B180 RRCA          ;
- $B181 RRCA          ;
- $B182 AND $1F       ;
- $B184 ADD A,$41     ;
- $B186 RST $10       ;
- $B187 POP DE        ;
- $B188 PUSH DE       ;
- $B189 LD A,D        ;
- $B18A RL E          ;
- $B18C RLA           ;
- $B18D RL E          ;
- $B18F RLA           ;
- $B190 RL E          ;
- $B192 RLA           ;
- $B193 AND $1F       ;
- $B195 ADD A,$41     ;
- $B197 RST $10       ;
- $B198 POP DE        ;
- $B199 LD A,E        ;
- $B19A AND $1F       ;
- $B19C ADD A,$41     ;
- $B19E RST $10       ;
- $B19F POP BC        ;
- $B1A0 POP HL        ;
- $B1A1 INC C         ;
- $B1A2 INC C         ;
- $B1A3 DJNZ $B16C    ;
- $B1A5 LD BC,$0806   ;
- $B1A8 LD HL,$F700   ;
-*$B1AB LD E,(HL)     ;
- $B1AC INC HL        ;
- $B1AD LD D,(HL)     ;
- $B1AE INC HL        ;
- $B1AF PUSH HL       ;
- $B1B0 PUSH BC       ;
- $B1B1 LD A,C        ;
- $B1B2 RRCA          ;
- $B1B3 RRCA          ;
- $B1B4 RRCA          ;
- $B1B5 AND $E0       ;
- $B1B7 OR $10        ;
- $B1B9 LD L,A        ;
- $B1BA LD A,C        ;
- $B1BB AND $18       ;
+ $B10C
+ $B10E LD A,$08
+ $B110
+ $B116 JR NZ,$B115
+ $B118 LD C,$3F
+ $B11A
+ $B11B JP NZ,$B115
+ $B11E XOR $10
+ $B120 OUT ($FE),A
+ $B122
+ $B126 JR NZ,$B131
+ $B128
+ $B12A JR Z,$B135
+ $B12C
+*$B135 LD A,($FE4E)
+ $B138 LD HL,$0000
+ $B13B LD DE,$0000
+ $B13E LD BC,$09C4
+ $B141 LDIR          ; Calibrated inter-phrase delay (`HL=DE=0`, `BC=0x09C4`) inside the `1812` start-theme player.
+                     ; About 15.00 ms at 3.5 MHz.
+ $B143
+ $B144 JP NZ,$B0F8
+ $B147 LD SP,($FE00)
+ $B14B
+*$B14C LD HL,$4000
+ $B14F LD DE,$4001
+ $B152 LD BC,$17FF
+ $B155 LDIR          ; Clear the full pixel screen before the later `TODAYS GREATEST` text path.
+ $B157 LD B,$12
+ $B159 LD HL,$CDFA
+*$B15C
+ $B15F RST $10
+ $B160
+ $B163 DJNZ $B15C
+ $B165 LD B,$08
+ $B167 LD C,$06
+ $B169 LD HL,$F712
+*$B16C
+ $B174 LD A,$16
+ $B176 RST $10
+ $B177
+ $B179 RST $10
+ $B17A LD A,$0A
+ $B17C RST $10
+ $B17D
+ $B182 AND $1F
+ $B184 ADD A,$41
+ $B186 RST $10
+ $B187
+ $B193 AND $1F
+ $B195 ADD A,$41
+ $B197 RST $10
+ $B198
+ $B19A AND $1F
+ $B19C ADD A,$41
+ $B19E RST $10
+ $B19F
+ $B1A3 DJNZ $B16C
+ $B1A5 LD BC,$0806
+ $B1A8 LD HL,$F700
+*$B1AB
+ $B1B5 AND $E0
+ $B1B7 OR $10
+ $B1B9
+ $B1BB AND $18
  $B1BD OR $40        ; Patch `NUMBA` to the destination for this attract-page numeric entry.
- $B1BF LD H,A        ;
- $B1C0 LD ($94F0),HL ;
- $B1C3 LD ($FE76),DE ;
- $B1C7 EX DE,HL      ;
- $B1C8 CALL $94EC    ;
- $B1CB POP BC        ;
- $B1CC POP HL        ;
- $B1CD INC C         ;
- $B1CE INC C         ;
- $B1CF DJNZ $B1AB    ;
+ $B1BF
+ $B1C0 LD ($94F0),HL
+ $B1C3 LD ($FE76),DE
+ $B1C7
+ $B1C8 CALL $94EC
+ $B1CB
+ $B1CF DJNZ $B1AB
  $B1D1 LD HL,$4059   ; Restore `NUMBA` to the normal gameplay score-strip position.
- $B1D4 LD ($94F0),HL ;
- $B1D7 LD A,$1A      ;
-*$B1D9 LD HL,$0000   ;
- $B1DC LD DE,$0000   ;
- $B1DF LD BC,$0000   ;
- $B1E2 LDIR          ;
- $B1E4 PUSH AF       ;
+ $B1D4 LD ($94F0),HL
+ $B1D7 LD A,$1A
+*$B1D9 LD HL,$0000
+ $B1DC LD DE,$0000
+ $B1DF LD BC,$0000
+ $B1E2 LDIR          ; Full-length `BC=0` attract/title dwell delay after the intro numeric list.
+                     ; About 393.21 ms at 3.5 MHz.
+ $B1E4
  $B1E5 LD A,$FD      ; Read the `A S D F G` keyboard row.
- $B1E7 IN A,($FE)    ;
- $B1E9 LD C,A        ;
- $B1EA POP AF        ;
+ $B1E7 IN A,($FE)
+ $B1E9
  $B1EB BIT 1,C       ; `S` pressed?
  $B1ED JP Z,$B0BC    ; Start game.
- $B1F0 DEC A         ;
- $B1F1 JP NZ,$B1D9   ;
+ $B1F0
+ $B1F1 JP NZ,$B1D9
 
 ; Routine at B1F4
 ;
@@ -8977,7 +8835,7 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B2DB JP NZ,$B2F5   ;
  $B2DE LD DE,$5801   ;
  $B2E1 LD BC,$02FF   ;
- $B2E4 LDIR          ;
+ $B2E4 LDIR          ; Flood the full attribute buffer from the current `0x5800` value during the title flash/fade phase.
  $B2E6 PUSH AF       ;
  $B2E7 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B2E9 IN A,($FE)    ;
@@ -8997,7 +8855,7 @@ c$B2F5 DEC (HL)      ;
  $B2FC JP NZ,$B30A   ;
  $B2FF LD DE,$5801   ;
  $B302 LD BC,$02FF   ;
- $B305 LDIR          ;
+ $B305 LDIR          ; Repeat the same full-attribute flood during the reverse phase.
  $B307 JP $B2F6      ;
 *$B30A INC (HL)      ;
  $B30B DEC A         ;
@@ -9006,7 +8864,7 @@ c$B2F5 DEC (HL)      ;
  $B312 LD DE,$5801   ;
  $B315 LD (HL),$44   ;
  $B317 LD BC,$02FF   ;
- $B31A LDIR          ;
+ $B31A LDIR          ; Restore the full attribute buffer to `0x44`.
  $B31C LD A,$08      ;
 *$B31E LD HL,$57FF   ;
 *$B321 SRL (HL)      ;
@@ -9022,7 +8880,8 @@ c$B2F5 DEC (HL)      ;
  $B334 LD HL,$0000   ;
  $B337 LD DE,$0000   ;
  $B33A LD BC,$4E20   ;
- $B33D LDIR          ;
+ $B33D LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x4E20`) in the title-separation prelude.
+                     ; About 120.00 ms at 3.5 MHz.
  $B33F DEC A         ;
  $B340 JP NZ,$B31E   ;
  $B343 JP $B3FB      ;
@@ -9181,9 +9040,12 @@ c$B2F5 DEC (HL)      ;
  $B47A LD HL,$0000   ;
  $B47D LD DE,$0000   ;
  $B480 LD BC,$0000   ;
- $B483 LDIR          ;
- $B485 LDIR          ;
- $B487 LDIR          ;
+ $B483 LDIR          ; First full-length `BC=0` delay before the footer/credits stage.
+                     ; About 393.21 ms at 3.5 MHz.
+ $B485 LDIR          ; Second full-length `BC=0` delay in the same pause block.
+                     ; About 393.21 ms at 3.5 MHz.
+ $B487 LDIR          ; Third full-length `BC=0` delay in the same pause block.
+                     ; About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
  $B489 JP $B4B2      ;
 ; Current best read: attract-mode credits/footer text stage.
 @label=AttractModeCreditsFooter
@@ -9211,13 +9073,16 @@ c$B2F5 DEC (HL)      ;
  $B4B5 LD HL,$0000   ;
  $B4B8 LD DE,$0000   ;
  $B4BB LD BC,$0000   ;
- $B4BE LDIR          ;
- $B4C0 LDIR          ;
- $B4C2 LDIR          ;
+ $B4BE LDIR          ; First full-length `BC=0` delay before the flyoff/footer clear.
+                     ; About 393.21 ms at 3.5 MHz.
+ $B4C0 LDIR          ; Second full-length `BC=0` delay in the same block.
+                     ; About 393.21 ms at 3.5 MHz.
+ $B4C2 LDIR          ; Third full-length `BC=0` delay in the same block.
+                     ; About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
  $B4C4 LD HL,$4000   ;
  $B4C7 LD DE,$4001   ;
  $B4CA LD BC,$07FF   ;
- $B4CD LDIR          ;
+ $B4CD LDIR          ; Clear the top `0x0800` bytes of the pixel screen before the long flyoff/footer phase.
  $B4CF LD B,$48      ;
 ; Current best read: long flyoff pass with the credits/footer redrawn each
 ; frame over the title words as their shared Z offset grows and their tumble
@@ -9245,7 +9110,7 @@ c$B2F5 DEC (HL)      ;
  $B4FF LD DE,$4001   ;
  $B502 LD BC,$17FF   ;
  $B505 LD (HL),$00   ;
- $B507 LDIR          ;
+ $B507 LDIR          ; Clear the full pixel screen after the title flyoff completes.
  $B509 LD A,$80      ;
  $B50B LD ($FEEC),A  ;
  $B50E LD A,$C9      ; Probable self-modifying attract-mode hack:
@@ -9262,12 +9127,12 @@ c$B2F5 DEC (HL)      ;
  $B52A LD DE,$4001   ;
  $B52D LD BC,$1800   ;
  $B530 LD (HL),$00   ;
- $B532 LDIR          ;
+ $B532 LDIR          ; Clear the pixel screen and seed the first attribute byte to zero for the split-colour showcase layout.
  $B534 LD BC,$00A0   ;
- $B537 LDIR          ;
+ $B537 LDIR          ; Continue zero-filling the first status-panel attribute region.
  $B539 LD (HL),$44   ;
  $B53B LD BC,$0260   ;
- $B53E LDIR          ;
+ $B53E LDIR          ; Fill the remaining attribute area with `0x44`.
  $B540 CALL $8C3C    ;
  $B543 LD HL,$1000   ;
  $B546 LD ($FE5E),HL ;
@@ -9424,9 +9289,9 @@ c$B587 LD HL,$00C0   ;
  $B654 LD DE,$4001   ;
  $B657 LD BC,$1800   ;
  $B65A LD (HL),$00   ;
- $B65C LDIR          ;
+ $B65C LDIR          ; Clear the full pixel screen and seed the first attribute byte before the instructions pages.
  $B65E LD BC,$02FF   ;
- $B661 LDIR          ;
+ $B661 LDIR          ; Continue zero-filling the full attribute buffer.
  $B663 LD HL,$3C00   ; {#HTML(Write <a rel="noopener nofollow"
  $B666 LD ($5C36),HL ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a>
                      ; to *<a rel="noopener nofollow"
@@ -9474,14 +9339,15 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B68F LD HL,$0000   ;
  $B692 LD DE,$0000   ;
  $B695 LD BC,$0000   ;
- $B698 LDIR          ;
+ $B698 LDIR          ; Full-length `BC=0` dwell delay after the first instructions page.
+                     ; About 393.21 ms at 3.5 MHz.
  $B69A POP BC        ;
  $B69B DJNZ $B685    ;
  $B69D LD HL,$4000   ;
  $B6A0 LD DE,$4001   ;
  $B6A3 LD BC,$17FF   ;
  $B6A6 LD (HL),$00   ;
- $B6A8 LDIR          ;
+ $B6A8 LDIR          ; Clear the full pixel screen before the second instructions page.
  $B6AA LD HL,$C3EF   ; #REGhl=#R$C3EF.
  $B6AD LD B,$00      ; #REGb=#N$00.
  $B6AF CALL $B66C    ; Call #R$B66C.
@@ -9496,7 +9362,8 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B6C3 LD HL,$0000   ;
  $B6C6 LD DE,$0000   ;
  $B6C9 LD BC,$0000   ;
- $B6CC LDIR          ;
+ $B6CC LDIR          ; Full-length `BC=0` dwell delay after the second instructions page.
+                     ; About 393.21 ms at 3.5 MHz.
  $B6CE POP BC        ;
  $B6CF DJNZ $B6B9    ;
  $B6D1 LD HL,$C8B4   ;
@@ -9515,9 +9382,9 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B6F4 LD DE,$4001   ;
  $B6F7 LD BC,$1800   ;
  $B6FA LD (HL),$00   ;
- $B6FC LDIR          ;
+ $B6FC LDIR          ; Clear the full pixel screen and seed the first attribute byte before the later instructions/text phase.
  $B6FE LD BC,$02FF   ;
- $B701 LDIR          ;
+ $B701 LDIR          ; Continue zero-filling the full attribute buffer.
  $B703 LD HL,$3C00   ;
  $B706 LD ($5C36),HL ;
  $B709 JP $B716      ;
@@ -9544,14 +9411,15 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B72F LD HL,$0000   ;
  $B732 LD DE,$0000   ;
  $B735 LD BC,$0000   ;
- $B738 LDIR          ;
+ $B738 LDIR          ; Full-length `BC=0` dwell delay in the later instructions/text phase.
+                     ; About 393.21 ms at 3.5 MHz.
  $B73A POP BC        ;
  $B73B DJNZ $B725    ;
  $B73D LD HL,$4000   ;
  $B740 LD DE,$4001   ;
  $B743 LD BC,$17FF   ;
  $B746 LD (HL),$00   ;
- $B748 LDIR          ;
+ $B748 LDIR          ; Clear the full pixel screen before the final instructions text.
  $B74A LD HL,$C3EB   ;
  $B74D LD B,$00      ;
  $B74F CALL $B70C    ;
@@ -9566,7 +9434,8 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B763 LD HL,$0000   ;
  $B766 LD DE,$0000   ;
  $B769 LD BC,$0000   ;
- $B76C LDIR          ;
+ $B76C LDIR          ; Full-length `BC=0` dwell delay after the final instructions text.
+                     ; About 393.21 ms at 3.5 MHz.
  $B76E POP BC        ;
  $B76F DJNZ $B759    ;
  $B771 LD HL,$C8B4   ; {#HTML(Write #R$C9B4(#N$C8B4) to *<a rel="noopener

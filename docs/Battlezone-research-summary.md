@@ -649,6 +649,17 @@ Working summary of verified facts, local source material, and open questions for
     - `MESPR` copies row-major rectangle data from a descriptor (`dest`, `height`, `width`, data...)
     - `MESER` uses the same header format but zero-fills the target rectangle
     - both advance by the Spectrum character-row stride (`+0x20`) between rows
+  - `PlotNumberGlyph` at `0x948C` is now documented as the shared 7-row status-strip glyph renderer used by `NUMBA`, life-strip redraws, and some attract/title overlays
+  - `SCOPR` at `0x94AC` is now documented as: add packed-BCD score increment, check and double the next extra-life threshold, award/redraw one life-symbol pair, then fall through into `NUMBA`
+  - `LDIR` audit completed in [LDIR-audit.md](./LDIR-audit.md)
+    - 55 `LDIR` instructions in the disassembly
+    - 55 raw `ED B0` opcode pairs in a flat RAM image emitted via `skool2bin.py`
+    - counts match exactly, so there is no remaining stray `ED B0` in data suggesting an unidentified code block
+    - the instructions split cleanly into screen/off-screen blits, overlap-fill memset patterns, and calibrated self-copy delays
+    - the delay-only `LDIR` sites now carry approximate ms timings in the ctl/skool comments, using 3.5 MHz Z80 timing
+  - the `NOP` run at `0xADC4..0xADD3` is now an explicit ignored (`i`) ctl block after `KEMPST`, so it drops out of the generated code view rather than appearing as live `NOP`s
+  - `0xADD4` is now labeled `CRASH` directly in the ctl/skool
+  - `0xAE90` is now labeled as the current best `BLOOD` match for the final zero-lives branch
     - `0xB0BC` then runs a short transition and jumps into the real game initialisation at `0x956A`, which eventually feeds the main loop at `0x977E`
 - Attract/demo structure now looks much more like Susan's staged recollection than a single static title screen:
   - `0xB1F4..0xB343` is the best current match for the earlier title/logo attract stages
