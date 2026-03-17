@@ -1253,32 +1253,20 @@ C $805B,1
 . Return.
 c $805C
 . LNLPT
-D $805C
-. Current best notebook match: `LNLPT` / line plotting routine.
-. `FE02` points at line-data blocks encoded as:
-. - 1 byte: line count
-. - then one record per line, each record being four 16-bit pointers
-.   into the current XPERS/YPERS-style projected-coordinate buffers
-. - current best order: `Y1`, `Y2`, `X1`, `X2`
-. On return, `FE02` is updated from SP at $80D1, so consecutive line-data
-. blocks can be chained in memory and consumed one after another by repeated
-. calls.
-. Current best internal workspace read:
-. - `FE0E` / `FE10` = vertically sorted projected Y endpoints
-. - `FE12` = absolute Y delta
-. - `FE08` / `FE0A` = corresponding projected X endpoints
-. - `FE0C` = signed X delta
-. The `0x7C00..0x7FFF` block used later in the routine is now best read as a
-. precomputed fixed-point trig/slope lookup family, not as raw pixel-mask
-. tables. The four major draw branches therefore look more like octant-style
-. angle/slope raster paths than simple left/right mask variants.
-. The repeated 8-step shift/compare/subtract segments inside the four major
-. branches are current-best matches for unrolled slope-division / gradient
-. setup code.
-. There is a dedicated vertical fast path at `0x85C7` when `XD = 0`.
-. The horizontal case currently looks folded into the zero-gradient subpaths
-. inside the X-major branches rather than split out as a separate top-level
-. entrypoint.
+D $805C Current best notebook match: `LNLPT` / line plotting routine. `FE02` points at line-data blocks encoded as: 1 byte line count, then one record per line, each record being four 16-bit pointers into the current `XPERS`/`YPERS`-style projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
+D $805C The Input/Output tables below capture the preset workspace interface. On return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data blocks can be chained in memory and consumed one after another by repeated calls.
+D $805C The `0x7C00..0x7FFF` block used later in the routine is now best read as a precomputed fixed-point trig/slope lookup family, not as raw pixel-mask tables. The repeated 8-step shift/compare/subtract segments inside the four major branches are current-best matches for unrolled slope-division / gradient setup code. There is a dedicated vertical fast path at `0x85C7` when `XD = 0`; the horizontal case currently looks folded into the zero-gradient subpaths inside the X-major branches rather than split out as a separate top-level entrypoint.
+R $805C LINCD Current line-data block pointer
+R $805C LNCNT Remaining line count in the current block
+R $805C XPERS Current projected X coordinate buffer referenced by the line records
+R $805C YPERS Current projected Y coordinate buffer referenced by the line records
+R $805C O:LINCD Updated line-data block pointer after consuming the current block
+R $805C O:X1 Per-line projected X endpoint scratch word
+R $805C O:X2 Per-line projected X endpoint scratch word
+R $805C O:XD Per-line signed X delta scratch word
+R $805C O:Y1 Per-line projected Y endpoint scratch word
+R $805C O:Y2 Per-line projected Y endpoint scratch word
+R $805C O:YD Per-line absolute Y delta scratch word
 @ $805C label=LNLPT
 C $805C,h3
 C $8060,h3
@@ -1632,18 +1620,18 @@ i $8640
 . at `0x8660`, strongly suggesting separately assembled module padding.
 c $8660
 . PERSP
-D $8660
-. Used throughout gameplay and attract/title rendering.
-. Current best notebook match: `PERSP`.
-. Shared perspective / clip stage. It consumes transformed coordinate tables,
-. writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
-. visible X limits, and returns status in `C` for caller-side draw/visibility
-. decisions.
-. Current best status-code read from the shipped callers:
-. - `C=0` drawable / visible enough to continue
-. - `C=1` primary depth failure: at least one source Z value is too near /
-.   behind the projection threshold
-. - `C=2` projected X overflow or visible-range failure
+D $8660 Used throughout gameplay and attract/title rendering. Current best notebook match: `PERSP`. Shared perspective / clip stage. It consumes transformed coordinate tables, writes projected coordinates into the `XPERS` / `YPERS` buffers, derives visible X limits, and returns status in `C` for caller-side draw/visibility decisions.
+D $8660 The Input/Output tables below capture the preset workspace interface. Current best status-code read from the shipped callers: `C=0` drawable / visible enough to continue; `C=1` primary depth failure: at least one source Z value is too near / behind the projection threshold; `C=2` projected X overflow or visible-range failure.
+R $8660 XLOC Current rotated X coordinate-list pointer
+R $8660 YLOC Current fixed Y coordinate-list pointer
+R $8660 ZLOC Current rotated Z coordinate-list pointer
+R $8660 XPERS Projected X output buffer end-pointer for the current pass
+R $8660 YPERS Projected Y output buffer end-pointer for the current pass
+R $8660 DYCNT Point count / pass-control slot for the current projection pass
+R $8660 O:XPERS Projected X words written into the buffer addressed by `XPERS`
+R $8660 O:YPERS Projected Y words written into the buffer addressed by `YPERS`
+R $8660 O:XMAX Tracked visible projected X maximum
+R $8660 O:XMIN Tracked visible projected X minimum
 R $8660 O:C Status code on return (`0` drawable, `1` near/depth failure, `2` projected-X overflow or visible-range failure)
 @ $8660 label=PERSP
 C $8660,h4
@@ -1789,26 +1777,19 @@ i $88D9
 . boundary `0x88EA`.
 c $88EA
 . Shared X/Z rotation transform
-D $88EA
-. Used throughout gameplay and attract/title rendering.
-. Current best read: reusable table-driven X/Z rotation stage.
-. It consumes the current model-space X/Z vertex lists plus angle-dependent
-. coefficient tables, applies the active X/Z world displacement, and rewrites
-. the current X/Z working lists in place for later perspective projection.
-. Current best structural read: four repeated multiply/accumulate passes using
-. the shared element count in `MUCNT`, the active coefficient-table pointers in
-. `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved
-. source-word continuation in `MMAT`.
-. Practical interface:
-. - callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end
-.   pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC`
-. - `RotateXZLists` processes those lists via `SP` and writes the descending
-.   rotated working-list pointers back into `XLOC`/`ZLOC`
-. - callers then pass those rotated X/Z lists plus a separate fixed `YLOC`
-.   list into `PERSP`
-. The attract-mode title tumble reuses the same block by feeding it a
-. non-standard Y/Z pair and then reusing the first rotated output list as the
-. effective `YLOC`.
+D $88EA Used throughout gameplay and attract/title rendering. Current best read: reusable table-driven X/Z rotation stage. It consumes the current model-space X/Z vertex lists plus angle-dependent coefficient tables, applies the active X/Z world displacement, and rewrites the current X/Z working lists in place for later perspective projection.
+D $88EA The Input/Output tables below capture the preset workspace interface. Current best structural read: four repeated multiply/accumulate passes using the shared element count in `MUCNT`, the active coefficient-table pointers in `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved source-word continuation in `MMAT`.
+D $88EA Practical interface: callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC`; `RotateXZLists` processes those lists via `SP` and writes the descending rotated working-list pointers back into `XLOC`/`ZLOC`; callers then pass those rotated X/Z lists plus a separate fixed `YLOC` list into `PERSP`. The attract-mode title tumble reuses the same block by feeding it a non-standard Y/Z pair and then reusing the first rotated output list as the effective `YLOC`.
+R $88EA XLOC Fixed model-space X vertex-list end-pointer for the current entity
+R $88EA ZLOC Fixed model-space Z vertex-list end-pointer for the current entity
+R $88EA XTAB Active X-side coefficient-table stream for the current angle
+R $88EA ZTAB Active Z-side coefficient-table stream for the current angle
+R $88EA XDIS Current world/entity X positional offset
+R $88EA ZDIS Current world/entity Z positional offset
+R $88EA MUCNT Element count / pass-control slot for the active transform pass
+R $88EA O:XLOC Final descending rotated X working-list pointer
+R $88EA O:ZLOC Final descending rotated Z working-list pointer
+R $88EA O:MMAT Saved source-word continuation / sign state reused across the transform passes
 @ $88EA label=RotateXZLists
 C $88EA,h4
 @ $8925 label=RotateXZPrimaryPass
@@ -2025,6 +2006,13 @@ N $8D68
 . routine appears to derive clipped hill bounds from the current object edge
 . limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
 . FE24/FE26 workspace pair.
+. The Input/Output tables below capture the preset workspace interface.
+R $8D68 MAX1 Raw outer X-limit word from the primary visible object
+R $8D68 MIN1 Raw outer X-limit word from the primary visible object
+R $8D68 MAX2 Raw outer X-limit word from the secondary object/obstacle family
+R $8D68 MIN2 Raw outer X-limit word from the secondary object/obstacle family
+R $8D68 O:LIM1 Clipped outer hill limit for the main hill pass
+R $8D68 O:LIM2 Clipped outer hill limit for the main hill pass
 @ $8D68 label=MHLC
 c $8D68
 N $8E08
@@ -2034,6 +2022,11 @@ N $8E08
 . It consumes the primary limits from #R$8D68 and derives a second pair of
 . hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
 . hill infill pass for the object interior.
+. The Input/Output tables below capture the preset workspace interface.
+R $8E08 LIM1 Primary hill limit from `MHLC`
+R $8E08 LIM2 Primary hill limit from `MHLC`
+R $8E08 O:LIM3 Secondary/inner hill limit for the infill pass
+R $8E08 O:LIM4 Secondary/inner hill limit for the infill pass
 @ $8E08 label=SHLC
 c $8E08
 N $8E38
@@ -2042,9 +2035,14 @@ N $8E38
 . Probable main-hill plotting stage from the notebook's SCREEN page. This
 . routine uses the stream pointer at FE2C together with the main-hill limits
 . derived by #R$8D68.
+. The Input/Output tables below capture the preset workspace interface.
 . Current best read: it copies hill-row data from the FE2C stream into the
 . off-screen E700 playfield buffer for the left and right outer regions, then
 . fills the interior span in E8A0..E8BF with `0xAA`.
+R $8E38 LIM1 Clipped outer hill limit from `MHLC`
+R $8E38 LIM2 Clipped outer hill limit from `MHLC`
+R $8E38 HLCNT Live hill-row data stream pointer
+R $8E38 O:HLCNT Advanced hill-row data stream pointer after the main hill pass
 @ $8E38 label=MHLPT
 c $8E38
 N $8E47
@@ -2063,9 +2061,16 @@ N $8F53
 . Probable secondary-hill plotting stage from the notebook's SCREEN page. It
 . reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
 . matching the recollected infill pass inside the object limits.
+. The Input/Output tables below capture the preset workspace interface.
 . Current best read: it advances through the FE2C stream while only writing
 . into still-empty bytes of the off-screen E700 playfield buffer, then steps
 . inward by row until the infill region is complete.
+R $8F53 LIM3 Inner hill limit from `SHLC`
+R $8F53 LIM4 Inner hill limit from `SHLC`
+R $8F53 HLCNT Live hill-row stream pointer for the forward infill direction
+R $8F53 SHCNT Live hill-row stream pointer for the reverse/inner-row direction
+R $8F53 O:SHCNT Advanced inner-row stream pointer after the infill pass
+R $8F53 O:LIM Updated temporary inner-width / limit pair used while stepping inward
 @ $8F53 label=SHLPT
 c $8F53
 N $8F61
@@ -2094,14 +2099,13 @@ N $90BA
 . Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
 . radar/status blip state, converts the coordinate pair into a radar
 . cell/bit position, and plots the blip into the status buffer.
-. Current best shipped read:
-. - `FE50` remembers the last plotted destination byte so it can be cleared
-. - `FE52` is a persistent radar/proximity helper-table base (initialised to
-.   `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`
+. The Input/Output tables below capture the register and preset-workspace interface. Current best shipped read: `FE50` remembers the last plotted destination byte so it can be cleared, and `FE52` is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
 . The cell/bit conversion path uses the shared plotting lookup family at
 . #R$7C00.
 R $90BA HL Signed X component / world-space X distance
 R $90BA DE Signed Z component / world-space Z distance
+R $90BA EXSCN Persistent radar/proximity helper-table base, normally seeded to `$6300`
+R $90BA O:EXBLP Last plotted radar/status destination byte
 @ $90BA label=RADAR
 @ $90BC label=RADARClearWorkspace
 @ $90EB label=RADARMapX

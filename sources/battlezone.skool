@@ -1486,31 +1486,36 @@ c$8000 LD HL,$F97F   ; Start at the end of #R$F800 so the 192-entry row-address 
 
 ; LNLPT
 ;
-; Current best notebook match: `LNLPT` / line plotting routine.
-; `FE02` points at line-data blocks encoded as:
-; - 1 byte: line count
-; - then one record per line, each record being four 16-bit pointers
-;   into the current XPERS/YPERS-style projected-coordinate buffers
-; - current best order: `Y1`, `Y2`, `X1`, `X2`
-; On return, `FE02` is updated from SP at $80D1, so consecutive line-data
+; Current best notebook match: `LNLPT` / line plotting routine. `FE02` points
+; at line-data blocks encoded as: 1 byte line count, then one record per line,
+; each record being four 16-bit pointers into the current `XPERS`/`YPERS`-style
+; projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
+; .
+; The Input/Output tables below capture the preset workspace interface. On
+; return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data
 ; blocks can be chained in memory and consumed one after another by repeated
 ; calls.
-; Current best internal workspace read:
-; - `FE0E` / `FE10` = vertically sorted projected Y endpoints
-; - `FE12` = absolute Y delta
-; - `FE08` / `FE0A` = corresponding projected X endpoints
-; - `FE0C` = signed X delta
+; .
 ; The `0x7C00..0x7FFF` block used later in the routine is now best read as a
 ; precomputed fixed-point trig/slope lookup family, not as raw pixel-mask
-; tables. The four major draw branches therefore look more like octant-style
-; angle/slope raster paths than simple left/right mask variants.
-; The repeated 8-step shift/compare/subtract segments inside the four major
-; branches are current-best matches for unrolled slope-division / gradient
-; setup code.
-; There is a dedicated vertical fast path at `0x85C7` when `XD = 0`.
-; The horizontal case currently looks folded into the zero-gradient subpaths
-; inside the X-major branches rather than split out as a separate top-level
-; entrypoint.
+; tables. The repeated 8-step shift/compare/subtract segments inside the four
+; major branches are current-best matches for unrolled slope-division /
+; gradient setup code. There is a dedicated vertical fast path at `0x85C7` when
+; `XD = 0`; the horizontal case currently looks folded into the zero-gradient
+; subpaths inside the X-major branches rather than split out as a separate
+; top-level entrypoint.
+;
+;   LINCD Current line-data block pointer
+;   LNCNT Remaining line count in the current block
+;   XPERS Current projected X coordinate buffer referenced by the line records
+;   YPERS Current projected Y coordinate buffer referenced by the line records
+; O:LINCD Updated line-data block pointer after consuming the current block
+; O:X1 Per-line projected X endpoint scratch word
+; O:X2 Per-line projected X endpoint scratch word
+; O:XD Per-line signed X delta scratch word
+; O:Y1 Per-line projected Y endpoint scratch word
+; O:Y2 Per-line projected Y endpoint scratch word
+; O:YD Per-line absolute Y delta scratch word
 @label=LNLPT
 c$805C LD HL,($FE02) ;
  $805F LD A,(HL)     ;
@@ -2542,18 +2547,28 @@ i$8640
 
 ; PERSP
 ;
-; Used throughout gameplay and attract/title rendering.
-; Current best notebook match: `PERSP`.
-; Shared perspective / clip stage. It consumes transformed coordinate tables,
-; writes projected coordinates into the `XPERS` / `YPERS` buffers, derives
-; visible X limits, and returns status in `C` for caller-side draw/visibility
-; decisions.
-; Current best status-code read from the shipped callers:
-; - `C=0` drawable / visible enough to continue
-; - `C=1` primary depth failure: at least one source Z value is too near /
-;   behind the projection threshold
-; - `C=2` projected X overflow or visible-range failure
+; Used throughout gameplay and attract/title rendering. Current best notebook
+; match: `PERSP`. Shared perspective / clip stage. It consumes transformed
+; coordinate tables, writes projected coordinates into the `XPERS` / `YPERS`
+; buffers, derives visible X limits, and returns status in `C` for caller-side
+; draw/visibility decisions.
+; .
+; The Input/Output tables below capture the preset workspace interface. Current
+; best status-code read from the shipped callers: `C=0` drawable / visible
+; enough to continue; `C=1` primary depth failure: at least one source Z value
+; is too near / behind the projection threshold; `C=2` projected X overflow or
+; visible-range failure.
 ;
+;   XLOC Current rotated X coordinate-list pointer
+;   YLOC Current fixed Y coordinate-list pointer
+;   ZLOC Current rotated Z coordinate-list pointer
+;   XPERS Projected X output buffer end-pointer for the current pass
+;   YPERS Projected Y output buffer end-pointer for the current pass
+;   DYCNT Point count / pass-control slot for the current projection pass
+; O:XPERS Projected X words written into the buffer addressed by `XPERS`
+; O:YPERS Projected Y words written into the buffer addressed by `YPERS`
+; O:XMAX Tracked visible projected X maximum
+; O:XMIN Tracked visible projected X minimum
 ; O:C Status code on return (`0` drawable, `1` near/depth failure, `2`
 ; .   projected-X overflow or visible-range failure)
 @label=PERSP
@@ -2953,15 +2968,38 @@ i$88D9
 
 ; Shared X/Z rotation transform
 ;
-; Used throughout gameplay and attract/title rendering.
-; Current best read: reusable table-driven X/Z rotation stage.
-; It consumes source coordinate lists plus angle-dependent tables and writes
-; rotated coordinate lists for later perspective projection.
-; Current best structural read: four repeated multiply/accumulate passes using
-; the shared element count in `MUCNT`, the active table/displacement pairs in
-; `XTAB`/`ZTAB` and `XDIS`/`ZDIS`, and the saved source-word continuation in
-; `MMAT`. The attract-mode title tumble reuses the same block by feeding it a
-; non-standard Y/Z pair.
+; Used throughout gameplay and attract/title rendering. Current best read:
+; reusable table-driven X/Z rotation stage. It consumes the current model-space
+; X/Z vertex lists plus angle-dependent coefficient tables, applies the active
+; X/Z world displacement, and rewrites the current X/Z working lists in place
+; for later perspective projection.
+; .
+; The Input/Output tables below capture the preset workspace interface. Current
+; best structural read: four repeated multiply/accumulate passes using the
+; shared element count in `MUCNT`, the active coefficient-table pointers in
+; `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved
+; source-word continuation in `MMAT`.
+; .
+; Practical interface: callers seed `XLOC`/`ZLOC` with fixed model-space X/Z
+; vertex-list end pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or
+; `EXXLC`/`EXZLC`; `RotateXZLists` processes those lists via `SP` and writes
+; the descending rotated working-list pointers back into `XLOC`/`ZLOC`; callers
+; then pass those rotated X/Z lists plus a separate fixed `YLOC` list into
+; `PERSP`. The attract-mode title tumble reuses the same block by feeding it a
+; non-standard Y/Z pair and then reusing the first rotated output list as the
+; effective `YLOC`.
+;
+;   XLOC Fixed model-space X vertex-list end-pointer for the current entity
+;   ZLOC Fixed model-space Z vertex-list end-pointer for the current entity
+;   XTAB Active X-side coefficient-table stream for the current angle
+;   ZTAB Active Z-side coefficient-table stream for the current angle
+;   XDIS Current world/entity X positional offset
+;   ZDIS Current world/entity Z positional offset
+;   MUCNT Element count / pass-control slot for the active transform pass
+; O:XLOC Final descending rotated X working-list pointer
+; O:ZLOC Final descending rotated Z working-list pointer
+; O:MMAT Saved source-word continuation / sign state reused across the
+; .      transform passes
 @label=RotateXZLists
 c$88EA LD ($FE00),SP ;
  $88EE LD ($FE4E),A  ;
@@ -3571,7 +3609,12 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ;
 ; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
-; .
+;   MAX1 Raw outer X-limit word from the primary visible object
+;   MIN1 Raw outer X-limit word from the primary visible object
+;   MAX2 Raw outer X-limit word from the secondary object/obstacle family
+;   MIN2 Raw outer X-limit word from the secondary object/obstacle family
+; O:LIM1 Clipped outer hill limit for the main hill pass
+; O:LIM2 Clipped outer hill limit for the main hill pass
 ;
 ; MHLC
 ; .
@@ -3579,6 +3622,7 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; routine appears to derive clipped hill bounds from the current object edge
 ; limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
 ; FE24/FE26 workspace pair.
+; The Input/Output tables below capture the preset workspace interface.
 @label=MHLC
 c$8D68 LD HL,($FE1C) ;
  $8D6B LD DE,$0080   ;
@@ -3684,7 +3728,10 @@ c$8D68 LD HL,($FE1C) ;
 ;
 ; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
-; .
+;   LIM1 Primary hill limit from `MHLC`
+;   LIM2 Primary hill limit from `MHLC`
+; O:LIM3 Secondary/inner hill limit for the infill pass
+; O:LIM4 Secondary/inner hill limit for the infill pass
 ;
 ; SHLC
 ; .
@@ -3692,6 +3739,7 @@ c$8D68 LD HL,($FE1C) ;
 ; It consumes the primary limits from #R$8D68 and derives a second pair of
 ; hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
 ; hill infill pass for the object interior.
+; The Input/Output tables below capture the preset workspace interface.
 @label=SHLC
 c$8E08 LD BC,($FE24) ;
  $8E0C LD DE,($FE26) ;
@@ -3727,13 +3775,17 @@ c$8E08 LD BC,($FE24) ;
 ;
 ; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
-; .
+;   LIM1 Clipped outer hill limit from `MHLC`
+;   LIM2 Clipped outer hill limit from `MHLC`
+;   HLCNT Live hill-row data stream pointer
+; O:HLCNT Advanced hill-row data stream pointer after the main hill pass
 ;
 ; MHLPT
 ; .
 ; Probable main-hill plotting stage from the notebook's SCREEN page. This
 ; routine uses the stream pointer at FE2C together with the main-hill limits
 ; derived by #R$8D68.
+; The Input/Output tables below capture the preset workspace interface.
 ; Current best read: it copies hill-row data from the FE2C stream into the
 ; off-screen E700 playfield buffer for the left and right outer regions, then
 ; fills the interior span in E8A0..E8BF with `0xAA`.
@@ -3958,13 +4010,19 @@ c$8E38 LD ($FE00),SP ;
 ;
 ; Used by the routines at #R$A0D6 and #R$ADC4.
 ;
-; .
+;   LIM3 Inner hill limit from `SHLC`
+;   LIM4 Inner hill limit from `SHLC`
+;   HLCNT Live hill-row stream pointer for the forward infill direction
+;   SHCNT Live hill-row stream pointer for the reverse/inner-row direction
+; O:SHCNT Advanced inner-row stream pointer after the infill pass
+; O:LIM Updated temporary inner-width / limit pair used while stepping inward
 ;
 ; SHLPT
 ; .
 ; Probable secondary-hill plotting stage from the notebook's SCREEN page. It
 ; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
 ; matching the recollected infill pass inside the object limits.
+; The Input/Output tables below capture the preset workspace interface.
 ; Current best read: it advances through the FE2C stream while only writing
 ; into still-empty bytes of the off-screen E700 playfield buffer, then steps
 ; inward by row until the infill region is complete.
@@ -4212,18 +4270,18 @@ i$9098
 ;
 ; Used by the routines at #R$977E, #R$A0D6 and #R$ADC4.
 ;
-; HL Signed X component / world-space X distance
-; DE Signed Z component / world-space Z distance
+;   HL Signed X component / world-space X distance
+;   DE Signed Z component / world-space Z distance
+;   EXSCN Persistent radar/proximity helper-table base, normally seeded to
+; .       `$6300`
+; O:EXBLP Last plotted radar/status destination byte
 ;
 ; Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
 ; Current best notebook match: `RADAR`.
 ; Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
 ; radar/status blip state, converts the coordinate pair into a radar
 ; cell/bit position, and plots the blip into the status buffer.
-; Current best shipped read:
-; - `FE50` remembers the last plotted destination byte so it can be cleared
-; - `FE52` is a persistent radar/proximity helper-table base (initialised to
-;   `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`
+; The Input/Output tables below capture the register and preset-workspace interface. Current best shipped read: `FE50` remembers the last plotted destination byte so it can be cleared, and `FE52` is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
 ; The cell/bit conversion path uses the shared plotting lookup family at
 ; #R$7C00.
 @label=RADAR
@@ -11590,6 +11648,14 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
 ; - XPERS/YPERS output buffers at $DE90/$DEC8
 ;   (`FE38`/`FE3A` are usually seeded with interior end-pointers and the
 ;   perspective code writes downward via `SP`/`PUSH`)
+; Current best role split:
+; - `XTAB` / `ZTAB` = angle-dependent coefficient-table families for
+;   `RotateXZLists`
+; - `YLOC` = fixed model-space Y vertex list for the perspectiviser
+; - `HBLXLC/OBXLC/EXXLC` and `HBLZLC/OBZLC/EXZLC` = fixed model-space X/Z
+;   vertex-list families for bullets, obstacles, and general entities/effects
+; - `EXBXL/EXBZL` = temporary expanded X/Z lists for the deferred-effect path
+; - `XPERS/YPERS` = final projected 2D X/Y output buffers consumed by `LNLPT`
 ; Current best `LINCDS` explosion matches:
 ; - $D6B8: probable `TKEXV`
 ; - $D7CC: probable `SAEXV`
@@ -12783,19 +12849,30 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; Workspace and scratch variables from Mem-locations.pdf
 @label=SP1
-g$FE00 DEFW $0008    ; Stack pointer scratch slot 1.
+g$FE00 DEFW $0008    ; Primary stack-pointer save slot.
+                     ; Shared stack-driven helpers such as `LNLPT`, `PERSP`, `RotateXZLists`,
+                     ; `RADAR`, the hill plotters, and the start-theme player save the caller's
+                     ; `SP` here before repointing the hardware stack into tables or buffers.
 
 ; Game status buffer entry at FE02
 @label=LINCD
-g$FE02 DEFW $3700
+g$FE02 DEFW $3700    ; Current line-data stream pointer.
+                     ; `LNLPT` treats this as the address of the next `LINCDS` block, consumes the
+                     ; current record via `SP`, then writes the advanced pointer back here at
+                     ; `0x80D1` so repeated calls can chain through consecutive line-data blocks.
 
 ; Game status buffer entry at FE04
 @label=LNCNT
-g$FE04 DEFW $00C9
+g$FE04 DEFW $00C9    ; Remaining line count within the current `LINCDS` block.
+                     ; Seeded from the first byte of the block at `0x805F/0x8060`, decremented at
+                     ; `LNLPTNextLine`, and used to decide whether another line record follows.
 
 ; Game status buffer entry at FE06
 @label=SPPL
-g$FE06 DEFW $0000
+g$FE06 DEFW $0000    ; Notebook name preserved.
+                     ; No confident independent shipped-code role has been isolated yet; if live at
+                     ; all, it appears to be part of the line-plotter scratch family rather than a
+                     ; long-lived gameplay state slot.
 
 ; Game status buffer entry at FE08
 @label=X1
@@ -12825,19 +12902,29 @@ g$FE12 DEFW $0000
 
 ; Game status buffer entry at FE14
 @label=DRTP1
-g$FE14 DEFW $0000
+g$FE14 DEFW $0000    ; Shared temporary pointer slot.
+                     ; In the zero-lives `BLOOD` path it remembers the current mutable drip-column
+                     ; row entry inside `CC5C`; later game-over/name-entry code reuses it as a
+                     ; temporary screen/text destination pointer.
 
 ; Game status buffer entry at FE16
 @label=DRTP2
-g$FE16 DEFW $0000
+g$FE16 DEFW $0000    ; Shared temporary character/attribute pair slot.
+                     ; In the game-over name-entry loop it holds the current letter and attribute
+                     ; pair used by the live input echo before the chosen character is committed.
 
 ; Game status buffer entry at FE18
 @label=SPPL1
-g$FE18 DEFW $0000
+g$FE18 DEFW $0000    ; Shared temporary cursor/result slot.
+                     ; Reused heavily by the game-over name-entry path as the current character
+                     ; position / assembled initials word, rather than as persistent gameplay state.
 
 ; Game status buffer entry at FE1A
 @label=SPPL2
-g$FE1A DEFW $0000
+g$FE1A DEFW $0000    ; Notebook name preserved.
+                     ; No confident live shipped-code role has been isolated yet; this currently
+                     ; looks like spare line-plotter/general workspace rather than an actively used
+                     ; high-level state variable.
 
 ; Game status buffer entry at FE1C
 @label=MAX1
@@ -12895,33 +12982,42 @@ g$FE30 DEFW $0000    ; Current best shipped read: temporary inner-width / limit 
 
 ; Game status buffer entry at FE32
 @label=XLOC
-g$FE32 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the current X
-                     ; source-coordinate list for shared transform/perspective passes. In attract
-                     ; mode this is repointed to fixed title/logo X tables.
+g$FE32 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointer to the current X
+                     ; working list in the 3D->2D chain.
+                     ; Callers seed it with a fixed model-space X list such as `HBLXLC`, `OBXLC`,
+                     ; or `EXXLC`; `RotateXZLists` then processes that list via `SP` and stores the
+                     ; descending rotated-output pointer back here at `0x8B3A`. In attract mode it
+                     ; is similarly repointed to fixed title/logo X tables.
 
 ; Game status buffer entry at FE34
 @label=YLOC
-g$FE34 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the current Y
-                     ; source-coordinate list. In the attract title tumble hack this is repointed
-                     ; to the first rotated output table so the normal pipeline sees a fake Y axis.
+g$FE34 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the current fixed Y
+                     ; vertex list consumed by `PERSP`.
+                     ; In normal gameplay this stays as a model-space Y table; in the attract title
+                     ; tumble hack it is repointed to the first rotated output list so the normal
+                     ; pipeline sees a fake Y axis.
 
 ; Game status buffer entry at FE36
 @label=ZLOC
-g$FE36 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the current Z
-                     ; source-coordinate list for shared transform/perspective passes.
+g$FE36 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointer to the current Z
+                     ; working list in the 3D->2D chain.
+                     ; Callers seed it with a fixed model-space Z list such as `HBLZLC`, `OBZLC`,
+                     ; or `EXZLC`; `RotateXZLists` then processes that list via `SP` and stores the
+                     ; descending rotated-output pointer back here at `0x8BE8`. `PERSP` then
+                     ; consumes the rotated Z list from this slot.
 
 ; Game status buffer entry at FE38
 @label=XPERS
-g$FE38 DEFW $0000    ; Notebook name preserved. Current shipped read: workspace end-pointer into the
-                     ; X perspective output buffer (`XPERS` base around `$DE90`). `PERSP` writes
-                     ; downward via `SP`/`PUSH`, so callers often seed this with an interior address
-                     ; such as `$DE98` or `$DEC4`.
+g$FE38 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointer into the final
+                     ; projected X output buffer (`XPERS` base around `$DE90`).
+                     ; `PERSP` writes projected 2D X values downward via `SP`/`PUSH`, so callers
+                     ; often seed this with an interior end-pointer such as `$DE98` or `$DEC4`.
 
 ; Game status buffer entry at FE3A
 @label=YPERS
-g$FE3A DEFW $0000    ; Companion workspace end-pointer into the Y perspective output buffer
-                     ; (`YPERS` base around `$DEC8`), again typically seeded with an interior
-                     ; address before the descending `SP`-based write pass.
+g$FE3A DEFW $0000    ; Companion end-pointer into the final projected Y output buffer (`YPERS` base
+                     ; around `$DEC8`). Again typically seeded with an interior end-pointer before
+                     ; the descending `SP`-based write pass.
 
 ; Game status buffer entry at FE3C
 @label=XMAX
@@ -12941,8 +13037,9 @@ g$FE40 DEFW $0000    ; Current shipped read: `PERSP` point-count / pass-control 
 ; Game status buffer entry at FE42
 @label=XTAB
 g$FE42 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the active X-side
-                     ; rotation/step table family for `RotateXZLists`. Often seeded from `XTAB`
-                     ; (`$D9D0`) or object-specific interior offsets.
+                     ; coefficient-table family for `RotateXZLists`, i.e. the lookup stream used in
+                     ; the X-side matrix multiply/add passes. Often seeded from `XTAB` (`$D9D0`) or
+                     ; object-specific interior offsets.
 
 ; Game status buffer entry at FE44
 @label=YTAB
@@ -12953,8 +13050,9 @@ g$FE44 DEFW $0000    ; Notebook name preserved. No confident direct shipped-code
 ; Game status buffer entry at FE46
 @label=ZTAB
 g$FE46 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the active Z-side
-                     ; rotation/step table family for `RotateXZLists`. Often seeded from `ZTAB`
-                     ; (`$DAC4`) or object-specific interior offsets.
+                     ; coefficient-table family for `RotateXZLists`, i.e. the lookup stream used in
+                     ; the Z-side matrix multiply/add passes. Often seeded from `ZTAB` (`$DAC4`) or
+                     ; object-specific interior offsets.
 
 ; Game status buffer entry at FE48
 @label=MMAT
@@ -12966,12 +13064,12 @@ g$FE48 DEFW $0000    ; Current shipped read: saved source-word continuation from
 @label=XDIS
 g$FE4A DEFW $0000    ; Notebook name preserved. Current shipped read: current X displacement /
                      ; world-offset word fed into `RotateXZLists` for the active entity/effect or
-                     ; obstacle/object.
+                     ; obstacle/object, i.e. the X positional offset added after rotation.
 
 ; Game status buffer entry at FE4C
 @label=ZDIS
 g$FE4C DEFW $0000    ; Companion current Z displacement / world-offset word fed into
-                     ; `RotateXZLists`.
+                     ; `RotateXZLists`, i.e. the Z positional offset added after rotation.
 
 ; Game status buffer entry at FE4E
 @label=MUCNT
@@ -13004,7 +13102,8 @@ g$FE54 DEFW $0000    ; Notebook name preserved, but shipped behaviour is now cle
 ; forward+right, `0x60` back+left, `0x50` back+right, `0x08` left on the
 ; spot, `0x04` right on the spot.
 @label=KMOV
-g$FE56 DEFW $0000
+g$FE56 DEFW $0000    ; Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
+                     ; `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
 
 ; Game status buffer entry at FE58
 @label=SIGHT
@@ -13015,11 +13114,16 @@ g$FE58 DEFW $0000    ; Notebook name preserved. Current shipped read: one-frame 
 
 ; Game status buffer entry at FE5A
 @label=SP2
-g$FE5A DEFW $0000    ; Stack pointer scratch slot 2.
+g$FE5A DEFW $0000    ; Secondary stack-pointer save slot.
+                     ; `PERSP` and related transform/presentation paths use this when they need a
+                     ; nested stack redirect on top of the main `SP1` save/restore flow.
 
 ; Game status buffer entry at FE5C
 @label=TURN
-g$FE5C DEFW $0000
+g$FE5C DEFW $0000    ; Current turn-handler dispatch pointer.
+                     ; `KMOVTurnDecode` is the sole writer: it stores one of the four view-turn
+                     ; handlers (`0x91EB`, `0x924A`, `0x92AE`, `0x9312`) here, and
+                     ; `TurnTransformDispatcher` then jumps through it via `JP (HL)`.
 
 ; Current entity/effect X position used by several transient setup paths.
 ; In the attract title code this is reused as the first title word's X offset.
@@ -13095,7 +13199,9 @@ g$FE74 DEFB $00,$00
 
 ; Packed-BCD score and nearby effect/state workspace.
 @label=ScoreBCD
-g$FE76 DEFB $00,$00
+g$FE76 DEFB $00,$00  ; The main visible score word used by `SCOPR`/`NUMBA`; some attract/showcase
+                     ; paths temporarily reuse the same slot as a generic small packed-BCD value
+                     ; before restoring normal score-strip behaviour.
 
 ; Missile-family live workspace:
 ; - `FE78` = probable `MISCT` (missiles fired so far)
@@ -13252,7 +13358,16 @@ g$FEA8 DEFB $00,$00,$00,$00 ; Live bullet workspace:
 @label=Lives
 g$FEE4 DEFB $00
 
-; Game status buffer entry at FEE5
+; Current best tail-status read:
+; - `FEE4` = lives counter (`SHIPS` in the notebook)
+; - `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by
+;   `SCOPR`
+; - `FEE8/FEEA` = currently selected obstacle/object world-space `(X,Z)` pair
+;   passed into `ObstacleRotateAndProject`
+; - `FEEC` = small attract/start transition latch reused by the later input
+;   bridge at `0xA679`; exact semantics still cautious
+; - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation
+;   words fed into the shared deferred-effect setup at `0xAC22`
 g$FEE5 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FEED DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FEF5 DEFB $00,$00,$00,$00,$00,$00,$00,$00

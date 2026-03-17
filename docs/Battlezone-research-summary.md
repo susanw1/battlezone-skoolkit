@@ -158,6 +158,10 @@ Working summary of verified facts, local source material, and open questions for
   - `KEMPST`: `O:A` `KMOV` code
   - `PrintCharacters`: `HL` text pointer, `B` character count
   - the local wrapper now prefers the resolved `skool2asm.py` / `skool2html.py` CLI tools over importing SkoolKit directly, because the imported local package was older and was suppressing newer HTML features such as the rendered Input/Output register tables
+- For routines that effectively take extra memory-backed arguments, the ctl now uses a matching prose convention in the entry description:
+  - `Preset workspace inputs:`
+  - `Workspace outputs:`
+  - first pass applied to `LNLPT`, `PERSP`, `RotateXZLists`, `MHLC`, `SHLC`, `MHLPT`, `SHLPT`, and `RADAR`
 - Added `NumberGlyphs` label at `0xCD80`.
 - Added a confident joystick-input mapping:
 - `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield
@@ -377,19 +381,32 @@ Working summary of verified facts, local source material, and open questions for
     - notebook name `HLCNT` at `FE2C` is now suspicious or at least misleading: in shipped code it behaves as a hill-data stream pointer, not a simple count
     - likewise, notebook `SHCNT` at `FE2E` currently looks more like the moving inner-row stream pointer used by `SHLPTStepUpRow` than a simple count
     - `FE30` currently looks like a temporary inner-width / limit pair used by `SHLPT` while stepping through the infill region
-  - notebook names `XLOC/YLOC/ZLOC` are also being preserved, but shipped behaviour is now clearer:
-    - `FE32` = current X source-coordinate list pointer
-    - `FE34` = current Y source-coordinate list pointer
-    - `FE36` = current Z source-coordinate list pointer
-    - attract mode repoints `FE32/FE34/FE36` aggressively, including the title tumble hack that reuses a rotated output list as the effective Y input
+    - notebook names `XLOC/YLOC/ZLOC` are also being preserved, but the 3D->2D handoff is now clearer:
+      - `FE32` / `XLOC` = end-pointer to the current X working list
+      - `FE36` / `ZLOC` = end-pointer to the current Z working list
+      - callers seed those with fixed model-space X/Z vertex lists such as `HBLXLC/OBXLC/EXXLC` and `HBLZLC/OBZLC/EXZLC`
+      - `RotateXZLists` then processes those lists in place via `SP` and writes the rotated-output pointers back into `XLOC/ZLOC`
+      - `FE34` / `YLOC` stays as the fixed model-space Y list consumed by `PERSP`
+      - attract mode repoints `FE32/FE34/FE36` aggressively, including the title tumble hack that reuses a rotated output list as the effective Y input
   - projection/transform workspace is now clearer too:
-    - `FE38/FE3A` = X/Y perspective output end-pointers into the `XPERS` / `YPERS` buffers
+    - `FE38/FE3A` = final projected 2D X/Y output end-pointers into the `XPERS` / `YPERS` buffers
     - `FE3C/FE3E` = visible projected X upper/lower limits maintained by `PERSP`
     - `FE40` = `PERSP` point-count / pass-control slot
-    - `FE42/FE46` = active X/Z rotation-table pointers used by `RotateXZLists`
+    - `FE42/FE46` = active X/Z coefficient-table pointers used by `RotateXZLists`
     - `FE48` = rotate-pass scratch pointer carried between transform phases
-    - `FE4A/FE4C` = current X/Z displacement or world-offset pair fed into the shared transform
+    - `FE4A/FE4C` = current X/Z positional offset pair added by the shared transform after rotation
     - `FE44` (`YTAB`) still has no confident direct shipped-code role isolated
+  - the geometry-table families now split more cleanly by role:
+    - `XTAB/ZTAB` = angle-dependent coefficient-table families for `RotateXZLists`
+    - `HBLXLC/OBXLC/EXXLC` and `HBLZLC/OBZLC/EXZLC` = fixed model-space X/Z vertex-list families
+    - `EXBXL/EXBZL` = temporary expanded X/Z lists for the deferred-effect path
+    - `XPERS/YPERS` = final projected 2D X/Y output buffers consumed by `LNLPT`
+  - the low workspace/header words are now documented more concretely:
+    - `FE00` = primary stack-pointer save slot for stack-driven helpers
+    - `FE02/FE04` = current `LINCDS` stream pointer plus remaining line count
+    - `FE14/FE16/FE18` = shared temporary pointer/character/result slots, heavily reused by the blood/game-over name-entry paths
+    - `FE5A` = secondary stack-pointer save slot for nested transform/perspective stack redirects
+    - `FE5C` = current turn-handler dispatch pointer written by `KMOVTurnDecode`
   - `FE50..FE58` is now less opaque:
     - `FE50` = last radar/status blip destination byte, cleared on the next radar update
     - `FE52` = persistent radar/proximity helper-table base, initialised to `$6300`; `RADARClearWorkspace` temporarily uses it via `SP`, and later entity logic samples its first byte as a proximity/range reference
@@ -400,6 +417,11 @@ Working summary of verified facts, local source material, and open questions for
     - `FE72` = slower spawn/variation counter incremented by `TEXST` and reused when deriving tank-family move delays
     - `FE88` = current best missile phase/sign toggle used when building the live missile transform angle each frame
     - `FE8E/FE90/FE92` = live saucer `X/Z/phase` in gameplay, but second title-word `X/Z/angle` in attract mode
+  - the tail of the game-status buffer is also less anonymous now:
+    - `FEE4` = lives counter
+    - `FEE6/FEE7` = next extra-life threshold in packed BCD
+    - `FEE8/FEEA` = currently selected obstacle/object `(X,Z)` pair for obstacle rendering
+    - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words
     - `FE94` = saucer drift-change countdown
     - `FE96` = saucer signed X-drift step / velocity
   - first-pass internal anchors now exist too:

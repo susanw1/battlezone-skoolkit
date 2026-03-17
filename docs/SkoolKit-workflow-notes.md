@@ -140,12 +140,30 @@ Useful ctl directives:
 Practical rule:
 
 - prefer `.` multi-line comments over cramming long prose onto one ctl line
+- when HTML readability matters on asm entry pages, prefer multiple `D $ADDR`
+  directives to create separate paragraphs instead of one huge description block
+- `#LIST` inside those description paragraphs does render as proper HTML bullet
+  lists on asm pages
 
 Register-doc rule:
 
 - use `R $ADDR` only when the register interface is actually clear
 - input lines can be plain register names such as `HL packed BCD value`
 - use an `O:` prefix for outputs, e.g. `O:C status code on return`
+
+Preset-workspace rule:
+
+- SkoolKit does not give us a separate built-in table for memory-backed
+  pseudo-arguments in the same way as `R` register docs
+- when a routine expects key workspace slots to be pre-seeded, document them in
+  the entry description as separate paragraphs such as:
+  - `Preset workspace inputs:`
+  - `Workspace outputs:`
+- where it helps readability, use `#LIST` under those headings
+- symbolic workspace names in `R` tables do work in some cases, but rendering
+  is not consistent enough yet to rely on that approach everywhere
+- use this only for routines where the workspace contract is part of the real
+  callable interface, not for every incidental scratch location
 
 ## HTML/linking reality
 
