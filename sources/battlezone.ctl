@@ -1947,11 +1947,13 @@ C $8C3C,h3
 C $8C3F,h3
 C $8C42,h2
 C $8C44,h3
-. Copy one 0x60-byte off-screen status/top row from `DFA0` to visible `40A0`;
-. the enclosing loop repeats this 8 times.
+. Copy one 0x60-byte row from the off-screen status/top-strip bitmap
+. (`DFA0..E29F`) into the visible top-strip bitmap at `40A0`; the enclosing
+. loop repeats this 8 times to cover the full 768-byte strip.
 C $8C50,h3
 C $8C53,h3
-. Copy the full off-screen playfield buffer `E700..F6FF` to visible `4800..57FF`.
+. Copy the full off-screen lower-playfield bitmap `E700..F6FF` to the visible
+. lower two-thirds of the Spectrum bitmap at `4800..57FF`.
 C $8C56,h3
 C $8C59,h3
 N $8C5E
@@ -1962,12 +1964,13 @@ C $8C5E,h3
 C $8C61,h3
 C $8C64,h2
 C $8C66,h3
-. Overlap-fill one 0x60-byte row of the off-screen status/top buffer with zero;
-. the enclosing loop repeats this 8 times.
+. Overlap-fill one 0x60-byte row of the off-screen status/top-strip bitmap
+. with zero; the enclosing loop repeats this 8 times to clear all 768 bytes of
+. `DFA0..E29F`.
 C $8C69,h2
 C $8C74,h3
 C $8C77,h3
-. Clear the full off-screen playfield buffer `E700..F6FF`.
+. Clear the full off-screen lower-playfield bitmap `E700..F6FF` (4096 bytes).
 C $8C7A,h3
 C $8C7D,h3
 C $8C80,h2
@@ -2791,9 +2794,11 @@ C $9603,h3
 C $9606,h3
 C $9609,h3
 C $960C,h2
-. Fill the first attribute region from `5800` with colour `0x43`.
+. Seed the top five attribute rows (`0x5800..0x589F`) with `0x43`
+. = bright magenta ink on black paper, no flash.
 C $9611,h3
-. Continue the initial attribute layout with colour `0x44`.
+. Then fill the remaining nineteen attribute rows (`0x58A0..0x5AFF`) with
+. `0x44` = bright green ink on black paper, no flash.
 C $9616,h3
 C $9619,h3
 C $961C,h3
@@ -5184,12 +5189,16 @@ C $AE9D,h3
 C $AEA0,h3
 C $AEA3,h3
 C $AEA6,h2
-. Fill 0x20 screen bytes at `0x4000` with `0x7E` for the zero-lives blood/drip setup.
+. Fill the first 32 bytes of the visible bitmap (`0x4000..0x401F`) with `0x7E`,
+. i.e. the very top 8-pixel screen row across the full width, for the
+. zero-lives blood/drip setup.
 C $AEAA,h3
 C $AEAD,h3
 C $AEB0,h3
 C $AEB3,h2
-. Fill 0x20 attribute bytes at `0x5800` with `0x42` for the same zero-lives setup.
+. Fill the first attribute row (`0x5800..0x581F`) with `0x42`
+. = bright red ink on black paper, no flash, matching the zero-lives blood
+. setup at the top of the screen.
 C $AEB7,h3
 . Overlap-copy trick:
 C $AEBA,h3
@@ -5510,11 +5519,10 @@ C $B204,5,h3,1,h1
 C $B209,h3
 . Call #R$8000.
 C $B20C,13,h11,2
-. Write #N$00 to #N$1800 bytes of the screen buffer,
-. starting at #N$4000.
+. Write `0x00` to the full 6144-byte visible bitmap (`0x4000..0x57FF`).
 C $B219,13,h11,2
-. Write #COLOUR$44 to #N($0300,$04,$04) bytes of the
-. attribute buffer, starting at #N$5800.
+. Write `0x44` to the full 768-byte attribute buffer
+. (`0x5800..0x5AFF`) = bright green ink on black paper, no flash.
 C $B226,13,h11,2
 . Write #N$00 to #N($00FF,$04,$04) bytes, starting from
 . #R$FE00.
@@ -5604,7 +5612,9 @@ C $B2DB,h3
 C $B2DE,h3
 C $B2E1,h3
 C $B2E4,h2
-. Flood the full attribute buffer from the current `0x5800` value during the title flash/fade phase.
+. Flood the full attribute buffer (`0x5800..0x5AFF`) from the current seed byte
+. at `0x5800`, stepping through successive Spectrum attribute values during the
+. title flash/fade colour cycle.
 C $B2E7,h2
 . Read the `A S D F G` keyboard row.
 C $B2E9,h2
@@ -5625,14 +5635,16 @@ C $B2FC,h3
 C $B2FF,h3
 C $B302,h3
 C $B305,h2
-. Repeat the same full-attribute flood during the reverse phase.
+. Repeat the same full-buffer attribute flood while stepping the `0x5800` seed
+. value back down through the reverse half of the colour cycle.
 C $B307,h3
 C $B30C,h3
 C $B30F,h3
 C $B312,h3
 C $B315,h2
 C $B31A,h2
-. Restore the full attribute buffer to `0x44`.
+. Restore the full attribute buffer (`0x5800..0x5AFF`) to `0x44`
+. = bright green ink on black paper, no flash.
 C $B317,h3
 C $B31C,h2
 N $B31E
@@ -5848,7 +5860,8 @@ C $B4C4,h3
 C $B4C7,h3
 C $B4CA,h3
 C $B4CD,h2
-. Clear the top `0x0800` bytes of the pixel screen before the long flyoff/footer phase.
+. Clear the top 2048 bytes of the visible bitmap (`0x4000..0x47FF`), i.e. the
+. top third / first 64 pixel rows, before the long flyoff/footer phase.
 C $B4CF,h2
 N $B4D1
 . Current best read: long flyoff pass with the credits/footer redrawn each
@@ -5882,7 +5895,9 @@ C $B50E,h2
 C $B510,h3
 . patch SDRAW temporarily,
 C $B514,h3
-. and alter the status-area colour/write behaviour.
+. and patch the `LD (HL),$43` immediate at `0x960C` down to `0x00`,
+. so the showcase reinitialiser makes the top five attribute rows black on
+. black instead of bright magenta on black.
 C $B517,h3
 C $B51A,h2
 . Restore the patched bytes after the forced demo setup.
@@ -5890,19 +5905,27 @@ C $B51C,h3
 C $B51F,h3
 C $B522,h2
 C $B524,h3
+. Restore the `0x960C` immediate to `0x43`
+. = bright magenta ink on black paper for the normal top status strip.
 C $B527,h3
 C $B52A,h3
 C $B52D,h3
 C $B530,h2
+. Clear the full 6144-byte visible bitmap; because the overlap-fill runs one
+. byte past `0x57FF`, it also seeds the first attribute byte at `0x5800` to
+. `0x00` = black on black.
 C $B532,h2
-. Clear the pixel screen and seed the first attribute byte to zero for the split-colour showcase layout.
+. Clear the pixel screen; because the copy overruns to `0x5800`, it also seeds
+. the first attribute byte to `0x00` = black on black.
 C $B534,h3
 C $B537,h2
-. Continue zero-filling the first status-panel attribute region.
+. Continue zero-filling the top five attribute rows (`0x5800..0x589F`) so the
+. showcase status/header region stays black on black.
 C $B539,h2
 C $B53B,h3
 C $B53E,h2
-. Fill the remaining attribute area with `0x44`.
+. Fill the remaining nineteen attribute rows (`0x58A0..0x5AFF`) with `0x44`
+. = bright green ink on black paper, no flash.
 C $B540,h3
 C $B543,h3
 C $B546,h3
@@ -6072,10 +6095,12 @@ C $B654,h3
 C $B657,h3
 C $B65A,h2
 C $B65C,h2
-. Clear the full pixel screen and seed the first attribute byte before the instructions pages.
+. Clear the full 6144-byte visible bitmap and, via the usual overlap-fill
+. trick, seed the first attribute byte to `0x00` = black on black.
 C $B65E,h3
 C $B661,h2
-. Continue zero-filling the full attribute buffer.
+. Continue zero-filling the rest of the 768-byte attribute buffer
+. (`0x5800..0x5AFF`), leaving the whole instructions display black on black.
 C $B663,h6
 . #HTML(Write <a rel="noopener nofollow"
 . href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a>
@@ -6188,10 +6213,12 @@ C $B6F4,h3
 C $B6F7,h3
 C $B6FA,h2
 C $B6FC,h2
-. Clear the full pixel screen and seed the first attribute byte before the later instructions/text phase.
+. Clear the full 6144-byte visible bitmap and seed the first attribute byte to
+. `0x00` = black on black before the later instructions/text phase.
 C $B6FE,h3
 C $B701,h2
-. Continue zero-filling the full attribute buffer.
+. Continue zero-filling the rest of the 768-byte attribute buffer
+. (`0x5800..0x5AFF`), again leaving the full screen black on black.
 C $B703,h3
 C $B706,h3
 C $B709,h3
@@ -6219,7 +6246,7 @@ C $B740,h3
 C $B743,h3
 C $B746,h2
 C $B748,h2
-. Clear the full pixel screen before the final instructions text.
+. Clear the full 6144-byte visible bitmap before the final instructions text.
 C $B74A,h3
 C $B74D,h2
 C $B74F,h3
