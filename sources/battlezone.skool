@@ -5036,8 +5036,9 @@ c$94AC LD HL,($FE76) ; Load the current score.
  $94CD RL D          ;
  $94CF LD ($FEE6),DE ;
  $94D3 CP $08        ; Stop drawing life symbols once the strip is full.
- $94D5 JR NC,$94EB   ; Compute the destination column for the newly awarded life symbol pair.
- $94D7 LD BC,$4010   ;
+ $94D5 JR NC,$94EB   ; Compute the destination column for the newly awarded life symbol pair in the
+                     ; top status strip.
+ $94D7 LD BC,$4010   ; Base destination `$4010` is the left edge of the life-symbol strip.
  $94DA LD L,A        ;
  $94DB LD H,$00      ;
  $94DD ADD HL,HL     ;
@@ -5061,9 +5062,10 @@ c$94AC LD HL,($FE76) ; Load the current score.
 @label=NUMBA
 c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $94EF LD BC,$4059   ; Destination `BC` immediate patched by `0xB0DA/0xB0E9/0xB1C0/0xB1D4/0xB563` to
-                     ; redirect the same print loop between the normal gameplay score strip,
-                     ; temporary start-transition heading position, per-entry attract numeric list,
-                     ; and the showcase score strip.
+                     ; redirect the same print loop between the normal gameplay score strip at
+                     ; `$4059` in the top status strip, the temporary start-transition heading slot
+                     ; at `$4099`, the per-entry attract numeric list, and the showcase score strip
+                     ; at `$50AB`.
  $94F2 LD A,H        ;
  $94F3 AND A         ;
  $94F4 JR Z,$9510    ;
@@ -5215,7 +5217,8 @@ c$956A LD HL,$0000   ;
  $9625 LD ($FEE6),HL ; Store that threshold and prepare the zero-increment `SCOPR` redraw.
  $9628 LD B,$00      ;
  $962A CALL $94AC    ;
- $962D LD BC,$4014   ; Start drawing the initial life-strip glyph pairs at `$4014`.
+ $962D LD BC,$4014   ; Start drawing the initial life-strip glyph pairs at `$4014` in the top
+                     ; status strip.
  $9630 LD A,$0A      ;
  $9632 CALL $948C    ;
  $9635 LD A,$0B      ;
@@ -7734,7 +7737,7 @@ i$ACC0
 ; jumps into `AttractModeTitleSequence`.
 @label=GameEntryPoint
 c$AD0C DI            ; Disable interrupts.
- $AD0D LD HL,$8CA0   ; {Copy #N($0024,$04,$04) bytes from #R$8CA0 to #R$F700.
+ $AD0D LD HL,$8CA0   ; {Copy 36 bytes of startup seed data from #R$8CA0 to #R$F700.
  $AD10 LD DE,$F700   ;
  $AD13 LD BC,$0024   ;
  $AD16 LDIR          ; }
@@ -7885,7 +7888,7 @@ i$ADC4
  $AE5B
  $AE5C DJNZ $AE47
  $AE5E LD A,($FEE4)  ; Load lives (`SHIPS` in the notebook).
- $AE61
+ $AE61 DEC A
  $AE62 LD ($FEE4),A  ; Store decremented lives.
  $AE65 JP Z,$AE90
  $AE68 CP $07
@@ -8031,7 +8034,7 @@ i$ADC4
  $AFB9 LD HL,$4000
  $AFBC LD DE,$4001
  $AFBF LD BC,$1800
- $AFC2 LD (HL),$00   ; Clear the full pixel screen from `0x4000`.
+ $AFC2 LD (HL),$00   ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`).
  $AFC4
  $AFC6 LD (HL),$44
  $AFC8 LD BC,$02FF
@@ -8144,18 +8147,20 @@ i$ADC4
  $B0C2 LD DE,$4001
  $B0C5 LD BC,$17FF
  $B0C8
- $B0CA LDIR          ; Clear the full pixel screen during the common start-game transition.
+ $B0CA LDIR          ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) during the common
+                     ; start-game transition.
  $B0CC LD HL,$0000
  $B0CF LD DE,$0000
  $B0D2 LDIR          ; Full-length `BC=0` self-copy delay inside the same transition.
                      ; About 393.21 ms at 3.5 MHz.
  $B0D4 LD ($FEEC),A
- $B0D7 LD HL,$4099   ; Patch `NUMBA` to the temporary start-transition heading position.
+ $B0D7 LD HL,$4099   ; Patch `NUMBA` to the temporary start-transition heading slot at `$4099` in
+                     ; the top status strip.
  $B0DA LD ($94F0),HL
  $B0DD LD HL,($F700)
  $B0E0 LD ($FE76),HL
- $B0E3 CALL $94EC    ; Restore `NUMBA` to the normal gameplay score-strip position.
- $B0E6 LD HL,$4059
+ $B0E3 CALL $94EC    ; Print the stored heading/score value in that temporary top-status slot.
+ $B0E6 LD HL,$4059   ; Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
  $B0E9 LD ($94F0),HL
  $B0EC JP $956A
 ; Current best read: start-game `1812` theme player.
@@ -8213,11 +8218,14 @@ i$ADC4
 *$B14C LD HL,$4000
  $B14F LD DE,$4001
  $B152 LD BC,$17FF
- $B155 LDIR          ; Clear the full pixel screen before the later `TODAYS GREATEST` text path.
+ $B155 LDIR          ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) before the later
+                     ; `TODAYS GREATEST` text path.
  $B157 LD B,$12
- $B159 LD HL,$CDFA
+ $B159 LD HL,$CDFA   ; Current best read: `TodaysGreatestText`, printed across the upper part of the
+                     ; high-score screen.
 *$B15C
- $B15F RST $10
+ $B15F RST $10       ; Print one character from the `TODAYS GREATEST` heading across the upper part
+                     ; of the cleared screen.
  $B160
  $B163 DJNZ $B15C
  $B165 LD B,$08
@@ -8251,7 +8259,8 @@ i$ADC4
  $B1B7 OR $10
  $B1B9
  $B1BB AND $18
- $B1BD OR $40        ; Patch `NUMBA` to the destination for this attract-page numeric entry.
+ $B1BD OR $40        ; Patch `NUMBA` to the destination for this attract-page numeric entry in the
+                     ; later `TODAYS GREATEST` display body.
  $B1BF
  $B1C0 LD ($94F0),HL
  $B1C3 LD ($FE76),DE
@@ -8259,7 +8268,7 @@ i$ADC4
  $B1C8 CALL $94EC
  $B1CB
  $B1CF DJNZ $B1AB
- $B1D1 LD HL,$4059   ; Restore `NUMBA` to the normal gameplay score-strip position.
+ $B1D1 LD HL,$4059   ; Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
  $B1D4 LD ($94F0),HL
  $B1D7 LD A,$1A
 *$B1D9 LD HL,$0000
@@ -8311,29 +8320,28 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B21F LD (HL),$44   ;
  $B221 LD BC,$02FF   ;
  $B224 LDIR          ; }
- $B226 LD HL,$FE00   ; {Write #N$00 to #N($00FF,$04,$04) bytes, starting from
- $B229 LD DE,$FE01   ; #R$FE00.
+ $B226 LD HL,$FE00   ; {Clear the 256-byte workspace block from #R$FE00 through `$FEFF`.
+ $B229 LD DE,$FE01   ;
  $B22C LD (HL),$00   ;
  $B22E LD BC,$00FF   ;
  $B231 LDIR          ; }
- $B233 LD HL,$C8B4   ; {#HTML(Write #R$C9B4(#N$C8B4) to *<a rel="noopener
- $B236 LD ($5C36),HL ; nofollow"
+ $B233 LD HL,$C8B4   ; {#HTML(Install the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+ $B236 LD ($5C36),HL ; to *<a rel="noopener nofollow"
                      ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
                      ; }
- $B239 LD HL,$6400   ; {Write #N$6400 to *#R$FE60.
+ $B239 LD HL,$6400   ; {Write `$6400` to *#R$FE60.
  $B23C LD ($FE60),HL ; }
- $B23F LD HL,$0000   ; {Write #N($0000,$04,$04) to: #LIST { #R$FE5E } { #R$FE62
- $B242 LD ($FE5E),HL ; } LIST#
+ $B23F LD HL,$0000   ; {Write `$0000` to both #R$FE5E and #R$FE62.
+ $B242 LD ($FE5E),HL ;
  $B245 LD ($FE62),HL ; }
- $B248 LD A,$30      ; {Write #N$30 to *#R$FE68.
+ $B248 LD A,$30      ; {Write `$30` to *#R$FE68.
  $B24A LD ($FE68),A  ; }
 ; Current best read: attract-mode stage A, tumbling `QS` logo loop.
 @label=AttractModeQSTumbleLoop
-*$B24D LD HL,$CA28   ; {Write #N$CA28 to *#R$FE42.
- $B250 LD ($FE42),HL ; Current best read: probable QS rotating Y/Z seed table.}
- $B253 LD HL,$CA5E   ; {Write #N$CA5E to *#R$FE46.
- $B256 LD ($FE46),HL ; Current best read: common zero-axis companion table used
-                     ; by the attract-mode X-axis rotation hack.}
+*$B24D LD HL,$CA28   ; {Point #R$FE42 at `$CA28`, the current best QS rotating Y/Z seed table.
+ $B250 LD ($FE42),HL ; }
+ $B253 LD HL,$CA5E   ; {Point #R$FE46 at `$CA5E`, the common zero-axis companion table used by the
+ $B256 LD ($FE46),HL ; attract-mode X-axis rotation hack.}
  $B259 LD A,($FE62)  ;
  $B25C ADD A,$10     ;
  $B25E LD ($FE62),A  ;
@@ -8362,7 +8370,7 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B298 LD ($FE38),HL ;
  $B29B LD HL,$DEFC   ;
  $B29E LD ($FE3A),HL ;
- $B2A1 LD A,$16      ; #REGa=#N$16.
+ $B2A1 LD A,$16      ; Project 22 points through `PERSP`.
  $B2A3 CALL $8660    ; Call #R$8660.
  $B2A6 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B2A8 IN A,($FE)    ;
@@ -8622,16 +8630,19 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 ; Current best read: attract-mode credits/footer text stage.
 @label=AttractModeCreditsFooter
 *$B48C LD B,$20      ;
- $B48E LD HL,$C5DA   ; Current best read: `AttractModeCreditsFooterText`.
+ $B48E LD HL,$C5DA   ; Current best read: `AttractModeCreditsFooterText`, i.e. the lower-screen
+                     ; `BY BILL WITTS / QUICKSILVA` footer.
 *$B491 LD A,(HL)     ;
  $B492 INC HL        ;
  $B493 PUSH HL       ;
  $B494 PUSH BC       ;
- $B495 RST $10       ;
+ $B495 RST $10       ; Print one character from the attract-mode credits/footer text in the lower
+                     ; screen region.
  $B496 POP BC        ;
  $B497 POP HL        ;
  $B498 DJNZ $B491    ;
- $B49A LD BC,$5015   ;
+ $B49A LD BC,$5015   ; Base destination for the `1984` footer-year digits, just below the attract
+                     ; credits text.
  $B49D LD A,$01      ;
  $B49F CALL $948C    ;
  $B4A2 LD A,$09      ;
@@ -8683,7 +8694,8 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B4FF LD DE,$4001   ;
  $B502 LD BC,$17FF   ;
  $B505 LD (HL),$00   ;
- $B507 LDIR          ; Clear the full pixel screen after the title flyoff completes.
+ $B507 LDIR          ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) after the title
+                     ; flyoff completes.
  $B509 LD A,$80      ;
  $B50B LD ($FEEC),A  ;
  $B50E LD A,$C9      ; Probable self-modifying attract-mode hack:
@@ -8705,8 +8717,9 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B530 LD (HL),$00   ; Clear the full 6144-byte visible bitmap; because the overlap-fill runs one
                      ; byte past `0x57FF`, it also seeds the first attribute byte at `0x5800` to
                      ; `0x00` = black on black.
- $B532 LDIR          ; Clear the pixel screen; because the copy overruns to `0x5800`, it also seeds
-                     ; the first attribute byte to `0x00` = black on black.
+ $B532 LDIR          ; Continue clearing the 6144-byte visible bitmap with the overlap-fill; because
+                     ; the copy overruns to `0x5800`, it also seeds the first attribute byte to
+                     ; `0x00` = black on black.
  $B534 LD BC,$00A0   ;
  $B537 LDIR          ; Continue zero-filling the top five attribute rows (`0x5800..0x589F`) so the
                      ; showcase status/header region stays black on black.
@@ -8737,21 +8750,21 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 @label=AttractModeShowcaseFrame
 c$B55D CALL $977E    ; Call #R$977E.
                      ; Patch `NUMBA` to the showcase score-strip position.
- $B560 LD HL,$50AB   ; {Write #N$50AB to *#R$94EF(#N$94F0).
+ $B560 LD HL,$50AB   ; {Write #N$50AB to *#R$94EF(#N$94F0), i.e. the showcase score-strip slot.
  $B563 LD ($94F0),HL ; }
- $B566 LD HL,($FE76) ; #REGhl=*#R$FE76.
+ $B566 LD HL,($FE76) ; Load the current showcase score/value from #R$FE76.
  $B569 CALL $94EC    ; Call #R$94EC.
- $B56C LD HL,$C2B6   ; #REGhl=#R$C2B6.
- $B56F LD B,$13      ; #REGb=#N$13.
+ $B56C LD HL,$C2B6   ; Load #R$C2B6, i.e. the `PRESS S TO START` showcase prompt text.
+ $B56F LD B,$13      ; Print 19 characters.
  $B571 CALL $B66C    ; Call #R$B66C.
- $B574 LD A,$16      ; {PRINT AT #N$15#RAW(,) #N$10.
- $B576 RST $10       ;
+ $B574 LD A,$16      ; {PRINT AT row 21, column 16 for the `PRESS S TO START` showcase prompt near
+ $B576 RST $10       ; the bottom of the screen.
  $B577 LD A,$15      ;
  $B579 RST $10       ;
  $B57A LD A,$10      ;
  $B57C RST $10       ; }
- $B57D LD A,$A9      ; {POINT #N$08#RAW(,) #N$53.
- $B57F RST $10       ;
+ $B57D LD A,$A9      ; {POINT to the nearby prompt marker/cursor position used with that showcase
+ $B57F RST $10       ; prompt.
  $B580 LD A,$08      ;
  $B582 RST $10       ;
  $B583 LD A,$53      ;
@@ -8875,10 +8888,11 @@ c$B587 LD HL,$00C0   ;
  $B65E LD BC,$02FF   ;
  $B661 LDIR          ; Continue zero-filling the rest of the 768-byte attribute buffer
                      ; (`0x5800..0x5AFF`), leaving the whole instructions display black on black.
- $B663 LD HL,$3C00   ; {#HTML(Write <a rel="noopener nofollow"
- $B666 LD ($5C36),HL ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a>
-                     ; to *<a rel="noopener nofollow"
-                     ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
+ $B663 LD HL,$3C00   ; {#HTML(Switch <a rel="noopener nofollow"
+ $B666 LD ($5C36),HL ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a> to
+                     ; <a rel="noopener nofollow"
+                     ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">`$3C00`</a>,
+                     ; i.e. the standard ROM character set, before the instructions pages.)
                      ; }
  $B669 JP $B676      ; Jump to #R$B676.
 
@@ -8889,7 +8903,7 @@ c$B587 LD HL,$00C0   ;
 ; HL Address of text
 ; B Number of characters to print
 @label=PrintCharacters
-c$B66C LD A,(HL)     ; Load the character from *#REGhl into #REGa.
+c$B66C LD A,(HL)     ; Load the next character from the text pointer in `HL`.
  $B66D PUSH HL       ; {Stash the string pointer and character counter on the
  $B66E PUSH BC       ; stack.}
  $B66F RST $10       ; Print the character to the screen.
@@ -8908,12 +8922,12 @@ c$B66C LD A,(HL)     ; Load the character from *#REGhl into #REGa.
 ; Prints the controls/instructions text pages, each with its own timed `S`
 ; check before looping back to the earlier attract-mode stages.
 @label=AttractModeInstructionPages
-c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
- $B679 LD B,$00      ; #REGb=#N$00.
+c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions page heading block.
+ $B679 LD B,$00      ; Start at the beginning of that text block.
  $B67B CALL $B66C    ; Call #R$B66C.
- $B67E LD B,$26      ; #REGb=#N$26.
+ $B67E LD B,$26      ; Print 38 more characters from the first instructions page.
  $B680 CALL $B66C    ; Call #R$B66C.
- $B683 LD B,$64      ; #REGb=#N$64.
+ $B683 LD B,$64      ; Outer dwell-count loop for the first instructions page.
 *$B685 LD A,$FD      ;
  $B687 IN A,($FE)    ;
  $B689 AND %00000010 ; Keep only bit 1.
@@ -8930,13 +8944,14 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B6A0 LD DE,$4001   ;
  $B6A3 LD BC,$17FF   ;
  $B6A6 LD (HL),$00   ;
- $B6A8 LDIR          ; Clear the full pixel screen before the second instructions page.
- $B6AA LD HL,$C3EF   ; #REGhl=#R$C3EF.
- $B6AD LD B,$00      ; #REGb=#N$00.
+ $B6A8 LDIR          ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) before the second
+                     ; instructions page.
+ $B6AA LD HL,$C3EF   ; Load #R$C3EF, i.e. the second full-screen instructions page.
+ $B6AD LD B,$00      ; Start at the beginning of that text block.
  $B6AF CALL $B66C    ; Call #R$B66C.
- $B6B2 LD B,$E2      ; #REGb=#N$E2.
+ $B6B2 LD B,$E2      ; Print 226 more characters from the second instructions page.
  $B6B4 CALL $B66C    ; Call #R$B66C.
- $B6B7 LD B,$64      ; #REGb=#N$64.
+ $B6B7 LD B,$64      ; Outer dwell-count loop for the second instructions page.
 *$B6B9 LD A,$FD      ;
  $B6BB IN A,($FE)    ;
  $B6BD AND $02       ;
@@ -8949,7 +8964,10 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
                      ; About 393.21 ms at 3.5 MHz.
  $B6CE POP BC        ;
  $B6CF DJNZ $B6B9    ;
- $B6D1 LD HL,$C8B4   ;
+ $B6D1 LD HL,$C8B4   ; #HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+                     ; back to *<a rel="noopener nofollow"
+                     ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>
+                     ; before returning to the title flow.)
  $B6D4 LD ($5C36),HL ;
 *$B6D7 JP $B1F4      ;
  $B6DA LD ($FE76),HL ;
@@ -8970,7 +8988,10 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
  $B6FE LD BC,$02FF   ;
  $B701 LDIR          ; Continue zero-filling the rest of the 768-byte attribute buffer
                      ; (`0x5800..0x5AFF`), again leaving the full screen black on black.
- $B703 LD HL,$3C00   ;
+ $B703 LD HL,$3C00   ; #HTML(Switch <a rel="noopener nofollow"
+                     ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a> to
+                     ; `$3C00`, i.e. the standard ROM character set, for the later plain-text
+                     ; instructions/text phase.)
  $B706 LD ($5C36),HL ;
  $B709 JP $B716      ;
 *$B70C LD A,(HL)     ;
@@ -9023,9 +9044,10 @@ c$B676 LD HL,$C2C9   ; #REGhl=#R$C2C9.
                      ; About 393.21 ms at 3.5 MHz.
  $B76E POP BC        ;
  $B76F DJNZ $B759    ;
- $B771 LD HL,$C8B4   ; {#HTML(Write #R$C9B4(#N$C8B4) to *<a rel="noopener
- $B774 LD ($5C36),HL ; nofollow"
-                     ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
+ $B771 LD HL,$C8B4   ; {#HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+ $B774 LD ($5C36),HL ; to *<a rel="noopener nofollow"
+                     ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>
+                     ; before jumping back to the title flow.)
                      ; }
  $B777 JP $B1F4      ; Jump to #R$B1F4.
 
@@ -9397,28 +9419,26 @@ b$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $C2AD DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $C2B5 DEFB $00
 
-; Message at C2B6
+; Showcase prompt text block.
 @label=PressStartPrompt
-t$C2B6 DEFB $16,$05,$08                                                                                                                  ; PRINT AT
-                                                                                                                                         ; (#PEEK(#PC+$01),
-                                                                                                                                         ; #PEEK(#PC+$02)).
- $C2B9 DEFM "PRESS[S[TO[START"                                                                                                           ; "#STR(#PC,$04,$10)".
+t$C2B6 DEFB $16,$05,$08        ; PRINT AT row 5, column 8 in the lower half of the screen.
+ $C2B9 DEFM "PRESS[S[TO[START" ; Text body: 16 characters.
+
+; Controls heading text block.
 @label=ControlsHeading
- $C2C9 DEFB $16,$00,$00                                                                                                                  ; PRINT AT
-                                                                                                                                         ; (#PEEK(#PC+$01),
-                                                                                                                                         ; #PEEK(#PC+$02)).
- $C2CC DEFM "CONTROLS:"                                                                                                                  ; "#STR(#PC,$04,$09)".
-; Controls / instructions page 1 body.
+t$C2C9 DEFB $16,$00,$00                                                                                                                  ; PRINT AT row 0, column 0 at the top-left of the instructions page.
+ $C2CC DEFM "CONTROLS:"                                                                                                                  ; Text body: 9 characters.
+; Controls / instructions page 1 body for the full-screen instructions display.
  $C2D5 DEFM $0D,$0D,$0D,"YOUR TANK HAS TWO CATERPILLAR",$0D,"TRACKS. THESE CAN BE CONTROLLED",$0D
  $C316 DEFM "INDIVIDUALLY.",$0D,$0D,"LEFT TRACK:",$0D,$0D,"1-5 & Q-T",$06,"  = FORWARD",$0D,"A-G & ",$14,$01,"CAPS",$14,$00,"-"
  $C357 DEFM "V",$06,"  = REVERSE",$0D,$0D,$0D,"RIGHT TRACK:",$0D,$0D,"6-9 & Y-P",$06,"  = FORWARD",$0D,"J-",$14,$01,"ENTER",$14,$00," &"
  $C398 DEFM " B-",$14,$01,"SPC",$14,$00,$06,"  = REVERSE",$16,$12,$0F,"0  = FIRE",$16,$14,$04,"H = HOLD    S = START",$0D,"     ",$14
  $C3D9 DEFM $01,"CAPS",$14,$00," H = ABORT GAME"
-; Controls / instructions page 2 body.
+
+; Controls / instructions page 2 text block for the full-screen instructions
+; display.
 @label=ControlsText
- $C3EF DEFB $16,$00,$00                                                                                                                  ; PRINT AT
-                                                                                                                                         ; (#PEEK(#PC+$01),
-                                                                                                                                         ; #PEEK(#PC+$02)).
+t$C3EF DEFB $16,$00,$00                                                                                          ; PRINT AT row 0, column 0 at the top-left of the second instructions page.
  $C3F2 DEFM "THESE CONTROLS ARE EASIER",$CC,"USEBY CONSIDERING THE KEYBOARD",$CC," BE QUAR"
  $C433 DEFM "TERED. THE QUARTER ON THETOP LEFT (1-5,Q-T) WILL MAKE THELEFT TRA"
  $C474 DEFM "CK DRIVE FORWARDS,",$C6," THE TANK WILL",$D1,"FORWARDS",$C6,$CC,"THE RIGHT.",$0D,"TO",$D1,"FORWARD"
@@ -9427,8 +9447,11 @@ t$C2B6 DEFB $16,$05,$08                                                         
  $C537 DEFM "(THIS GAME IS KEMPSTON JOYSTICK  COMPATABLE)",$0D,$0D,"USE OBJECTS (CUBES",$C6
  $C578 DEFM "PYRAMIDS)AS SHIELDS,",$C6,"USE THE RADAR TOFIND THE ENEMY. DO ",$C3,"STAY IN "
  $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00
+
+; Attract footer text block for the lower-screen `BY BILL WITTS / QUICKSILVA`
+; credits region.
 @label=AttractModeCreditsFooterText
- $C5DA DEFM $16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
+t$C5DA DEFM $16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
  $C5FA DEFM $00,$00,$00,$00,$00,$00,$00,$00
 
 ; Probable attract-mode title-word line-data family.
@@ -11148,16 +11171,19 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $CDD4 DEFB $3F,$1F,$00,$00,$F8,$FC,$FC,$FE
  $CDDC DEFB $FF,$FE,$00,$00,$00,$00,$00,$00
  $CDE4 DEFB $00,$00,$00,$00,$10,$00,$11,$02
-; `GAME OVER` text/control block printed in the zero-lives branch.
+; `GAME OVER` text/control block printed near the middle of the screen
+; in the zero-lives branch.
 @label=GameOverText
  $CDEC DEFB $16,$0C,$0B,$47,$41,$4D,$45,$5B
  $CDF4 DEFB $5B,$4F,$56,$45,$52,$00,$16,$03
-; `TODAYS GREATEST` heading printed before the high-score table.
+; `TODAYS GREATEST` heading printed across the upper part of the
+; high-score screen before the table body.
 @label=TodaysGreatestText
  $CDFC DEFB $08,$54,$4F,$44,$41,$59,$53,$5B
  $CE04 DEFB $47,$52,$45,$41,$54,$45,$53,$54
  $CE0C DEFB $00,$00,$00,$00,$00,$00,$16,$03
-; `QUICKSILVA PRESENTS` attract-mode text block printed at $B2C5.
+; `QUICKSILVA PRESENTS` attract-mode text block printed in the early
+; title sequence, above the tumbling title/logo action.
 @label=QuicksilvaPresentsText
  $CE14 DEFB $06,$10,$04,$11,$00,$51,$55,$49
  $CE1C DEFB $43,$4B,$53,$49,$4C,$56,$41,$5B

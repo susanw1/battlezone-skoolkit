@@ -2668,8 +2668,10 @@ C $94CF,h4
 C $94D3,h2
 . Stop drawing life symbols once the strip is full.
 C $94D5,h2
-. Compute the destination column for the newly awarded life symbol pair.
+. Compute the destination column for the newly awarded life symbol pair in the
+. top status strip.
 C $94D7,h3
+. Base destination `$4010` is the left edge of the life-symbol strip.
 C $94DB,h2
 C $94E1,h2
 C $94E3,h3
@@ -2689,9 +2691,10 @@ C $94EC,h3
 . Persist the current packed BCD value.
 C $94EF,h3
 . Destination `BC` immediate patched by `0xB0DA/0xB0E9/0xB1C0/0xB1D4/0xB563` to
-. redirect the same print loop between the normal gameplay score strip,
-. temporary start-transition heading position, per-entry attract numeric list,
-. and the showcase score strip.
+. redirect the same print loop between the normal gameplay score strip at
+. `$4059` in the top status strip, the temporary start-transition heading slot
+. at `$4099`, the per-entry attract numeric list, and the showcase score strip
+. at `$50AB`.
 C $94F4,h2
 C $94FA,h2
 C $94FC,h2
@@ -2810,7 +2813,8 @@ C $9625,h3
 C $9628,h2
 C $962A,h3
 C $962D,h3
-. Start drawing the initial life-strip glyph pairs at `$4014`.
+. Start drawing the initial life-strip glyph pairs at `$4014` in the top
+. status strip.
 C $9630,h2
 C $9632,h3
 C $9635,h2
@@ -5020,7 +5024,7 @@ D $AD0C
 C $AD0C,1
 . Disable interrupts.
 C $AD0D,11,h9,2
-. Copy #N($0024,$04,$04) bytes from #R$8CA0 to #R$F700.
+. Copy 36 bytes of startup seed data from #R$8CA0 to #R$F700.
 C $AD18,h3
 . Jump to #R$B1F4.
 b $AD1B
@@ -5158,6 +5162,7 @@ C $AE59,h2
 C $AE5C,h2
 C $AE5E,h3
 . Load lives (`SHIPS` in the notebook).
+C $AE61,1
 C $AE62,h3
 . Store decremented lives.
 C $AE65,h3
@@ -5289,7 +5294,7 @@ C $AFB9,h3
 C $AFBC,h3
 C $AFBF,h3
 C $AFC2,h2
-. Clear the full pixel screen from `0x4000`.
+. Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`).
 C $AFC6,h2
 C $AFC8,h3
 C $AFCB,h2
@@ -5380,7 +5385,8 @@ C $B0BF,h3
 C $B0C2,h3
 C $B0C5,h3
 C $B0CA,h2
-. Clear the full pixel screen during the common start-game transition.
+. Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) during the common
+. start-game transition.
 C $B0CC,h3
 C $B0CF,h3
 C $B0D2,h2
@@ -5388,13 +5394,15 @@ C $B0D2,h2
 . About 393.21 ms at 3.5 MHz.
 C $B0D4,h3
 C $B0D7,h3
-. Patch `NUMBA` to the temporary start-transition heading position.
+. Patch `NUMBA` to the temporary start-transition heading slot at `$4099` in
+. the top status strip.
 C $B0DA,h3
 C $B0DD,h3
 C $B0E0,h3
 C $B0E3,h3
-. Restore `NUMBA` to the normal gameplay score-strip position.
+. Print the stored heading/score value in that temporary top-status slot.
 C $B0E6,h3
+. Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
 C $B0E9,h3
 C $B0EC,h3
 N $B0EF
@@ -5447,10 +5455,15 @@ C $B14C,h3
 C $B14F,h3
 C $B152,h3
 C $B155,h2
-. Clear the full pixel screen before the later `TODAYS GREATEST` text path.
+. Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) before the later
+. `TODAYS GREATEST` text path.
 C $B157,h2
 C $B159,h3
+. Current best read: `TodaysGreatestText`, printed across the upper part of the
+. high-score screen.
 C $B15F,h1
+. Print one character from the `TODAYS GREATEST` heading across the upper part
+. of the cleared screen.
 C $B163,h2
 C $B165,h2
 C $B167,h2
@@ -5476,13 +5489,14 @@ C $B1B5,h2
 C $B1B7,h2
 C $B1BB,h2
 C $B1BD,h2
-. Patch `NUMBA` to the destination for this attract-page numeric entry.
+. Patch `NUMBA` to the destination for this attract-page numeric entry in the
+. later `TODAYS GREATEST` display body.
 C $B1C0,h3
 C $B1C3,h4
 C $B1C8,h3
 C $B1CF,h2
 C $B1D1,h3
-. Restore `NUMBA` to the normal gameplay score-strip position.
+. Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
 C $B1D4,h3
 C $B1D7,h2
 C $B1D9,h3
@@ -5524,30 +5538,25 @@ C $B219,13,h11,2
 . Write `0x44` to the full 768-byte attribute buffer
 . (`0x5800..0x5AFF`) = bright green ink on black paper, no flash.
 C $B226,13,h11,2
-. Write #N$00 to #N($00FF,$04,$04) bytes, starting from
-. #R$FE00.
+. Clear the 256-byte workspace block from #R$FE00 through `$FEFF`.
 C $B233,h6
-. #HTML(Write #R$C9B4(#N$C8B4) to *<a rel="noopener
-. nofollow"
+. #HTML(Install the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+. to *<a rel="noopener nofollow"
 . href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
-.
 C $B239,h6
-. Write #N$6400 to *#R$FE60.
+. Write `$6400` to *#R$FE60.
 C $B23F,h9
-. Write #N($0000,$04,$04) to: #LIST { #R$FE5E } { #R$FE62
-. } LIST#
+. Write `$0000` to both #R$FE5E and #R$FE62.
 C $B248,h5
-. Write #N$30 to *#R$FE68.
+. Write `$30` to *#R$FE68.
 N $B24D
 . Current best read: attract-mode stage A, tumbling `QS` logo loop.
 @ $B24D label=AttractModeQSTumbleLoop
 C $B24D,h6
-. Write #N$CA28 to *#R$FE42.
-. Current best read: probable QS rotating Y/Z seed table.
+. Point #R$FE42 at `$CA28`, the current best QS rotating Y/Z seed table.
 C $B253,h6
-. Write #N$CA5E to *#R$FE46.
-. Current best read: common zero-axis companion table used
-. by the attract-mode X-axis rotation hack.
+. Point #R$FE46 at `$CA5E`, the common zero-axis companion table used by the
+. attract-mode X-axis rotation hack.
 C $B259,h3
 C $B25C,h2
 C $B25E,h3
@@ -5578,7 +5587,7 @@ C $B298,h3
 C $B29B,h3
 C $B29E,h3
 C $B2A1,h2
-. #REGa=#N$16.
+. Project 22 points through `PERSP`.
 C $B2A3,h3
 . Call #R$8660.
 C $B2A6,h2
@@ -5831,10 +5840,15 @@ N $B48C
 @ $B48C label=AttractModeCreditsFooter
 C $B48C,h2
 C $B48E,h3
-. Current best read: `AttractModeCreditsFooterText`.
+. Current best read: `AttractModeCreditsFooterText`, i.e. the lower-screen
+. `BY BILL WITTS / QUICKSILVA` footer.
 C $B495,h1
+. Print one character from the attract-mode credits/footer text in the lower
+. screen region.
 C $B498,h2
 C $B49A,h3
+. Base destination for the `1984` footer-year digits, just below the attract
+. credits text.
 C $B49D,h2
 C $B49F,h3
 C $B4A2,h2
@@ -5887,7 +5901,8 @@ C $B4FF,h3
 C $B502,h3
 C $B505,h2
 C $B507,h2
-. Clear the full pixel screen after the title flyoff completes.
+. Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) after the title
+. flyoff completes.
 C $B509,h2
 C $B50B,h3
 C $B50E,h2
@@ -5915,8 +5930,9 @@ C $B530,h2
 . byte past `0x57FF`, it also seeds the first attribute byte at `0x5800` to
 . `0x00` = black on black.
 C $B532,h2
-. Clear the pixel screen; because the copy overruns to `0x5800`, it also seeds
-. the first attribute byte to `0x00` = black on black.
+. Continue clearing the 6144-byte visible bitmap with the overlap-fill; because
+. the copy overruns to `0x5800`, it also seeds the first attribute byte to
+. `0x00` = black on black.
 C $B534,h3
 C $B537,h2
 . Continue zero-filling the top five attribute rows (`0x5800..0x589F`) so the
@@ -5951,21 +5967,23 @@ C $B55D,h3
 . Call #R$977E.
 . Patch `NUMBA` to the showcase score-strip position.
 C $B560,h6
-. Write #N$50AB to *#R$94EF(#N$94F0).
+. Write #N$50AB to *#R$94EF(#N$94F0), i.e. the showcase score-strip slot.
 C $B566,h3
-. #REGhl=*#R$FE76.
+. Load the current showcase score/value from #R$FE76.
 C $B569,h3
 . Call #R$94EC.
 C $B56C,h3
-. #REGhl=#R$C2B6.
+. Load #R$C2B6, i.e. the `PRESS S TO START` showcase prompt text.
 C $B56F,h2
-. #REGb=#N$13.
+. Print 19 characters.
 C $B571,h3
 . Call #R$B66C.
 C $B574,h9
-. PRINT AT #N$15#RAW(,) #N$10.
+. PRINT AT row 21, column 16 for the `PRESS S TO START` showcase prompt near
+. the bottom of the screen.
 C $B57D,h9
-. POINT #N$08#RAW(,) #N$53.
+. POINT to the nearby prompt marker/cursor position used with that showcase
+. prompt.
 C $B586,1
 . Return.
 c $B587
@@ -6102,11 +6120,11 @@ C $B661,h2
 . Continue zero-filling the rest of the 768-byte attribute buffer
 . (`0x5800..0x5AFF`), leaving the whole instructions display black on black.
 C $B663,h6
-. #HTML(Write <a rel="noopener nofollow"
-. href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">#N$3C00</a>
-. to *<a rel="noopener nofollow"
-. href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
-.
+. #HTML(Switch <a rel="noopener nofollow"
+. href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a> to
+. <a rel="noopener nofollow"
+. href="https://skoolkit.ca/disassemblies/rom/hex/asm/3D00.html">`$3C00`</a>,
+. i.e. the standard ROM character set, before the instructions pages.)
 C $B669,h3
 . Jump to #R$B676.
 c $B66C
@@ -6118,7 +6136,7 @@ R $B66C
 . B Number of characters to print
 @ $B66C label=PrintCharacters
 C $B66C,1
-. Load the character from *#REGhl into #REGa.
+. Load the next character from the text pointer in `HL`.
 C $B66D,2
 . Stash the string pointer and character counter on the
 . stack.
@@ -6144,17 +6162,17 @@ D $B676
 . check before looping back to the earlier attract-mode stages.
 @ $B676 label=AttractModeInstructionPages
 C $B676,h3
-. #REGhl=#R$C2C9.
+. Load #R$C2C9, i.e. the first full-screen instructions page heading block.
 C $B679,h2
-. #REGb=#N$00.
+. Start at the beginning of that text block.
 C $B67B,h3
 . Call #R$B66C.
 C $B67E,h2
-. #REGb=#N$26.
+. Print 38 more characters from the first instructions page.
 C $B680,h3
 . Call #R$B66C.
 C $B683,h2
-. #REGb=#N$64.
+. Outer dwell-count loop for the first instructions page.
 C $B685,h2
 C $B687,h2
 C $B689,b2
@@ -6172,19 +6190,20 @@ C $B6A0,h3
 C $B6A3,h3
 C $B6A6,h2
 C $B6A8,h2
-. Clear the full pixel screen before the second instructions page.
+. Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) before the second
+. instructions page.
 C $B6AA,h3
-. #REGhl=#R$C3EF.
+. Load #R$C3EF, i.e. the second full-screen instructions page.
 C $B6AD,h2
-. #REGb=#N$00.
+. Start at the beginning of that text block.
 C $B6AF,h3
 . Call #R$B66C.
 C $B6B2,h2
-. #REGb=#N$E2.
+. Print 226 more characters from the second instructions page.
 C $B6B4,h3
 . Call #R$B66C.
 C $B6B7,h2
-. #REGb=#N$64.
+. Outer dwell-count loop for the second instructions page.
 C $B6B9,h2
 C $B6BB,h2
 C $B6BD,h2
@@ -6197,6 +6216,10 @@ C $B6CC,h2
 . About 393.21 ms at 3.5 MHz.
 C $B6CF,h2
 C $B6D1,h3
+. #HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+. back to *<a rel="noopener nofollow"
+. href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>
+. before returning to the title flow.)
 C $B6D4,h3
 C $B6D7,h3
 C $B6DA,h3
@@ -6220,6 +6243,10 @@ C $B701,h2
 . Continue zero-filling the rest of the 768-byte attribute buffer
 . (`0x5800..0x5AFF`), again leaving the full screen black on black.
 C $B703,h3
+. #HTML(Switch <a rel="noopener nofollow"
+. href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a> to
+. `$3C00`, i.e. the standard ROM character set, for the later plain-text
+. instructions/text phase.)
 C $B706,h3
 C $B709,h3
 C $B70F,h1
@@ -6265,9 +6292,10 @@ C $B76C,h2
 . About 393.21 ms at 3.5 MHz.
 C $B76F,h2
 C $B771,h6
-. #HTML(Write #R$C9B4(#N$C8B4) to *<a rel="noopener
-. nofollow"
-. href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
+. #HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+. to *<a rel="noopener nofollow"
+. href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>
+. before jumping back to the title flow.)
 .
 C $B777,h3
 . Jump to #R$B1F4.
@@ -6641,35 +6669,32 @@ B $C2A5,8,h8
 B $C2AD,8,h8
 B $C2B5,1,h1
 t $C2B6
-. Message at C2B6
+. Showcase prompt text block.
 @ $C2B6 label=PressStartPrompt
 B $C2B6,3,h3
-. PRINT AT
-. (#PEEK(#PC+$01),
-. #PEEK(#PC+$02)).
+. PRINT AT row 5, column 8 in the lower half of the screen.
 T $C2B9,16,16
-. "#STR(#PC,$04,$10)".
+. Text body: 16 characters.
+t $C2C9
+. Controls heading text block.
 @ $C2C9 label=ControlsHeading
 B $C2C9,3,h3
-. PRINT AT
-. (#PEEK(#PC+$01),
-. #PEEK(#PC+$02)).
+. PRINT AT row 0, column 0 at the top-left of the instructions page.
 T $C2CC,9,9
-. "#STR(#PC,$04,$09)".
+. Text body: 9 characters.
 N $C2D5
-. Controls / instructions page 1 body.
+. Controls / instructions page 1 body for the full-screen instructions display.
 T $C2D5,65,h3:29:h1:31:h1
 T $C316,65,13:h2:11:h2:9:h1:11:h1:6:h2:4:h2:1
 T $C357,65,1:h1:11:h3:12:h2:9:h1:11:h1:2:h2:5:h2:2
 T $C398,65,3:h2:3:h3:11:h3:9:h3:21:h1:5:h1
 T $C3D9,22,h1:4:h2:15
-N $C3EF
-. Controls / instructions page 2 body.
+t $C3EF
+. Controls / instructions page 2 text block for the full-screen instructions
+. display.
 @ $C3EF label=ControlsText
 B $C3EF,3,h3
-. PRINT AT
-. (#PEEK(#PC+$01),
-. #PEEK(#PC+$02)).
+. PRINT AT row 0, column 0 at the top-left of the second instructions page.
 T $C3F2,65,25:h1:30:h1:8
 T $C433,65,65
 T $C474,65,18:h1:14:h1:8:h2:10:h1:2:h1:7
@@ -6678,6 +6703,9 @@ T $C4F6,65,36:h1:27:h1
 T $C537,65,44:h2:18:h1
 T $C578,65,20:h1:35:h1:8
 T $C5B9,33,24:h9
+t $C5DA
+. Attract footer text block for the lower-screen `BY BILL WITTS / QUICKSILVA`
+. credits region.
 @ $C5DA label=AttractModeCreditsFooterText
 T $C5DA,32,h3:13:h3:13
 T $C5FA,8,h8
@@ -7132,16 +7160,19 @@ B $CD7C,4,h4
 > $F700  $CDD4 DEFB $3F,$1F,$00,$00,$F8,$FC,$FC,$FE
 > $F700  $CDDC DEFB $FF,$FE,$00,$00,$00,$00,$00,$00
 > $F700  $CDE4 DEFB $00,$00,$00,$00,$10,$00,$11,$02
-> $F700 ; `GAME OVER` text/control block printed in the zero-lives branch.
+> $F700 ; `GAME OVER` text/control block printed near the middle of the screen
+> $F700 ; in the zero-lives branch.
 > $F700 @label=GameOverText
 > $F700  $CDEC DEFB $16,$0C,$0B,$47,$41,$4D,$45,$5B
 > $F700  $CDF4 DEFB $5B,$4F,$56,$45,$52,$00,$16,$03
-> $F700 ; `TODAYS GREATEST` heading printed before the high-score table.
+> $F700 ; `TODAYS GREATEST` heading printed across the upper part of the
+> $F700 ; high-score screen before the table body.
 > $F700 @label=TodaysGreatestText
 > $F700  $CDFC DEFB $08,$54,$4F,$44,$41,$59,$53,$5B
 > $F700  $CE04 DEFB $47,$52,$45,$41,$54,$45,$53,$54
 > $F700  $CE0C DEFB $00,$00,$00,$00,$00,$00,$16,$03
-> $F700 ; `QUICKSILVA PRESENTS` attract-mode text block printed at $B2C5.
+> $F700 ; `QUICKSILVA PRESENTS` attract-mode text block printed in the early
+> $F700 ; title sequence, above the tumbling title/logo action.
 > $F700 @label=QuicksilvaPresentsText
 > $F700  $CE14 DEFB $06,$10,$04,$11,$00,$51,$55,$49
 > $F700  $CE1C DEFB $43,$4B,$53,$49,$4C,$56,$41,$5B
