@@ -424,6 +424,13 @@ Working summary of verified facts, local source material, and open questions for
     - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words
     - `FE94` = saucer drift-change countdown
     - `FE96` = saucer signed X-drift step / velocity
+  - the `FE00..FEFF` workspace/status area now uses ordinary data entries
+    instead of SkoolKit `g` entries
+    - this makes workspace labels and `#R$...` address targets behave more like
+      normal asm/data entries
+    - the Input/Output table key column is still symbol-only, but the stable
+      description-cell pattern is now `#R$FE38($FE38)`, which renders a linked
+      visible address without changing the symbol key
   - first-pass internal anchors now exist too:
     - `MHLPTWriteOuterLeft` at `0x8E47`
     - `MHLPTAdvanceToOuterRight` at `0x8E7D`
@@ -996,6 +1003,11 @@ Working summary of verified facts, local source material, and open questions for
     - `$CAB8: 1388/0054` -> `F/F#`-ish, longest hold
 
 ## Ground rules for future updates
+
+- Latest code-reading pass:
+  - expanded the per-line semantic comments in the bullet and obstacle update/render blocks
+  - player/hostile bullet paths now call out when `XDIS` / `ZDIS`, `XTAB` / `ZTAB`, `XLOC` / `ZLOC`, `XPERS` / `YPERS`, and `YLOC` are being installed for the shared rotate/project pipeline
+  - obstacle selection/projection now calls out the temporary selected `(X,Z)` seed slots at `0xFEE8/0xFEEA` and the later installation of the shared obstacle/object model-space and projected-output lists
 
 - Prefer code and scanned notes over recollection when they conflict.
 - Record uncertainty explicitly rather than smoothing over it.

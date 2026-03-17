@@ -99,8 +99,18 @@ Top-level block directives:
 - `w` words
 - `s` repeated same-byte data
 - `u` unused memory
-- `g` game-status entry
 - `i` ignored block
+
+We have largely stopped using `g` for the main `FE00..FEFF` workspace block in
+this repo.
+
+Reason:
+
+- ordinary `b`/`w` entries preserve labels and descriptions well enough
+- they also interact better with `#R$...` address references and normal asm/data
+  linking than `g` entries do in this toolchain
+- switching the workspace/status area away from `g` improves navigability on
+  asm pages without materially harming the memory-map notes we care about
 
 Useful consequence:
 
@@ -145,8 +155,10 @@ Practical rule:
 - `#LIST` inside those description paragraphs does render as proper HTML bullet
   lists on asm pages
 - by contrast, the Input/Output register tables are much stricter:
-  symbolic names render well there, but embedded address text or `#R` links in
-  table cells are not preserved reliably in this build
+  the left-hand key column remains symbolic-only in this build
+- converting workspace slots from `g` entries to ordinary `b`/`w` entries does
+  not change that symbolic-only key column, but it does help with ordinary
+  entry links and `#R$...` address targets elsewhere
 
 Register-doc rule:
 
@@ -163,11 +175,13 @@ Preset-workspace rule:
   - `Preset workspace inputs:`
   - `Workspace outputs:`
 - where it helps readability, use `#LIST` under those headings
-- symbolic workspace names in `R` tables do work in some cases, but rendering
-  is not consistent enough yet to rely on that approach everywhere
-- if the underlying workspace addresses matter to the reader, put them in the
-  surrounding description prose rather than trying to force them into the
-  table cells
+- the left-hand symbol column in `R` tables stays symbolic
+- the stable pattern for the description cell is
+  `#R$FE38($FE38)`, which renders as a linked visible address while leaving the
+  left-hand symbol column untouched
+- prefer putting the workspace address mapping in the relevant table
+  description cell rather than duplicating a long `Workspace anchors:` list in
+  the surrounding prose when the mapping is straightforward
 - use this only for routines where the workspace contract is part of the real
   callable interface, not for every incidental scratch location
 
@@ -182,6 +196,10 @@ So:
 - data/table anchors are high-value
 - for non-clickable operands, a `#R` comment is often the most readable way to
   add a hyperlink in the HTML
+- for workspace/status slots, `#R$...` works much better when those slots are
+  ordinary `b`/`w` entries rather than `g` entries
+- if you need linked visible address text in a table description, use
+  `#R$ADDR($ADDR)`
 
 Example pattern:
 
