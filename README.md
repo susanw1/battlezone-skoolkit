@@ -35,6 +35,10 @@ doing block-structure regeneration.
 `Battlezone.z80` can be produced from the TZX source or another compatible
 snapshot source when regeneration is needed.
 
+See also:
+
+* `docs/SkoolKit-workflow-notes.md` for the repo-local SkoolKit workflow guide
+
 
 Disclaimer
 ----------

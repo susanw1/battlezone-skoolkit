@@ -146,6 +146,18 @@ Working summary of verified facts, local source material, and open questions for
   - `PlotNumberGlyph` at `0x948C`: generic 7-row status-strip glyph renderer used by `NUMBA`, life-strip redraws, and some attract/title overlays
   - `SCOPR` at `0x94AC`: packed-BCD score increment routine with inlined extra-life threshold handling; awards a life, redraws one life-symbol pair, then falls through into `NUMBA`
   - `NUMBA` at `0x94EC`: packed-BCD score display routine, reached directly or by falling through from `SCOPR`
+- SkoolKit `R` register docs are now used on selected shared helpers where the register interface is solid:
+  - `PERSP`: `O:C` status code on return
+  - `HeadingFromXZ`: `HL`/`DE` signed `(X,Z)` in, `O:A` heading out
+  - `RADAR`: `HL`/`DE` signed `(X,Z)` in for radar blip plotting
+  - `MESPR`, `MESER`, `PlotNumberGlyph`, `SCOPR`, and `NUMBA` now have explicit register docs too
+  - `KeyboardMovementDecode`: `O:A` `KMOV` code
+  - `TurnTransformDispatcher`: `DE/BC` in, updated `DE/BC` plus `O:HL` angle out
+  - `TurnHandlerLeft1/Right1/Left2/Right2`: same `DE/BC` in and updated `DE/BC` plus `O:HL` out as the selected internal turn handlers
+  - `KMOVTurnDecode`: `A` surviving `KMOV` code in
+  - `KEMPST`: `O:A` `KMOV` code
+  - `PrintCharacters`: `HL` text pointer, `B` character count
+  - the local wrapper now prefers the resolved `skool2asm.py` / `skool2html.py` CLI tools over importing SkoolKit directly, because the imported local package was older and was suppressing newer HTML features such as the rendered Input/Output register tables
 - Added `NumberGlyphs` label at `0xCD80`.
 - Added a confident joystick-input mapping:
 - `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield

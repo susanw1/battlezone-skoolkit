@@ -1279,8 +1279,6 @@ D $805C
 . The horizontal case currently looks folded into the zero-gradient subpaths
 . inside the X-major branches rather than split out as a separate top-level
 . entrypoint.
-R $805C
-. Used throughout gameplay, crash/death, and attract/title rendering paths.
 @ $805C label=LNLPT
 C $805C,h3
 C $8060,h3
@@ -1646,6 +1644,7 @@ D $8660
 . - `C=1` primary depth failure: at least one source Z value is too near /
 .   behind the projection threshold
 . - `C=2` projected X overflow or visible-range failure
+R $8660 O:C Status code on return (`0` drawable, `1` near/depth failure, `2` projected-X overflow or visible-range failure)
 @ $8660 label=PERSP
 C $8660,h4
 @ $8676 label=PERSPProjectPrimary
@@ -2079,7 +2078,7 @@ i $9098
 . `0x90BA`.
 c $90BA
 . RADAR
-D $90BA
+N $90BA
 . Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
 . Current best notebook match: `RADAR`.
 . Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
@@ -2091,8 +2090,9 @@ D $90BA
 .   `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`
 . The cell/bit conversion path uses the shared plotting lookup family at
 . #R$7C00.
+R $90BA HL Signed X component / world-space X distance
+R $90BA DE Signed Z component / world-space Z distance
 @ $90BA label=RADAR
-N $90BA
 @ $90BC label=RADARClearWorkspace
 @ $90EB label=RADARMapX
 @ $9104 label=RADARMapZ
@@ -2104,7 +2104,7 @@ i $9130
 . Padding / alignment space between `RADAR` and `KeyboardMovementDecode`.
 . Only two trailing `NOP`s remain visible here after the embedded byte block;
 . they are not referenced and simply align the next helper at `0x9132`.
-N $9132
+D $9132
 . Keyboard movement/button decode helper.
 . Called from gameplay input handling and the start/demo code. It scans the
 . keyboard matrix rows, normalises contradictory directions, latches the fire
@@ -2120,6 +2120,7 @@ N $9132
 . - `0x50` back+right
 . - `0x08` left on the spot
 . - `0x04` right on the spot
+R $9132 O:A `KMOV` movement code
 @ $9132 label=KeyboardMovementDecode
 c $9132
 C $9132,h2
@@ -2226,7 +2227,7 @@ C $91D3,1
 C $91D4,1
 B $91D5,11,h11
 B $91E0,6,h6
-N $91E6
+D $91E6
 . Shared turn/movement transform dispatcher.
 . `0xA7D9` and related callers pass an `(X,Z)` pair in `DE/BC`. The routine
 . jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
@@ -2235,11 +2236,24 @@ N $91E6
 . Indirect-entry audit note: this `JP (HL)` is the only true computed routine
 . dispatch in the shipped gameplay code, and `KMOVTurnDecode` only seeds it
 . with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312`.
+R $91E6 DE Input X coordinate word
+R $91E6 BC Input Z coordinate word
+R $91E6 O:DE Updated X coordinate word
+R $91E6 O:BC Updated Z coordinate word
+R $91E6 O:HL Updated view-turn angle / accumulator
 @ $91E6 label=TurnTransformDispatcher
 c $91E6
 C $91E6,1
 C $91E7,h3
 C $91EA,1
+D $91EB
+. Movement/turn handler variant selected via `TURN`.
+. Current best read: single-speed left turn before the shared transform.
+R $91EB DE Input X coordinate word
+R $91EB BC Input Z coordinate word
+R $91EB O:DE Updated X coordinate word
+R $91EB O:BC Updated Z coordinate word
+R $91EB O:HL Updated view-turn angle / accumulator
 @ $91EB label=TurnHandlerLeft1
 C $91EB,1
 C $91EC,1
@@ -2306,9 +2320,14 @@ C $9245,1
 C $9246,1
 C $9247,1
 B $9248,2,h2
-N $924A
+D $924A
 . Movement/turn handler variant selected via `TURN`.
 . Current best read: single-speed right turn before the shared transform.
+R $924A DE Input X coordinate word
+R $924A BC Input Z coordinate word
+R $924A O:DE Updated X coordinate word
+R $924A O:BC Updated Z coordinate word
+R $924A O:HL Updated view-turn angle / accumulator
 @ $924A label=TurnHandlerRight1
 c $924A
 C $924A,1
@@ -2379,9 +2398,14 @@ C $92AA,1
 C $92AB,1
 C $92AC,1
 B $92AD,1
-N $92AE
+D $92AE
 . Movement/turn handler variant selected via `TURN`.
 . Current best read: double-speed left turn before the shared transform.
+R $92AE DE Input X coordinate word
+R $92AE BC Input Z coordinate word
+R $92AE O:DE Updated X coordinate word
+R $92AE O:BC Updated Z coordinate word
+R $92AE O:HL Updated view-turn angle / accumulator
 @ $92AE label=TurnHandlerLeft2
 c $92AE
 C $92AE,1
@@ -2452,9 +2476,14 @@ C $930B,1
 C $930C,1
 C $930D,1
 B $930E,4,h4
-N $9312
+D $9312
 . Movement/turn handler variant selected via `TURN`.
 . Current best read: double-speed right turn before the shared transform.
+R $9312 DE Input X coordinate word
+R $9312 BC Input Z coordinate word
+R $9312 O:DE Updated X coordinate word
+R $9312 O:BC Updated Z coordinate word
+R $9312 O:HL Updated view-turn angle / accumulator
 @ $9312 label=TurnHandlerRight2
 c $9312
 C $9312,1
@@ -2537,6 +2566,9 @@ N $938A
 . Current best shipped read: convert the signed `(X,Z)` vector into the
 . compact 8-bit heading/bearing code used by tank desired-heading logic,
 . missile orientation refresh, and proximity/range comparisons.
+R $938A HL Signed X component / world-space X distance
+R $938A DE Signed Z component / world-space Z distance
+R $938A O:A Heading / bearing code
 @ $938A label=HeadingFromXZ
 c $938A
 i $943D
@@ -2560,6 +2592,7 @@ D $9452
 . - byte 3: width in bytes
 . - remaining bytes: row-major source data copied into the destination
 . Each row advances by the Spectrum character-row stride (`+0x20`).
+R $9452 HL Address of rectangle descriptor: destination, height, width, then row-major byte data
 @ $9452 label=MESPR
 C $9452,1
 . Load the destination address low byte.
@@ -2589,6 +2622,7 @@ D $9476
 . Uses the same descriptor header (`destination`, `height`, `width`) but fills
 . the target rectangle with zero bytes instead of copying source data.
 . Each row advances by the Spectrum character-row stride (`+0x20`).
+R $9476 HL Address of rectangle descriptor: destination, height, width
 @ $9476 label=MESER
 C $9476,1
 . Load the destination address low byte.
@@ -2622,6 +2656,9 @@ D $948C
 . The low nibble of `A` selects an 8-byte slot in `NumberGlyphs`; only the first
 . 7 rows are copied, then `BC` is advanced one column so callers can chain glyph
 . plots horizontally without adjusting the destination themselves.
+R $948C A Digit or symbol index; the low nibble selects the glyph slot
+R $948C BC Destination address
+R $948C O:BC Destination advanced one column to the right for chained glyph plots
 @ $948C label=PlotNumberGlyph
 C $948C,1
 . Preserve the destination pointer for the caller.
@@ -2649,6 +2686,7 @@ D $94AC
 . extra-life threshold at `0xFEE6`, awards a life if needed, doubles that next
 . threshold, redraws one life symbol pair if the strip is not yet full, then
 . falls through into `NUMBA` to refresh the visible score display.
+R $94AC B Packed-BCD score increment
 @ $94AC label=SCOPR
 C $94AC,h3
 . Load the current score.
@@ -2686,6 +2724,7 @@ D $94EC
 . gameplay score strip and several attract/start numeric displays.
 . The destination is redirected by patching the `LD BC,$....` immediate at
 . `$94EF`, rather than by duplicating the routine.
+R $94EC HL Packed BCD value to display
 @ $94EC label=NUMBA
 C $94EC,h3
 . Persist the current packed BCD value.
@@ -4467,6 +4506,11 @@ C $A70C,h3
 . Obstacle-block warning path: print the warning and restrict surviving movement bits via `C`.
 . Print the obstacle-block warning rectangle from `CF9E`.
 C $A710,h3
+D $A714
+. Shared `KMOV` turn/motion decoder.
+. Decodes the surviving masked `KMOV` state into the selected turn-handler
+. entry plus the matching hill-pointer delta.
+R $A714 A Surviving `KMOV` movement code after obstacle masking
 @ $A714 label=KMOVTurnDecode
 C $A714,h3
 . Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
@@ -5039,6 +5083,7 @@ c $AD3E
 . KEMPST
 D $AD3E
 . Used by the routine at #R$977E.
+R $AD3E O:A `KMOV` movement code
 @ $AD3E label=KEMPST
 C $AD3E,h3
 C $AD41,h2
@@ -6131,9 +6176,8 @@ c $B66C
 . Print Characters
 D $B66C
 . Used by the routines at #R$B55D and #R$B676.
-R $B66C
-. HL Address of text
-. B Number of characters to print
+R $B66C HL Address of text
+R $B66C B Number of characters to print
 @ $B66C label=PrintCharacters
 C $B66C,1
 . Load the next character from the text pointer in `HL`.

@@ -40,6 +40,14 @@ Full HTML build:
 utils/mkhtml.py -q
 ```
 
+Wrapper note:
+
+- the local `utils/skrunner.py` now prefers the resolved `skool2asm.py` and
+  `skool2html.py` CLI tools over importing a Python module directly
+- this avoids version skew between an older site-packages install and the newer
+  pipx/CLI SkoolKit toolchain, which matters for HTML features such as register
+  tables
+
 ## Source of truth
 
 For this repo, treat the snapshot plus the ctl file as the real inputs:
@@ -132,6 +140,12 @@ Useful ctl directives:
 Practical rule:
 
 - prefer `.` multi-line comments over cramming long prose onto one ctl line
+
+Register-doc rule:
+
+- use `R $ADDR` only when the register interface is actually clear
+- input lines can be plain register names such as `HL packed BCD value`
+- use an `O:` prefix for outputs, e.g. `O:C status code on return`
 
 ## HTML/linking reality
 
