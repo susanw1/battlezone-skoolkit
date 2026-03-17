@@ -1792,13 +1792,23 @@ c $88EA
 D $88EA
 . Used throughout gameplay and attract/title rendering.
 . Current best read: reusable table-driven X/Z rotation stage.
-. It consumes source coordinate lists plus angle-dependent tables and writes
-. rotated coordinate lists for later perspective projection.
+. It consumes the current model-space X/Z vertex lists plus angle-dependent
+. coefficient tables, applies the active X/Z world displacement, and rewrites
+. the current X/Z working lists in place for later perspective projection.
 . Current best structural read: four repeated multiply/accumulate passes using
-. the shared element count in `MUCNT`, the active table/displacement pairs in
-. `XTAB`/`ZTAB` and `XDIS`/`ZDIS`, and the saved source-word continuation in
-. `MMAT`. The attract-mode title tumble reuses the same block by feeding it a
-. non-standard Y/Z pair.
+. the shared element count in `MUCNT`, the active coefficient-table pointers in
+. `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved
+. source-word continuation in `MMAT`.
+. Practical interface:
+. - callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end
+.   pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC`
+. - `RotateXZLists` processes those lists via `SP` and writes the descending
+.   rotated working-list pointers back into `XLOC`/`ZLOC`
+. - callers then pass those rotated X/Z lists plus a separate fixed `YLOC`
+.   list into `PERSP`
+. The attract-mode title tumble reuses the same block by feeding it a
+. non-standard Y/Z pair and then reusing the first rotated output list as the
+. effective `YLOC`.
 @ $88EA label=RotateXZLists
 C $88EA,h4
 @ $8925 label=RotateXZPrimaryPass
@@ -7631,6 +7641,14 @@ B $DC2E,8,h8
 > $F700 ; - XPERS/YPERS output buffers at $DE90/$DEC8
 > $F700 ;   (`FE38`/`FE3A` are usually seeded with interior end-pointers and the
 > $F700 ;   perspective code writes downward via `SP`/`PUSH`)
+> $F700 ; Current best role split:
+> $F700 ; - `XTAB` / `ZTAB` = angle-dependent coefficient-table families for
+> $F700 ;   `RotateXZLists`
+> $F700 ; - `YLOC` = fixed model-space Y vertex list for the perspectiviser
+> $F700 ; - `HBLXLC/OBXLC/EXXLC` and `HBLZLC/OBZLC/EXZLC` = fixed model-space X/Z
+> $F700 ;   vertex-list families for bullets, obstacles, and general entities/effects
+> $F700 ; - `EXBXL/EXBZL` = temporary expanded X/Z lists for the deferred-effect path
+> $F700 ; - `XPERS/YPERS` = final projected 2D X/Y output buffers consumed by `LNLPT`
 > $F700 ; Current best `LINCDS` explosion matches:
 > $F700 ; - $D6B8: probable `TKEXV`
 > $F700 ; - $D7CC: probable `SAEXV`
@@ -8883,16 +8901,30 @@ g $FE00
 . Workspace and scratch variables from Mem-locations.pdf
 @ $FE00 label=SP1
 W $FE00,2,h2
-. Stack pointer scratch slot 1.
+. Primary stack-pointer save slot.
+. Shared stack-driven helpers such as `LNLPT`, `PERSP`, `RotateXZLists`,
+. `RADAR`, the hill plotters, and the start-theme player save the caller's
+. `SP` here before repointing the hardware stack into tables or buffers.
 g $FE02
 @ $FE02 label=LINCD
 W $FE02,2,h2
+. Current line-data stream pointer.
+. `LNLPT` treats this as the address of the next `LINCDS` block, consumes the
+. current record via `SP`, then writes the advanced pointer back here at
+. `0x80D1` so repeated calls can chain through consecutive line-data blocks.
 g $FE04
 @ $FE04 label=LNCNT
 W $FE04,2,h2
+. Remaining line count within the current `LINCDS` block.
+. Seeded from the first byte of the block at `0x805F/0x8060`, decremented at
+. `LNLPTNextLine`, and used to decide whether another line record follows.
 g $FE06
 @ $FE06 label=SPPL
 W $FE06,2,h2
+. Notebook name preserved.
+. No confident independent shipped-code role has been isolated yet; if live at
+. all, it appears to be part of the line-plotter scratch family rather than a
+. long-lived gameplay state slot.
 g $FE08
 @ $FE08 label=X1
 W $FE08,2,h2
@@ -8917,15 +8949,29 @@ W $FE12,2,h2
 g $FE14
 @ $FE14 label=DRTP1
 W $FE14,2,h2
+. Shared temporary pointer slot.
+. In the zero-lives `BLOOD` path it remembers the current mutable drip-column
+. row entry inside `CC5C`; later game-over/name-entry code reuses it as a
+. temporary screen/text destination pointer.
 g $FE16
 @ $FE16 label=DRTP2
 W $FE16,2,h2
+. Shared temporary character/attribute pair slot.
+. In the game-over name-entry loop it holds the current letter and attribute
+. pair used by the live input echo before the chosen character is committed.
 g $FE18
 @ $FE18 label=SPPL1
 W $FE18,2,h2
+. Shared temporary cursor/result slot.
+. Reused heavily by the game-over name-entry path as the current character
+. position / assembled initials word, rather than as persistent gameplay state.
 g $FE1A
 @ $FE1A label=SPPL2
 W $FE1A,2,h2
+. Notebook name preserved.
+. No confident live shipped-code role has been isolated yet; this currently
+. looks like spare line-plotter/general workspace rather than an actively used
+. high-level state variable.
 g $FE1C
 @ $FE1C label=MAX1
 W $FE1C,2,h2
@@ -8983,33 +9029,42 @@ W $FE30,2,h2
 g $FE32
 @ $FE32 label=XLOC
 W $FE32,2,h2
-. Notebook name preserved. Current shipped read: pointer to the current X
-. source-coordinate list for shared transform/perspective passes. In attract
-. mode this is repointed to fixed title/logo X tables.
+. Notebook name preserved. Current shipped read: end-pointer to the current X
+. working list in the 3D->2D chain.
+. Callers seed it with a fixed model-space X list such as `HBLXLC`, `OBXLC`,
+. or `EXXLC`; `RotateXZLists` then processes that list via `SP` and stores the
+. descending rotated-output pointer back here at `0x8B3A`. In attract mode it
+. is similarly repointed to fixed title/logo X tables.
 g $FE34
 @ $FE34 label=YLOC
 W $FE34,2,h2
-. Notebook name preserved. Current shipped read: pointer to the current Y
-. source-coordinate list. In the attract title tumble hack this is repointed
-. to the first rotated output table so the normal pipeline sees a fake Y axis.
+. Notebook name preserved. Current shipped read: pointer to the current fixed Y
+. vertex list consumed by `PERSP`.
+. In normal gameplay this stays as a model-space Y table; in the attract title
+. tumble hack it is repointed to the first rotated output list so the normal
+. pipeline sees a fake Y axis.
 g $FE36
 @ $FE36 label=ZLOC
 W $FE36,2,h2
-. Notebook name preserved. Current shipped read: pointer to the current Z
-. source-coordinate list for shared transform/perspective passes.
+. Notebook name preserved. Current shipped read: end-pointer to the current Z
+. working list in the 3D->2D chain.
+. Callers seed it with a fixed model-space Z list such as `HBLZLC`, `OBZLC`,
+. or `EXZLC`; `RotateXZLists` then processes that list via `SP` and stores the
+. descending rotated-output pointer back here at `0x8BE8`. `PERSP` then
+. consumes the rotated Z list from this slot.
 g $FE38
 @ $FE38 label=XPERS
 W $FE38,2,h2
-. Notebook name preserved. Current shipped read: workspace end-pointer into the
-. X perspective output buffer (`XPERS` base around `$DE90`). `PERSP` writes
-. downward via `SP`/`PUSH`, so callers often seed this with an interior address
-. such as `$DE98` or `$DEC4`.
+. Notebook name preserved. Current shipped read: end-pointer into the final
+. projected X output buffer (`XPERS` base around `$DE90`).
+. `PERSP` writes projected 2D X values downward via `SP`/`PUSH`, so callers
+. often seed this with an interior end-pointer such as `$DE98` or `$DEC4`.
 g $FE3A
 @ $FE3A label=YPERS
 W $FE3A,2,h2
-. Companion workspace end-pointer into the Y perspective output buffer
-. (`YPERS` base around `$DEC8`), again typically seeded with an interior
-. address before the descending `SP`-based write pass.
+. Companion end-pointer into the final projected Y output buffer (`YPERS` base
+. around `$DEC8`). Again typically seeded with an interior end-pointer before
+. the descending `SP`-based write pass.
 g $FE3C
 @ $FE3C label=XMAX
 W $FE3C,2,h2
@@ -9029,8 +9084,9 @@ g $FE42
 @ $FE42 label=XTAB
 W $FE42,2,h2
 . Notebook name preserved. Current shipped read: pointer to the active X-side
-. rotation/step table family for `RotateXZLists`. Often seeded from `XTAB`
-. (`$D9D0`) or object-specific interior offsets.
+. coefficient-table family for `RotateXZLists`, i.e. the lookup stream used in
+. the X-side matrix multiply/add passes. Often seeded from `XTAB` (`$D9D0`) or
+. object-specific interior offsets.
 g $FE44
 @ $FE44 label=YTAB
 W $FE44,2,h2
@@ -9041,8 +9097,9 @@ g $FE46
 @ $FE46 label=ZTAB
 W $FE46,2,h2
 . Notebook name preserved. Current shipped read: pointer to the active Z-side
-. rotation/step table family for `RotateXZLists`. Often seeded from `ZTAB`
-. (`$DAC4`) or object-specific interior offsets.
+. coefficient-table family for `RotateXZLists`, i.e. the lookup stream used in
+. the Z-side matrix multiply/add passes. Often seeded from `ZTAB` (`$DAC4`) or
+. object-specific interior offsets.
 g $FE48
 @ $FE48 label=MMAT
 W $FE48,2,h2
@@ -9054,12 +9111,12 @@ g $FE4A
 W $FE4A,2,h2
 . Notebook name preserved. Current shipped read: current X displacement /
 . world-offset word fed into `RotateXZLists` for the active entity/effect or
-. obstacle/object.
+. obstacle/object, i.e. the X positional offset added after rotation.
 g $FE4C
 @ $FE4C label=ZDIS
 W $FE4C,2,h2
 . Companion current Z displacement / world-offset word fed into
-. `RotateXZLists`.
+. `RotateXZLists`, i.e. the Z positional offset added after rotation.
 g $FE4E
 @ $FE4E label=MUCNT
 W $FE4E,2,h2
@@ -9093,6 +9150,8 @@ g $FE56
 . forward+right, `0x60` back+left, `0x50` back+right, `0x08` left on the
 . spot, `0x04` right on the spot.
 W $FE56,2,h2
+. Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
+. `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
 g $FE58
 @ $FE58 label=SIGHT
 W $FE58,2,h2
@@ -9103,10 +9162,16 @@ W $FE58,2,h2
 g $FE5A
 @ $FE5A label=SP2
 W $FE5A,2,h2
-. Stack pointer scratch slot 2.
+. Secondary stack-pointer save slot.
+. `PERSP` and related transform/presentation paths use this when they need a
+. nested stack redirect on top of the main `SP1` save/restore flow.
 g $FE5C
 @ $FE5C label=TURN
 W $FE5C,2,h2
+. Current turn-handler dispatch pointer.
+. `KMOVTurnDecode` is the sole writer: it stores one of the four view-turn
+. handlers (`0x91EB`, `0x924A`, `0x92AE`, `0x9312`) here, and
+. `TurnTransformDispatcher` then jumps through it via `JP (HL)`.
 g $FE5E
 . Current entity/effect X position used by several transient setup paths.
 . In the attract title code this is reused as the first title word's X offset.
@@ -9188,6 +9253,9 @@ g $FE76
 . Packed-BCD score and nearby effect/state workspace.
 @ $FE76 label=ScoreBCD
 B $FE76,2,h2
+. The main visible score word used by `SCOPR`/`NUMBA`; some attract/showcase
+. paths temporarily reuse the same slot as a generic small packed-BCD value
+. before restoring normal score-strip behaviour.
 g $FE78
 . Missile-family live workspace:
 . - `FE78` = probable `MISCT` (missiles fired so far)
@@ -9346,7 +9414,16 @@ g $FEE4
 @ $FEE4 label=Lives
 B $FEE4,1,h1
 g $FEE5
-. Game status buffer entry at FEE5
+. Current best tail-status read:
+. - `FEE4` = lives counter (`SHIPS` in the notebook)
+. - `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by
+.   `SCOPR`
+. - `FEE8/FEEA` = currently selected obstacle/object world-space `(X,Z)` pair
+.   passed into `ObstacleRotateAndProject`
+. - `FEEC` = small attract/start transition latch reused by the later input
+.   bridge at `0xA679`; exact semantics still cautious
+. - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation
+.   words fed into the shared deferred-effect setup at `0xAC22`
 B $FEE5,8,h8
 B $FEED,8,h8
 B $FEF5,8,h8
