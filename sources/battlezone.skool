@@ -1488,13 +1488,18 @@ c$8000 LD HL,$F97F   ; Start at the end of #R$F800 so the 192-entry row-address 
 ;
 ; Current best notebook match: `LNLPT` / line plotting routine. `FE02` points
 ; at line-data blocks encoded as: 1 byte line count, then one record per line,
-; each record being four 16-bit pointers into the current `XPERS`/`YPERS`-style
-; projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
+; each record being four 16-bit pointers into the current projected-coordinate
+; buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
 ; .
 ; The Input/Output tables below capture the preset workspace interface. On
 ; return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data
 ; blocks can be chained in memory and consumed one after another by repeated
 ; calls.
+; .
+; `LNLPT` does not read `XPERS` / `YPERS` directly. Instead, each line record
+; already contains four pointers into the currently prepared projected X/Y
+; buffers, so those buffers are an indirect upstream dependency rather than a
+; direct workspace input at the call site.
 ; .
 ; The `0x7C00..0x7FFF` block used later in the routine is now best read as a
 ; precomputed fixed-point trig/slope lookup family, not as raw pixel-mask
@@ -1507,10 +1512,6 @@ c$8000 LD HL,$F97F   ; Start at the end of #R$F800 so the 192-entry row-address 
 ;
 ;   LINCD Current line-data block pointer (#R$FE02($FE02))
 ;   LNCNT Remaining line count in the current block (#R$FE04($FE04))
-;   XPERS Current projected X coordinate buffer referenced by the line records
-; .       (#R$FE38($FE38))
-;   YPERS Current projected Y coordinate buffer referenced by the line records
-; .       (#R$FE3A($FE3A))
 ; O:LINCD Updated line-data block pointer after consuming the current block
 ; .       (#R$FE02($FE02))
 ; O:X1 Per-line projected X endpoint scratch word (#R$FE08($FE08))

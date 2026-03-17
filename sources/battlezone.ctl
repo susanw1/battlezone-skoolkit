@@ -1253,13 +1253,12 @@ C $805B,1
 . Return.
 c $805C
 . LNLPT
-D $805C Current best notebook match: `LNLPT` / line plotting routine. `FE02` points at line-data blocks encoded as: 1 byte line count, then one record per line, each record being four 16-bit pointers into the current `XPERS`/`YPERS`-style projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
+D $805C Current best notebook match: `LNLPT` / line plotting routine. `FE02` points at line-data blocks encoded as: 1 byte line count, then one record per line, each record being four 16-bit pointers into the current projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
 D $805C The Input/Output tables below capture the preset workspace interface. On return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data blocks can be chained in memory and consumed one after another by repeated calls.
+D $805C `LNLPT` does not read `XPERS` / `YPERS` directly. Instead, each line record already contains four pointers into the currently prepared projected X/Y buffers, so those buffers are an indirect upstream dependency rather than a direct workspace input at the call site.
 D $805C The `0x7C00..0x7FFF` block used later in the routine is now best read as a precomputed fixed-point trig/slope lookup family, not as raw pixel-mask tables. The repeated 8-step shift/compare/subtract segments inside the four major branches are current-best matches for unrolled slope-division / gradient setup code. There is a dedicated vertical fast path at `0x85C7` when `XD = 0`; the horizontal case currently looks folded into the zero-gradient subpaths inside the X-major branches rather than split out as a separate top-level entrypoint.
 R $805C LINCD Current line-data block pointer (#R$FE02($FE02))
 R $805C LNCNT Remaining line count in the current block (#R$FE04($FE04))
-R $805C XPERS Current projected X coordinate buffer referenced by the line records (#R$FE38($FE38))
-R $805C YPERS Current projected Y coordinate buffer referenced by the line records (#R$FE3A($FE3A))
 R $805C O:LINCD Updated line-data block pointer after consuming the current block (#R$FE02($FE02))
 R $805C O:X1 Per-line projected X endpoint scratch word (#R$FE08($FE08))
 R $805C O:X2 Per-line projected X endpoint scratch word (#R$FE0A($FE0A))
