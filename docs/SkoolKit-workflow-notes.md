@@ -144,6 +144,9 @@ Practical rule:
   directives to create separate paragraphs instead of one huge description block
 - `#LIST` inside those description paragraphs does render as proper HTML bullet
   lists on asm pages
+- by contrast, the Input/Output register tables are much stricter:
+  symbolic names render well there, but embedded address text or `#R` links in
+  table cells are not preserved reliably in this build
 
 Register-doc rule:
 
@@ -162,6 +165,9 @@ Preset-workspace rule:
 - where it helps readability, use `#LIST` under those headings
 - symbolic workspace names in `R` tables do work in some cases, but rendering
   is not consistent enough yet to rely on that approach everywhere
+- if the underlying workspace addresses matter to the reader, put them in the
+  surrounding description prose rather than trying to force them into the
+  table cells
 - use this only for routines where the workspace contract is part of the real
   callable interface, not for every incidental scratch location
 

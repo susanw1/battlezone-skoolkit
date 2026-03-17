@@ -1254,7 +1254,7 @@ C $805B,1
 c $805C
 . LNLPT
 D $805C Current best notebook match: `LNLPT` / line plotting routine. `FE02` points at line-data blocks encoded as: 1 byte line count, then one record per line, each record being four 16-bit pointers into the current `XPERS`/`YPERS`-style projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
-D $805C The Input/Output tables below capture the preset workspace interface. On return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data blocks can be chained in memory and consumed one after another by repeated calls.
+D $805C The Input/Output tables below capture the preset workspace interface. On return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data blocks can be chained in memory and consumed one after another by repeated calls. Workspace anchors: `LINCD` = #R$FE02, `LNCNT` = #R$FE04, `XPERS` = #R$FE38, `YPERS` = #R$FE3A, `X1/X2/XD` = #R$FE08 / #R$FE0A / #R$FE0C, `Y1/Y2/YD` = #R$FE0E / #R$FE10 / #R$FE12.
 D $805C The `0x7C00..0x7FFF` block used later in the routine is now best read as a precomputed fixed-point trig/slope lookup family, not as raw pixel-mask tables. The repeated 8-step shift/compare/subtract segments inside the four major branches are current-best matches for unrolled slope-division / gradient setup code. There is a dedicated vertical fast path at `0x85C7` when `XD = 0`; the horizontal case currently looks folded into the zero-gradient subpaths inside the X-major branches rather than split out as a separate top-level entrypoint.
 R $805C LINCD Current line-data block pointer
 R $805C LNCNT Remaining line count in the current block
@@ -1269,12 +1269,15 @@ R $805C O:Y2 Per-line projected Y endpoint scratch word
 R $805C O:YD Per-line absolute Y delta scratch word
 @ $805C label=LNLPT
 C $805C,h3
+. Load the current line-data block pointer from `LINCD` (`$FE02`).
 C $8060,h3
 C $8064,h3
 C $8067,h4
+. Save `SP` to `SP1` (`$FE00`) before reusing it as the line-record stream pointer.
 N $806B
 @ $806B label=LNLPTLoadLineRecord
 C $806B,h4
+. Switch `SP` to the current line-data stream held in `LINCD` (`$FE02`).
 C $806F,h3
 C $8072,h2
 C $807D,h3
@@ -1284,8 +1287,11 @@ C $808D,h3
 C $8090,h3
 C $8093,h3
 C $8096,h4
+. Store the sorted Y endpoint into `Y2` (`$FE10`).
 C $809E,h4
+. Store the matching X endpoint into `X2` (`$FE0A`).
 C $80A6,h4
+. Store the other X endpoint into `X1` (`$FE08`).
 C $80AE,h3
 C $80B1,h2
 C $80B3,h4
@@ -1294,6 +1300,7 @@ C $80BE,h4
 C $80C6,h4
 C $80CE,h3
 C $80D1,h4
+. Write the advanced stacked line-data pointer back to `LINCD` (`$FE02`).
 C $80D5,h4
 C $80D9,h3
 C $80DC,h3
@@ -1621,7 +1628,7 @@ i $8640
 c $8660
 . PERSP
 D $8660 Used throughout gameplay and attract/title rendering. Current best notebook match: `PERSP`. Shared perspective / clip stage. It consumes transformed coordinate tables, writes projected coordinates into the `XPERS` / `YPERS` buffers, derives visible X limits, and returns status in `C` for caller-side draw/visibility decisions.
-D $8660 The Input/Output tables below capture the preset workspace interface. Current best status-code read from the shipped callers: `C=0` drawable / visible enough to continue; `C=1` primary depth failure: at least one source Z value is too near / behind the projection threshold; `C=2` projected X overflow or visible-range failure.
+D $8660 The Input/Output tables below capture the preset workspace interface. Workspace anchors: `XLOC` = #R$FE32, `YLOC` = #R$FE34, `ZLOC` = #R$FE36, `XPERS` = #R$FE38, `YPERS` = #R$FE3A, `XMAX/XMIN` = #R$FE3C / #R$FE3E, `DYCNT` = #R$FE40. Current best status-code read from the shipped callers: `C=0` drawable / visible enough to continue; `C=1` primary depth failure: at least one source Z value is too near / behind the projection threshold; `C=2` projected X overflow or visible-range failure.
 R $8660 XLOC Current rotated X coordinate-list pointer
 R $8660 YLOC Current fixed Y coordinate-list pointer
 R $8660 ZLOC Current rotated Z coordinate-list pointer
@@ -1638,8 +1645,11 @@ C $8660,h4
 @ $8676 label=PERSPProjectPrimary
 C $8664,h3
 C $8667,h4
+. Switch `SP` to the projected X output buffer end-pointer in `XPERS` (`$FE38`).
 C $866C,h3
+. Load the current rotated X list pointer from `XLOC` (`$FE32`).
 C $866F,h4
+. Load the current rotated Z list pointer from `ZLOC` (`$FE36`).
 C $8673,h2
 C $867C,h2
 . Reject the point if the primary depth/Z word is below the shipped near threshold.
@@ -1726,11 +1736,15 @@ C $87D9,h4
 C $87DD,h4
 @ $87E1 label=PERSPProjectSecondary
 C $87E1,h4
+. Begin the secondary/Y projection pass.
 C $87E5,h4
+. Switch `SP` to the projected Y output buffer end-pointer in `YPERS` (`$FE3A`).
 C $87E9,h3
 C $87EC,h2
 C $87EE,h4
+. Reload the rotated Z list pointer from `ZLOC` (`$FE36`) for the Y pass.
 C $87F2,h3
+. Load the fixed Y list pointer from `YLOC` (`$FE34`).
 C $8804,h2
 C $8813,h3
 C $8816,h3
@@ -1778,7 +1792,7 @@ i $88D9
 c $88EA
 . Shared X/Z rotation transform
 D $88EA Used throughout gameplay and attract/title rendering. Current best read: reusable table-driven X/Z rotation stage. It consumes the current model-space X/Z vertex lists plus angle-dependent coefficient tables, applies the active X/Z world displacement, and rewrites the current X/Z working lists in place for later perspective projection.
-D $88EA The Input/Output tables below capture the preset workspace interface. Current best structural read: four repeated multiply/accumulate passes using the shared element count in `MUCNT`, the active coefficient-table pointers in `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved source-word continuation in `MMAT`.
+D $88EA The Input/Output tables below capture the preset workspace interface. Workspace anchors: `XLOC/YLOC/ZLOC` = #R$FE32 / #R$FE34 / #R$FE36, `XTAB/ZTAB` = #R$FE42 / #R$FE46, `MMAT` = #R$FE48, `XDIS/ZDIS` = #R$FE4A / #R$FE4C, `MUCNT` = #R$FE4E. Current best structural read: four repeated multiply/accumulate passes using the shared element count in `MUCNT`, the active coefficient-table pointers in `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved source-word continuation in `MMAT`.
 D $88EA Practical interface: callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC`; `RotateXZLists` processes those lists via `SP` and writes the descending rotated working-list pointers back into `XLOC`/`ZLOC`; callers then pass those rotated X/Z lists plus a separate fixed `YLOC` list into `PERSP`. The attract-mode title tumble reuses the same block by feeding it a non-standard Y/Z pair and then reusing the first rotated output list as the effective `YLOC`.
 R $88EA XLOC Fixed model-space X vertex-list end-pointer for the current entity
 R $88EA ZLOC Fixed model-space Z vertex-list end-pointer for the current entity
@@ -1792,17 +1806,22 @@ R $88EA O:ZLOC Final descending rotated Z working-list pointer
 R $88EA O:MMAT Saved source-word continuation / sign state reused across the transform passes
 @ $88EA label=RotateXZLists
 C $88EA,h4
+. Save `SP` to `SP1` (`$FE00`) before reusing it as a coordinate-list pointer.
 @ $8925 label=RotateXZPrimaryPass
 C $88EE,h3
+. Latch the element count into `MUCNT` (`$FE4E`) for the shared transform passes.
 C $88F1,h2
 C $88F7,h4
+. Load the active X-side coefficient-table pointer from `XTAB` (`$FE42`).
 C $88FB,h2
 C $88FE,h3
 C $8901,h2
 C $8903,h2
 C $8906,h2
 C $8909,h4
+. Load the current X displacement from `XDIS` (`$FE4A`).
 C $890D,h4
+. Reuse `SP` as the current fixed model-space X list pointer from `XLOC` (`$FE32`).
 C $8915,h3
 C $891A,h2
 C $891D,h3
@@ -1830,8 +1849,11 @@ C $89C1,h3
 @ $89C4 label=RotateXZSecondaryPass
 C $89C4,h3
 C $89C8,h4
+. Reload the saved source-word/sign continuation from `MMAT` (`$FE48`).
 C $89CD,h4
+. Reuse `SP` as the current fixed model-space Z list pointer from `ZLOC` (`$FE36`).
 C $89D1,h4
+. Load the current Z displacement from `ZDIS` (`$FE4C`).
 C $89DA,h2
 C $89E0,h3
 C $89E4,h2
@@ -1914,9 +1936,11 @@ C $8BCE,h2
 C $8BD9,h3
 C $8BE5,h3
 C $8BE8,h4
+. Store the descending rotated Z working-list pointer back into `ZLOC` (`$FE36`).
 C $8BEC,h4
 C $8BF9,h3
 C $8BFC,h4
+. Store the final companion rotated Z pointer back into `ZLOC` (`$FE36`).
 C $8C00,h4
 i $8C06
 . Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
@@ -2006,7 +2030,7 @@ N $8D68
 . routine appears to derive clipped hill bounds from the current object edge
 . limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
 . FE24/FE26 workspace pair.
-. The Input/Output tables below capture the preset workspace interface.
+. The Input/Output tables below capture the preset workspace interface. Workspace anchors: `MAX1/MIN1` = #R$FE1C / #R$FE1E, `MAX2/MIN2` = #R$FE20 / #R$FE22, `LIM1/LIM2` = #R$FE24 / #R$FE26.
 R $8D68 MAX1 Raw outer X-limit word from the primary visible object
 R $8D68 MIN1 Raw outer X-limit word from the primary visible object
 R $8D68 MAX2 Raw outer X-limit word from the secondary object/obstacle family
@@ -2015,6 +2039,16 @@ R $8D68 O:LIM1 Clipped outer hill limit for the main hill pass
 R $8D68 O:LIM2 Clipped outer hill limit for the main hill pass
 @ $8D68 label=MHLC
 c $8D68
+C $8D68,h3
+. Load the first raw outer X-limit from `MAX1` (`$FE1C`).
+C $8D82,h3
+. Load the matching first raw outer X-limit from `MIN1` (`$FE1E`).
+C $8D99,h3
+. Load the second raw outer X-limit from `MAX2` (`$FE20`).
+C $8DB1,h3
+. Load the matching second raw outer X-limit from `MIN2` (`$FE22`).
+C $8DFF,h4
+. Store the clipped primary hill limits into `LIM1` (`$FE24`) and `LIM2` (`$FE26`).
 N $8E08
 . SHLC
 .
@@ -2022,20 +2056,24 @@ N $8E08
 . It consumes the primary limits from #R$8D68 and derives a second pair of
 . hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
 . hill infill pass for the object interior.
-. The Input/Output tables below capture the preset workspace interface.
+. The Input/Output tables below capture the preset workspace interface. Workspace anchors: `LIM1/LIM2` = #R$FE24 / #R$FE26, `LIM3/LIM4` = #R$FE28 / #R$FE2A.
 R $8E08 LIM1 Primary hill limit from `MHLC`
 R $8E08 LIM2 Primary hill limit from `MHLC`
 R $8E08 O:LIM3 Secondary/inner hill limit for the infill pass
 R $8E08 O:LIM4 Secondary/inner hill limit for the infill pass
 @ $8E08 label=SHLC
 c $8E08
+C $8E08,h4
+. Load the primary clipped hill limits from `LIM1` (`$FE24`) and `LIM2` (`$FE26`).
+C $8E2F,h4
+. Store the derived inner hill limits into `LIM3` (`$FE28`) and `LIM4` (`$FE2A`).
 N $8E38
 . MHLPT
 .
 . Probable main-hill plotting stage from the notebook's SCREEN page. This
 . routine uses the stream pointer at FE2C together with the main-hill limits
 . derived by #R$8D68.
-. The Input/Output tables below capture the preset workspace interface.
+. The Input/Output tables below capture the preset workspace interface. Workspace anchors: `LIM1/LIM2` = #R$FE24 / #R$FE26, `HLCNT` = #R$FE2C.
 . Current best read: it copies hill-row data from the FE2C stream into the
 . off-screen E700 playfield buffer for the left and right outer regions, then
 . fills the interior span in E8A0..E8BF with `0xAA`.
@@ -2045,23 +2083,41 @@ R $8E38 HLCNT Live hill-row data stream pointer
 R $8E38 O:HLCNT Advanced hill-row data stream pointer after the main hill pass
 @ $8E38 label=MHLPT
 c $8E38
+C $8E38,h4
+. Save `SP` to `SP1` (`$FE00`) before reusing it as the hill-row stream pointer.
+C $8E3C,h4
+. Switch `SP` to the live hill-row stream in `HLCNT` (`$FE2C`).
+C $8E40,h4
+. Load the clipped outer hill limits from `LIM1` (`$FE24`).
 N $8E47
 @ $8E47 label=MHLPTWriteOuterLeft
 N $8E7D
 @ $8E7D label=MHLPTAdvanceToOuterRight
+C $8E7D,h4
+. Reload the base hill-row stream pointer from `HLCNT` (`$FE2C`) before skipping to the outer-right region.
 N $8E96
 @ $8E96 label=MHLPTWriteOuterRight
 N $8ECC
 @ $8ECC label=MHLPTFillInteriorSetup
+C $8ECC,h4
+. Load the companion clipped outer hill limits from `LIM2` (`$FE26`) for the interior setup.
+C $8EDC,h3
+. Reload the base hill-row stream pointer from `HLCNT` (`$FE2C`).
 N $8F1B
 @ $8F1B label=MHLPTFillInterior
+C $8F1B,h4
+. Reuse the clipped outer hill limits from `LIM1` (`$FE24`) while filling the central span.
+C $8F3A,h4
+. Reload the companion outer hill limits from `LIM2` (`$FE26`) for the second half of the fill.
+C $8F4E,h4
+. Restore `SP` from `SP1` (`$FE00`) after the hill stream pass completes.
 N $8F53
 . SHLPT
 .
 . Probable secondary-hill plotting stage from the notebook's SCREEN page. It
 . reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
 . matching the recollected infill pass inside the object limits.
-. The Input/Output tables below capture the preset workspace interface.
+. The Input/Output tables below capture the preset workspace interface. Workspace anchors: `LIM3/LIM4` = #R$FE28 / #R$FE2A, `HLCNT/SHCNT/LIM` = #R$FE2C / #R$FE2E / #R$FE30.
 . Current best read: it advances through the FE2C stream while only writing
 . into still-empty bytes of the off-screen E700 playfield buffer, then steps
 . inward by row until the infill region is complete.
@@ -2073,10 +2129,18 @@ R $8F53 O:SHCNT Advanced inner-row stream pointer after the infill pass
 R $8F53 O:LIM Updated temporary inner-width / limit pair used while stepping inward
 @ $8F53 label=SHLPT
 c $8F53
+C $8F56,h4
+. Load the first inner hill limits from `LIM3` (`$FE28`) and seed the temporary pair in `LIM` (`$FE30`).
 N $8F61
 @ $8F61 label=SHLPTSeedSecondLimit
+C $8F61,h4
+. Load the second inner hill limits from `LIM4` (`$FE2A`) and replace the temporary pair in `LIM` (`$FE30`).
 N $8F69
 @ $8F69 label=SHLPTBeginPass
+C $8F6A,h4
+. Save `SP` to `SP1` (`$FE00`) before reusing it as the infill stream pointer.
+C $8F79,h3
+. Reload the forward hill-row stream pointer from `HLCNT` (`$FE2C`).
 N $8F88
 @ $8F88 label=SHLPTWriteIfEmpty
 N $8FFB
@@ -2099,7 +2163,7 @@ N $90BA
 . Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
 . radar/status blip state, converts the coordinate pair into a radar
 . cell/bit position, and plots the blip into the status buffer.
-. The Input/Output tables below capture the register and preset-workspace interface. Current best shipped read: `FE50` remembers the last plotted destination byte so it can be cleared, and `FE52` is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
+. The Input/Output tables below capture the register and preset-workspace interface. Workspace anchors: `EXBLP` = #R$FE50, `EXSCN` = #R$FE52. Current best shipped read: `FE50` remembers the last plotted destination byte so it can be cleared, and `FE52` is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
 . The cell/bit conversion path uses the shared plotting lookup family at
 . #R$7C00.
 R $90BA HL Signed X component / world-space X distance
@@ -2107,9 +2171,19 @@ R $90BA DE Signed Z component / world-space Z distance
 R $90BA EXSCN Persistent radar/proximity helper-table base, normally seeded to `$6300`
 R $90BA O:EXBLP Last plotted radar/status destination byte
 @ $90BA label=RADAR
+N $90BC
+. Load the previous radar/status destination byte pointer from `EXBLP` (`$FE50`) so it can be cleared.
 @ $90BC label=RADARClearWorkspace
+N $90C1
+. Save `SP` to `SP1` (`$FE00`) before reusing it for the radar helper-table workspace.
+N $90C5
+. Switch `SP` to the persistent radar/proximity helper-table base in `EXSCN` (`$FE52`).
+N $90D0
+. Store the advanced helper-table pointer back into `EXSCN` (`$FE52`).
 @ $90EB label=RADARMapX
 @ $9104 label=RADARMapZ
+N $911C
+. Remember the newly plotted radar/status destination byte in `EXBLP` (`$FE50`).
 @ $9119 label=RADARPlotBlip
 N $9122
 B $9122,8,h8
@@ -2203,6 +2277,8 @@ C $9193,1
 C $9194,1
 C $9195,h2
 C $9197,h2
+N $9199
+. Latch the fire request into `TRIGA` (`$FE54`) and clear the fire bit before decoding the surviving movement state.
 C $9199,h3
 C $919C,h2
 C $919E,1
@@ -2258,6 +2334,8 @@ R $91E6 O:HL Updated view-turn angle / accumulator
 @ $91E6 label=TurnTransformDispatcher
 c $91E6
 C $91E6,1
+N $91E7
+. Load the current indirect turn-handler entry from `TURN` (`$FE5C`).
 C $91E7,h3
 C $91EA,1
 D $91EB
@@ -4538,6 +4616,7 @@ C $A714,h3
 . This is the sole writer of the indirect `TURN` dispatch pointer used by
 . `TurnTransformDispatcher`.
 C $A718,h3
+. Store the masked movement bits back into `KMOV` (`$FE56`) before selecting the turn handler.
 C $A71D,h3
 C $A720,h2
 C $A722,h3
@@ -4551,6 +4630,8 @@ C $A739,h3
 C $A73E,h2
 C $A740,h3
 C $A743,h3
+N $A746
+. Load the current hill-row stream pointer from `HLCNT` (`$FE2C`) before applying the selected turn-rate delta.
 C $A746,h3
 C $A74A,h4
 . Store the selected turn-handler entry in `TURN` and clamp the hill pointer
@@ -4561,6 +4642,8 @@ C $A755,h2
 C $A757,h2
 C $A759,h3
 C $A75C,h2
+N $A75E
+. Store the clamped hill-row stream pointer back into `HLCNT` (`$FE2C`).
 C $A75E,h3
 C $A763,h3
 C $A766,h3
@@ -4573,33 +4656,59 @@ C $A774,h3
 . The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
 . other world-space entity Z positions so the player remains effectively
 . centred while the world moves.
+N $A778
+. Store the updated first obstacle Z slot back into `Obstacle1Z` (`$FE9A`).
 C $A778,h3
+N $A77B
+. Load the second obstacle Z slot from `Obstacle2Z` (`$FE9E`).
 C $A77B,h3
 C $A77F,h3
+N $A782
+. Load the third obstacle Z slot from `Obstacle3Z` (`$FEA2`).
 C $A782,h3
 C $A786,h3
+N $A789
+. Load the fourth obstacle Z slot from `Obstacle4Z` (`$FEA6`).
 C $A789,h3
 C $A78D,h3
+N $A790
+. Load the active tank-family Z position from `TankZ` (`$FE60`).
 C $A790,h3
 C $A794,h3
+N $A797
+. Load the active saucer Z position from `SaucerZ` (`$FE90`).
 C $A797,h3
 C $A79B,h3
+N $A79E
+. Load the missile companion/shared Z slot from `$DDBA`.
 C $A79E,h3
 C $A7A2,h3
+N $A7A5
+. Load the temporary deferred-effect source Z from `DeferredEffectSourceZ` (`$FED0`).
 C $A7A5,h3
 C $A7A9,h3
+N $A7AC
+. Load the player-bullet companion/shared Z slot from `$DDCA`.
 C $A7AC,h3
 C $A7B0,h3
+N $A7B3
+. Load the live player-bullet Z position from `PlayerBulletZ` (`$FEAE`) before applying the world scroll.
 C $A7B3,h3
 C $A7B7,h3
+N $A7BA
+. Load the hostile-bullet companion/shared Z slot from `$DDD2`.
 C $A7BA,h3
 C $A7BE,h3
+N $A7C1
+. Load the live hostile-bullet Z position from `HostileBulletZ` (`$FEB6`) for the final world-scroll update.
 C $A7C1,h3
 C $A7C5,h3
 @ $A7C8 label=WorldTurnGate
 C $A7C9,h2
 C $A7CB,h3
 . Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
+N $A7CE
+. Load the current shared turn accumulator from `ViewTurnAngle` (`$FEA8`) before rotating the live world-state tuples.
 C $A7CE,h3
 @ $A7D1 label=SharedWorldTurnPass
 C $A7D1,h4
@@ -4608,8 +4717,12 @@ C $A7D1,h4
 . transform to each `(X,Z)` pair, and returns updated coordinates. The pass is
 . used first on the four obstacle pairs, then on tank/saucer/missile/bullet
 . world positions.
+N $A7D5
+. Load the first obstacle world `(X,Z)` pair from `Obstacle1X` / `Obstacle1Z` (`$FE98` / `$FE9A`).
 C $A7D5,h4
 C $A7D9,h3
+N $A7DC
+. Store the updated turn accumulator back into `ViewTurnAngle` (`$FEA8`) for the later tuples in the same frame.
 C $A7DC,h3
 C $A7DF,h4
 C $A7E3,h4
