@@ -787,6 +787,7 @@ Working summary of verified facts, local source material, and open questions for
     - `DeferredEffectPhaseSetup` at `0xAAD1`
     - `DeferredEffectRewriteGeometry` at `0xAB13`
     - `DeferredEffectDraw` at `0xABDE`
+    - the helper page now has an explicit workspace interface table for the staged X/Z offsets, source pairs, angle / countdown, count pairs, line-data pointer, and deferred-effect XTAB / ZTAB / Y companion-list inputs
   - `DeferredEffectComplete` at `0xAC01` ends the animation and decides whether a deferred major-entity bit should be restored
   - `DeferredEffectRespawn` at `0xAC12` ORs the queued high bit from `FE6C` back into `FE6A` and jumps to `TEXST` at `0x9644`
   - `0xD392`, `0xD3DC`, and `0xD43E` were originally tagged as `CRAVU`, but current code reading shows they are a better match for page-21 `MISS`

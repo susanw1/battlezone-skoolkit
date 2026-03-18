@@ -1620,7 +1620,7 @@ C $8631,h3
 C $8635,h3
 C $8638,h3
 C $863B,h4
-i $8640
+u $8640
 . Padding / reserved growth space between `LNLPT` and `PERSP`.
 . This 32-byte `NOP` run follows a hard `RET` and ends on the round boundary
 . at `0x8660`, strongly suggesting separately assembled module padding.
@@ -1784,7 +1784,7 @@ C $88CE,h4
 C $88D2,h4
 C $88D6,h2
 . Return `C=0`: projection completed and the caller may treat the object as drawable.
-i $88D9
+u $88D9
 . Padding / reserved growth space between `PERSP` and `RotateXZLists`.
 . This 17-byte `NOP` run follows a `RET` and ends exactly at the next module
 . boundary `0x88EA`.
@@ -1941,7 +1941,7 @@ C $8BF9,h3
 C $8BFC,h4
 . Store the final companion rotated Z pointer back into #R$FE36.
 C $8C00,h4
-i $8C06
+u $8C06
 . Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
 . This `NOP` run follows a hard `RET` and ends on the next separately built
 . module boundary at `0x8C3C`.
@@ -1987,7 +1987,7 @@ C $8C77,h3
 C $8C7A,h3
 C $8C7D,h3
 C $8C80,h2
-i $8C85
+u $8C85
 . Padding / reserved growth space between `SDRAW` and `StartupWorkspaceSeedData`.
 . This 27-byte `NOP` run follows a hard `RET` and precedes genuine embedded
 . seed data copied at reset/title start.
@@ -2150,7 +2150,7 @@ N $9081
 @ $9081 label=SHLPTStepUpRow
 N $9093
 @ $9093 label=SHLPTDone
-i $9098
+u $9098
 . Padding / reserved growth space between `SHLPT` and `RADAR`.
 . This `NOP` run follows a hard `RET` and ends at the next module boundary
 . `0x90BA`.
@@ -2184,13 +2184,12 @@ N $90D0
 N $911C
 . Remember the newly plotted radar/status destination byte in #R$FE50.
 @ $9119 label=RADARPlotBlip
-N $9122
-B $9122,8,h8
-B $912A,6,h6
-i $9130
+C $9122,1
+. Return from `RADAR`.
+u $9123
 . Padding / alignment space between `RADAR` and `KeyboardMovementDecode`.
-. Only two trailing `NOP`s remain visible here after the embedded byte block;
-. they are not referenced and simply align the next helper at `0x9132`.
+. The `RET` at `0x9122` ends `RADAR`; the following zero/NOP bytes are unused
+. spacer/alignment bytes before the next helper at `0x9132`.
 D $9132
 . Keyboard movement/button decode helper.
 . Called from gameplay input handling and the start/demo code. It scans the
@@ -2662,7 +2661,7 @@ R $938A DE Signed Z component / world-space Z distance
 R $938A O:A Heading / bearing code
 @ $938A label=HeadingFromXZ
 c $938A
-i $943D
+u $943D
 . Padding / reserved growth space after `HeadingFromXZ`.
 . The 3-byte `NOP` run at `0x943D..0x943F` follows a hard `RET` and precedes
 . a zeroed spacer block before `MESPR`.
@@ -2845,7 +2844,7 @@ C $9523,h3
 C $9527,h3
 C $952B,h3
 C $952F,h3
-i $9533
+u $9533
 . Padding / reserved growth space before the short score-strip helper at `0x9538`.
 . This 5-byte `NOP` run follows a hard `RET` and is not a live fallthrough path.
 c $9538
@@ -2860,7 +2859,7 @@ C $9545,h2
 . About 4.92 ms per `LDIR` pass, or about 19.73 ms for the whole 4-pass block
 . at 3.5 MHz.
 C $9548,h3
-i $954C
+u $954C
 . Padding / reserved growth space between the short score-strip helper and the
 . main reset/initialisation block at `0x956A`.
 . This 30-byte `NOP` run follows a hard `RET` and ends at a round-number
@@ -4055,12 +4054,14 @@ C $A0CB,h2
 C $A0CD,h2
 C $A0CF,h2
 C $A0D2,h3
-i $A0D6
+u $A0D6
 . Padding / reserved growth space between the missile block and the shared
 . bullet update/render block.
 . This `NOP` run follows a hard `RET` and ends on the next routine boundary at
-. `0xA122`.
+. `#R$A122`.
+D $A122 Shared player-bullet / hostile-bullet update, project, draw, and hit-test block. It advances the active bullet state, installs the shared transform/perspective inputs, and either draws the visible bullet or queues the appropriate deferred hit/effect path.
 @ $A122 label=BulletUpdateAndRender
+c $A122
 @ $A133 label=PlayerBulletCheckActive
 @ $A155 label=PlayerBulletAdvanceAndRotate
 @ $A1D3 label=PlayerBulletVisible
@@ -4070,8 +4071,6 @@ i $A0D6
 @ $A234 label=HostileBulletCheckActive
 @ $A25A label=HostileBulletAdvanceAndRotate
 @ $A2ED label=HostileBulletVisible
-C $A122,h2
-. Shared player-bullet / hostile-bullet update, project, draw, and hit-test block.
 C $A124,h2
 C $A126,h3
 C $A129,h2
@@ -4304,14 +4303,13 @@ C $A36F,h3
 C $A373,h2
 C $A375,h3
 C $A378,h3
+D $A37B Select the current obstacle/object family, seed its raw world `(X,Z)` pair plus line-data base, and either project/draw it or fall straight into the shared SCREEN phase.
 @ $A37B label=ObstacleSelectAndRender
+c $A37B
 @ $A423 label=ObstacleRotateAndProject
 @ $A4CA label=ObstacleHidden
 @ $A4E1 label=ObstacleVisible
 @ $A576 label=ObstacleSelectVisibleLineData
-C $A37B,h2
-. Select the current obstacle/object family, seed its raw `(X,Z)` position and line-data
-. base, and either continue into obstacle projection or fall straight into the SCREEN phase.
 C $A37D,h2
 C $A37F,h2
 C $A381,h2
@@ -4597,6 +4595,7 @@ N $A685
 . obstacles, and prepares the turn/movement handler state.
 @ $A685 label=KEYIN
 @ $A685 label=InputDecodeAndMask
+c $A685
 @ $A692 label=InputStoreKMOV
 @ $A695 label=InputMaskAgainstObstacles
 @ $A701 label=InputNoObstacleWarning
@@ -4671,6 +4670,7 @@ D $A714
 . entry plus the matching hill-pointer delta.
 R $A714 A Surviving `KMOV` movement code after obstacle masking
 @ $A714 label=KMOVTurnDecode
+c $A714
 C $A714,h3
 . Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
 . delta that matches the chosen turn rate/direction.
@@ -4718,11 +4718,8 @@ C $A769,h3
 C $A76E,h3
 C $A771,h3
 @ $A774 label=WorldZScroll
-C $A774,h3
-. Straight world-Z scroll pass after forward/back movement.
-. The chosen signed delta in `DE` is applied to all obstacle Z slots and to the
-. other world-space entity Z positions so the player remains effectively
-. centred while the world moves.
+c $A774
+D $A774 Straight world-Z scroll pass after forward/back movement. The chosen signed delta in `DE` is applied to all obstacle Z slots and to the other world-space entity Z positions so the player remains effectively centred while the world moves.
 N $A778
 . Store the updated first obstacle Z slot back into #R$FE9A.
 C $A778,h3
@@ -4771,6 +4768,7 @@ N $A7C1
 C $A7C1,h3
 C $A7C5,h3
 @ $A7C8 label=WorldTurnGate
+c $A7C8
 C $A7C9,h2
 C $A7CB,h3
 . Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
@@ -4778,12 +4776,8 @@ N $A7CE
 . Load the current shared turn accumulator from #R$FEA8 before rotating the live world-state tuples.
 C $A7CE,h3
 @ $A7D1 label=SharedWorldTurnPass
-C $A7D1,h4
-. Shared world-turn rotation pass.
-. `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn
-. transform to each `(X,Z)` pair, and returns updated coordinates. The pass is
-. used first on the four obstacle pairs, then on tank/saucer/missile/bullet
-. world positions.
+c $A7D1
+D $A7D1 Shared world-turn rotation pass. `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn transform to each `(X,Z)` pair, and returns updated coordinates. The pass is used first on the four obstacle pairs, then on tank, saucer, missile, bullet, and deferred-effect world positions.
 N $A7D5
 . Load the first obstacle world `(X,Z)` pair from `Obstacle1X` / `Obstacle1Z` (`$FE98` / `$FE9A`).
 C $A7D5,h4
@@ -4887,6 +4881,7 @@ C $A906,h3
 C $A909,h4
 C $A90D,h4
 @ $A911 label=GameplayHoldLoop
+c $A911
 C $A911,h3
 . Read the `ENTER L K J H` keyboard row.
 C $A916,h2
@@ -4915,6 +4910,7 @@ N $A934
 .   `SAEX_ZTAB`, and `SAEX_YLOC`
 . - current best notebook match: `SAEXV`
 @ $A934 label=SaucerExplosionSetup
+c $A934
 C $A934,h3
 C $A937,h2
 . Clear the active saucer and player-bullet bits.
@@ -4972,6 +4968,7 @@ N $A9AC
 .   `TKEX_ZTAB`, and `TKEX_YLOC`
 . - current best notebook match: `TKEXV`
 @ $A9AC label=TankExplosionSetup
+c $A9AC
 C $A9AC,h3
 C $A9AF,h2
 C $A9B1,h3
@@ -5010,6 +5007,7 @@ C $AA02,h3
 C $AA05,h3
 C $AA08,h3
 @ $AA0B label=MissileExplosionSetup
+c $AA0B
 C $AA0B,h3
 C $AA0E,h2
 . Clear the active missile and player-bullet bits.
@@ -5048,7 +5046,35 @@ N $AA5D
 . - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
 .   `MSEX_ZTAB`, and `MSEX_YLOC`
 . - current best notebook match: `MSEXV`
+D $AA5D Shared deferred explosion / impact animator. It advances the staged X/Z offset terms, refreshes the current phase angle and source position, rebuilds the mutable companion X/Z/Y lists, projects and draws the current frame, and either loops into the next phase or restores the deferred major-entity bit.
+D $AA5D Used by the tank, saucer, missile, and bullet-impact effect setup entries after they have installed the appropriate effect families and source coordinates.
+R $AA5D DeferredEffectXOffsetA Current staged X offset pair A (#R$FEBC($FEBC))
+R $AA5D DeferredEffectXOffsetB Current staged X offset pair B (#R$FEC0($FEC0))
+R $AA5D DeferredEffectXOffsetC Current staged X offset pair C (#R$FEC4($FEC4))
+R $AA5D DeferredEffectXOffsetD Current staged X offset pair D (#R$FEC8($FEC8))
+R $AA5D DeferredEffectZOffsetA Current staged Z offset pair A (#R$FEBE($FEBE))
+R $AA5D DeferredEffectZOffsetB Current staged Z offset pair B (#R$FEC2($FEC2))
+R $AA5D DeferredEffectZOffsetC Current staged Z offset pair C (#R$FEC6($FEC6))
+R $AA5D DeferredEffectZOffsetD Current staged Z offset pair D (#R$FECA($FECA))
+R $AA5D DeferredEffectSourceX Current effect source X pair (#R$FECC($FECC))
+R $AA5D DeferredEffectSourceZ Current effect source Z pair (#R$FED0($FED0))
+R $AA5D DeferredEffectYBias Current Y-bias pair for the rebuilt temporary Y list (#R$FECE($FECE))
+R $AA5D DeferredEffectYBase Current descending Y-base pair for the rebuilt temporary Y list (#R$FED2($FED2))
+R $AA5D DeferredEffectAngle Current effect phase angle (#R$FED4($FED4))
+R $AA5D DeferredEffectPhaseCountdown Current phase countdown (#R$FED6($FED6))
+R $AA5D DeferredEffectPrimaryCounts Current primary rewrite / projection count pair (#R$FED8($FED8))
+R $AA5D DeferredEffectSecondaryCounts Current secondary rewrite / projection count pair (#R$FEDA($FEDA))
+R $AA5D DeferredEffectLineData Current deferred-effect line-data pointer (#R$FEDC($FEDC))
+R $AA5D DeferredEffectXTAB Current deferred-effect X rotation-table pointer (#R$FEDE($FEDE))
+R $AA5D DeferredEffectZTAB Current deferred-effect Z rotation-table pointer (#R$FEE0($FEE0))
+R $AA5D DeferredEffectYLOC Current deferred-effect Y companion-list pointer (#R$FEE2($FEE2))
+R $AA5D O:DeferredEffectAngle Advanced effect phase angle (#R$FED4($FED4))
+R $AA5D O:DeferredEffectPhaseCountdown Updated phase countdown / completion flag (#R$FED6($FED6))
+R $AA5D O:DeferredEffectYBase Advanced descending Y-base pair (#R$FED2($FED2))
+R $AA5D O:DeferredEffectYLOC Rebuilt temporary deferred-effect Y list pointer (#R$FEE2($FEE2))
+R $AA5D O:LINCD Installed deferred-effect line-data pointer for `LNLPT` (#R$FE02($FE02))
 @ $AA5D label=DeferredEffectAnimator
+c $AA5D
 C $AA5D,h2
 C $AA5F,h3
 . If the active source was a bullet, refresh the shared impact-effect seed first.
@@ -5085,14 +5111,15 @@ C $AAB2,h3
 C $AAB5,h3
 C $AAB8,h3
 C $AABB,h3
-. `EXBXL`
+. Install the fixed deferred-effect companion X list in `XLOC`.
 C $AABE,h3
 C $AAC1,h3
-. `EXBZL`
+. Install the fixed deferred-effect companion Z list in `ZLOC`.
 C $AAC4,h3
 C $AAC7,h3
 C $AACB,h3
 C $AACE,h3
+. When the phase countdown reaches zero, finish the animation immediately.
 @ $AAD1 label=DeferredEffectPhaseSetup
 C $AAD1,h3
 C $AAD4,h3
@@ -5101,12 +5128,15 @@ C $AAD4,h3
 C $AAD4,h3
 C $AAD8,h3
 C $AADB,h4
+. Load the current `DeferredEffectPrimaryCounts` / `DeferredEffectSecondaryCounts` pair for the rewrite pass.
 C $AAE1,h4
+. Reuse the current deferred-effect source pair as the shared X/Z displacement in `XDIS` / `ZDIS`.
 C $AAE7,h3
 C $AAEA,h3
 C $AAED,h3
 C $AAF0,h3
 C $AAF3,h3
+. Feed the current `DeferredEffectAngle` into the shared rotation helper at `RotateXZLists`.
 C $AAFA,h2
 C $AAFC,h3
 C $AAFF,h3
@@ -5118,13 +5148,13 @@ C $AB0D,h3
 C $AB11,h2
 @ $AB13 label=DeferredEffectRewriteGeometry
 C $AB13,h3
-. YPERS
+. Install the temporary projected X/Y buffers for the rewritten deferred-effect geometry.
 C $AB16,h3
 C $AB19,h3
 C $AB1C,h3
 C $AB1F,h4
 C $AB23,h3
-. EXBXL
+. Reuse `SP` as the mutable deferred-effect X companion list (`EXBXL`) and rewrite its four staged sections from `DeferredEffectXOffsetA..D`.
 C $AB26,h4
 C $AB2A,h4
 C $AB35,h2
@@ -5136,7 +5166,7 @@ C $AB52,h2
 C $AB55,h4
 C $AB5E,h2
 C $AB60,h3
-. EXBZL
+. Reuse `SP` as the mutable deferred-effect Z companion list (`EXBZL`) and rewrite its four staged sections from `DeferredEffectZOffsetA..D`.
 C $AB63,h4
 C $AB67,h4
 C $AB72,h2
@@ -5148,25 +5178,30 @@ C $AB8F,h2
 C $AB92,h4
 C $AB9B,h2
 C $AB9D,h3
+. Advance the descending Y-base in `DeferredEffectYBase`, combine it with `DeferredEffectYBias`, and start rebuilding the temporary Y list.
 C $ABA0,h3
 C $ABA5,h3
 C $ABA8,h4
 C $ABAD,h3
 C $ABB0,h4
+. Reuse `SP` as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and `DeferredEffectYLOC`.
 C $ABB4,h3
 C $ABB7,h4
 C $ABBD,h4
 C $ABC3,h4
 C $ABD3,h2
 C $ABD6,h4
+. Store the rebuilt temporary Y list pointer in `YLOC`.
 C $ABDA,h4
 @ $ABDE label=DeferredEffectDraw
 C $ABDE,h3
 C $ABE1,h3
+. Install `DeferredEffectLineData` in `LINCD`.
 . Install the line-data pointer, run perspective/line draw, and present the
 . current explosion frame.
 C $ABE1,h3
 C $ABE4,h3
+. Load the current count pair for the perspective/draw pass.
 C $ABE7,h2
 C $ABE9,h2
 C $ABED,h3
@@ -5175,6 +5210,8 @@ C $ABF4,h3
 C $ABFA,h3
 C $ABFE,h2
 @ $AC01 label=DeferredEffectComplete
+C $AC01,1
+. Latch the new `DeferredEffectPhaseCountdown` value and decide whether any deferred major-entity bit must be restored.
 C $AC02,h3
 C $AC05,h3
 C $AC08,h2
@@ -5189,6 +5226,7 @@ C $AC17,h3
 C $AC1B,h3
 C $AC1F,h3
 @ $AC22 label=BulletImpactEffectSetup
+c $AC22
 C $AC22,h2
 N $AC24
 . Probable bullet-impact / bullet-explosion setup.
@@ -5247,7 +5285,7 @@ C $ACB5,h2
 C $ACB7,h2
 C $ACB9,h3
 C $ACBD,h2
-i $ACC0
+u $ACC0
 . Padding / reserved growth space between the deferred-effect block and the
 . startup/title copy helper at `0xAD0C`.
 . This `NOP` run follows a hard `RET` and ends at the next round-number helper
@@ -5327,7 +5365,7 @@ C $ADB4,h2
 C $ADB6,h3
 C $ADBB,h3
 C $ADBF,h3
-i $ADC4
+u $ADC4
 . Padding / reserved growth space after `KEMPST`.
 . This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
 . callers/jumpers landing in it.
@@ -5346,6 +5384,7 @@ N $ADD4
 .   effect rather than as a static text block
 . This entry point is used by the routine at #R$977E.
 @ $ADD4 label=CRASH
+c $ADD4
 C $ADD4,h2
 C $ADD6,h3
 C $ADD9,h3
@@ -5423,6 +5462,7 @@ N $AE90
 . This is the late branch of `CRASH`: it enters the blood/end-screen effect,
 . then prints `GAME OVER` and later the `TODAYS GREATEST` heading.
 @ $AE90 label=BLOOD
+c $AE90
 C $AE90,h2
 C $AE92,h3
 C $AE95,h3
