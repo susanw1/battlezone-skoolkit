@@ -4307,14 +4307,6 @@ u$9098 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; RADAR
 ;
-; Used by the routines at #R$977E, #R$AA5D and #R$ADD4.
-;
-;   HL Signed X component / world-space X distance
-;   DE Signed Z component / world-space Z distance
-;   EXSCN Persistent radar/proximity helper-table base, normally seeded to
-; .       `$6300` (#R$FE52($FE52))
-; O:EXBLP Last plotted radar/status destination byte (#R$FE50($FE50))
-;
 ; Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
 ; Current best notebook match: `RADAR`.
 ; Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
@@ -4323,6 +4315,12 @@ u$9098 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; The Input/Output tables below capture the register and preset-workspace interface. Current best shipped read: `FE50` remembers the last plotted destination byte so it can be cleared, and `FE52` is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
 ; The cell/bit conversion path uses the shared plotting lookup family at
 ; #R$7C00.
+;
+;   HL Signed X component / world-space X distance
+;   DE Signed Z component / world-space Z distance
+;   EXSCN Persistent radar/proximity helper-table base, normally seeded to
+; .       `$6300` (#R$FE52($FE52))
+; O:EXBLP Last plotted radar/status destination byte (#R$FE50($FE50))
 @label=RADAR
 c$90BA PUSH HL       ;
  $90BB PUSH DE       ;
@@ -4418,15 +4416,17 @@ u$9123 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; request in `FE54`, and returns the same compact `KMOV` code in `A` as the
 ; Kempston routine at `0xAD3E`.
 ; Current best `KMOV` code table:
-; - `0x00` idle
-; - `0x80` forward
-; - `0x40` back
-; - `0xA0` forward+left
-; - `0x90` forward+right
-; - `0x60` back+left
-; - `0x50` back+right
-; - `0x08` left on the spot
-; - `0x04` right on the spot
+; #LIST
+; { `0x00` idle }
+; { `0x80` forward }
+; { `0x40` back }
+; { `0xA0` forward+left }
+; { `0x90` forward+right }
+; { `0x60` back+left }
+; { `0x50` back+right }
+; { `0x08` left on the spot }
+; { `0x04` right on the spot }
+; LIST#
 ;
 ; O:A `KMOV` movement code
 @label=KeyboardMovementDecode
@@ -4872,17 +4872,15 @@ c$9312 POP HL                               ;
 
 ; HeadingFromXZ
 ;
-; Used by the routines at #R$956A and #R$977E.
-;
-;   HL Signed X component / world-space X distance
-;   DE Signed Z component / world-space Z distance
-; O:A Heading / bearing code
-;
 ; Shared heading/bearing helper.
 ; Called with a world-space `(X,Z)` pair in `HL`/`DE`.
 ; Current best shipped read: convert the signed `(X,Z)` vector into the
 ; compact 8-bit heading/bearing code used by tank desired-heading logic,
 ; missile orientation refresh, and proximity/range comparisons.
+;
+;   HL Signed X component / world-space X distance
+;   DE Signed Z component / world-space Z distance
+; O:A Heading / bearing code
 @label=HeadingFromXZ
 c$938A LD A,H        ;
  $938B LD B,$00      ;
@@ -5094,7 +5092,7 @@ c$9476 LD E,(HL)     ; Load the destination address low byte.
  $9488 JP NZ,$9480   ;
  $948B RET           ;
 
-; Plot Number Glyph
+; PlotNumberGlyph
 ;
 ; A Digit or symbol index
 ; BC Destination address
@@ -5259,7 +5257,7 @@ u$954C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; Entered from the common start-game transition and the attract/showcase setup patch path.
 ;
-; Used by the routines at #R$AE90 and #R$B1F4.
+; Used by the routines at #R$B0BC and #R$B1F4.
 c$956A LD HL,$0000   ;
  $956D LD ($FE6A),HL ; Clear probable EXST1 / EXST2 state bytes.
  $9570 LD ($FE6C),HL ;
@@ -8305,22 +8303,17 @@ u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; CRASH
 ;
-; Used by the routines at #R$977E and #R$A122.
-;
-; .
-;
 ; Probable `CRASH` / lose-life and game-over sequence.
 ; This is the current best code match for the notebook's page-17 `CRASH`
 ; heading: repeated animation/display work, decrement lives at `FEE4`, branch
 ; to a zero-lives end sequence, otherwise return to the main reinitialisation
 ; path at `9644`.
 ; Current best refinement from the data it uses:
-; - `CC9C` is a probable screen-break / crack line-data block drawn three times
-;   before the life counter is decremented
-; - the zero-lives branch uses `CDE8` for the `GAME OVER` text and later
-;   `CDFA` for the `TODAYS GREATEST` high-score heading
-; - `CC5C` is reused as a mutable table/workspace during the blood/end-screen
-;   effect rather than as a static text block
+; #LIST
+; { `CC9C` is a probable screen-break / crack line-data block drawn three times before the life counter is decremented }
+; { the zero-lives branch uses `CDE8` for the `GAME OVER` text and later `CDFA` for the `TODAYS GREATEST` high-score heading }
+; { `CC5C` is reused as a mutable table/workspace during the blood/end-screen effect rather than as a static text block }
+; LIST#
 ; This entry point is used by the routine at #R$977E.
 @label=CRASH
 c$ADD4 LD A,$C9      ;
@@ -8402,10 +8395,6 @@ c$ADD4 LD A,$C9      ;
  $AE8D JP $9644      ;
 
 ; BLOOD
-;
-; Used by the routine at #R$ADD4.
-;
-; .
 ;
 ; Current best `BLOOD` / final zero-lives branch match.
 ; This is the late branch of `CRASH`: it enters the blood/end-screen effect,
@@ -8722,6 +8711,9 @@ c$AE90 LD A,$02      ;
  $B0B7 INC HL        ;
  $B0B8 LD (HL),D     ;
  $B0B9 JP $B14C      ;
+
+; StartGameTransition
+;
 ; This entry point is used by the attract/title sequence, the showcase stage,
 ; and the instructions loop.
 ; Common start-game transition from the attract/title/instructions flow.
@@ -8729,7 +8721,7 @@ c$AE90 LD A,$02      ;
 ; short visual/audio transition, restores the score display, and then jumps
 ; into the main game initialisation at #R$956A.
 @label=StartGameTransition
-*$B0BC CALL $B0EF    ;
+c$B0BC CALL $B0EF    ;
  $B0BF LD HL,$4000   ;
  $B0C2 LD DE,$4001   ;
  $B0C5 LD BC,$17FF   ;
@@ -8751,24 +8743,27 @@ c$AE90 LD A,$02      ;
  $B0E6 LD HL,$4059   ; Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
  $B0E9 LD ($94F0),HL ;
  $B0EC JP $956A      ;
+
+; PlayStartTheme
+;
 ; Current best read: start-game `1812` theme player.
 ; Evidence:
-; - no non-`RST $10` ROM calls are used here
-; - the routine drives `OUT ($FE),A` directly
-; - `SP` is pointed at the 10-entry record table at `StartThemeData`
-; - each record is consumed as two words (`HL`, `DE`) and used to control one
-;   beeper-tone phrase
+; #LIST
+; { no non-`RST $10` ROM calls are used here }
+; { the routine drives `OUT ($FE),A` directly }
+; { `SP` is pointed at the 10-entry record table at `StartThemeData` }
+; { each record is consumed as two words (`HL`, `DE`) and used to control one beeper-tone phrase }
+; LIST#
 ; Current best record format/timing read:
-; - first word (`HL`) = period parameter
-; - second word (`DE`) = repeat count
-; - the OUT-to-OUT delay alternates between `4*HL+82` and `4*HL+87`
-;   T-states, so one full square-wave cycle is approximately `8*HL+169`
-;   T-states
-; - at 3.5 MHz that gives `f ~= 3500000 / (8*HL+169)` Hz
-; - the repeat counter is decremented on every other toggle, so a phrase lasts
-;   roughly `(DE+1)` full cycles
+; #LIST
+; { first word (`HL`) = period parameter }
+; { second word (`DE`) = repeat count }
+; { the OUT-to-OUT delay alternates between `4*HL+82` and `4*HL+87` T-states, so one full square-wave cycle is approximately `8*HL+169` T-states }
+; { at 3.5 MHz that gives `f ~= 3500000 / (8*HL+169)` Hz }
+; { the repeat counter is decremented on every other toggle, so a phrase lasts roughly `(DE+1)` full cycles }
+; LIST#
 @label=PlayStartTheme
-*$B0EF LD ($FE00),SP ;
+c$B0EF LD ($FE00),SP ;
  $B0F3 LD SP,$CA94   ; Current best read: `StartThemeData`.
  $B0F6 LD A,$0A      ;
 *$B0F8 LD ($FE4E),A  ;
@@ -8822,6 +8817,7 @@ c$AE90 LD A,$02      ;
  $B144 JP NZ,$B0F8   ;
  $B147 LD SP,($FE00) ;
  $B14B RET           ;
+; This entry point is used by the routine at #R$AE90.
 *$B14C LD HL,$4000   ;
  $B14F LD DE,$4001   ;
  $B152 LD BC,$17FF   ;
@@ -9706,7 +9702,11 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
 @label=GameEntryVector
 c$B77A JP $AD0C      ; Jump to the primary `GameEntryPoint` at #R$AD0C.
 
-; Data block at B77D
+; Zero-filled post-entry gap
+;
+; Zero-filled data gap after `GameEntryVector`.
+;       No live references are currently known; this looks more like reserved growth
+;       space or packaged slack than active title/instructions data.
 b$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $B785 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $B78D DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -10103,14 +10103,17 @@ t$C3EF DEFB $16,$00,$00                                                         
 t$C5DA DEFM $16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
  $C5FA DEFM $00,$00,$00,$00,$00,$00,$00,$00
 
+; AttractModeTitleWordLineDataFamily
+;
 ; Probable attract-mode title-word line-data family.
-; This range appears to contain two consecutive `LNLPT` blocks:
-; - first block at $C602 begins with count `$1E` (30 lines)
-; - second block begins at $C6F3 with count `$17` (23 lines)
-; Because `LNLPT` updates `FE02` on return, the attract pipeline at #R$B346
-; can draw the first title piece and then the second one without reloading
-; `FE02`.
-; Data block at C602
+;       This range appears to contain two consecutive `LNLPT` blocks:
+; #LIST
+;       { first block at $C602 begins with count `$1E` (30 lines) }
+;       { second block begins at $C6F3 with count `$17` (23 lines) }
+; LIST#
+;       Because `LNLPT` updates `FE02` on return, the attract pipeline at #R$B346
+;       can draw the first title piece and then the second one without reloading
+;       #R$FE02 ($FE02).
 b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C60A DEFB $DE,$F8,$DE,$F6,$DE,$C0,$DE,$BE
  $C612 DEFB $DE,$F6,$DE,$F4,$DE,$BE,$DE,$BC
@@ -13183,7 +13186,10 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $F6F4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F6FC DEFB $00,$00,$00,$00
 
-; Data block at F700
+; Runtime workspace mirror / text and glyph area
+;
+; Live RAM region seeded from `StartupWorkspaceSeedData` and then reused as a
+;       mixed runtime text, glyph, and scratch area.
 b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F708 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F710 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -13412,140 +13418,141 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FDF0 DEFB $7F,$DB,$FE,$1F,$00,$A9,$E6,$20
  $FDF8 DEFB $28,$F3,$79,$2F,$4F,$E6,$07,$F6
 
-; Workspace and scratch variables from Mem-locations.pdf
+; SP1
 @label=SP1
-b$FE00 DEFW $0008    ; Primary stack-pointer save slot.
+b$FE00 DEFW $0008    ; Workspace and scratch variables from `Mem-locations.pdf`.
+                     ; Primary stack-pointer save slot.
                      ; Shared stack-driven helpers such as `LNLPT`, `PERSP`, `RotateXZLists`,
                      ; `RADAR`, the hill plotters, and the start-theme player save the caller's
                      ; `SP` here before repointing the hardware stack into tables or buffers.
 
-; Data block at FE02
+; LINCD
 @label=LINCD
 b$FE02 DEFW $3700    ; Current line-data stream pointer.
                      ; `LNLPT` treats this as the address of the next `LINCDS` block, consumes the
                      ; current record via `SP`, then writes the advanced pointer back here at
                      ; `0x80D1` so repeated calls can chain through consecutive line-data blocks.
 
-; Data block at FE04
+; LNCNT
 @label=LNCNT
 b$FE04 DEFW $00C9    ; Remaining line count within the current `LINCDS` block.
                      ; Seeded from the first byte of the block at `0x805F/0x8060`, decremented at
                      ; `LNLPTNextLine`, and used to decide whether another line record follows.
 
-; Data block at FE06
+; SPPL
 @label=SPPL
 b$FE06 DEFW $0000    ; Notebook name preserved.
                      ; No confident independent shipped-code role has been isolated yet; if live at
                      ; all, it appears to be part of the line-plotter scratch family rather than a
                      ; long-lived gameplay state slot.
 
-; Data block at FE08
+; X1
 @label=X1
 b$FE08 DEFW $0000    ; Notebook names preserved. Current best shipped `LNLPT` read is that
                      ; `FE08/FE0A/FE0C` carry the current X endpoints and signed X delta, while
                      ; `FE0E/FE10/FE12` carry the vertically sorted Y endpoints and Y delta.
 
-; Data block at FE0A
+; X2
 @label=X2
 b$FE0A DEFW $0000
 
-; Data block at FE0C
+; XD
 @label=XD
 b$FE0C DEFW $0000
 
-; Data block at FE0E
+; Y1
 @label=Y1
 b$FE0E DEFW $0000
 
-; Data block at FE10
+; Y2
 @label=Y2
 b$FE10 DEFW $0000
 
-; Data block at FE12
+; YD
 @label=YD
 b$FE12 DEFW $0000
 
-; Data block at FE14
+; DRTP1
 @label=DRTP1
 b$FE14 DEFW $0000    ; Shared temporary pointer slot.
                      ; In the zero-lives `BLOOD` path it remembers the current mutable drip-column
                      ; row entry inside `CC5C`; later game-over/name-entry code reuses it as a
                      ; temporary screen/text destination pointer.
 
-; Data block at FE16
+; DRTP2
 @label=DRTP2
 b$FE16 DEFW $0000    ; Shared temporary character/attribute pair slot.
                      ; In the game-over name-entry loop it holds the current letter and attribute
                      ; pair used by the live input echo before the chosen character is committed.
 
-; Data block at FE18
+; SPPL1
 @label=SPPL1
 b$FE18 DEFW $0000    ; Shared temporary cursor/result slot.
                      ; Reused heavily by the game-over name-entry path as the current character
                      ; position / assembled initials word, rather than as persistent gameplay state.
 
-; Data block at FE1A
+; SPPL2
 @label=SPPL2
 b$FE1A DEFW $0000    ; Notebook name preserved.
                      ; No confident live shipped-code role has been isolated yet; this currently
                      ; looks like spare line-plotter/general workspace rather than an actively used
                      ; high-level state variable.
 
-; Data block at FE1C
+; MAX1
 @label=MAX1
 b$FE1C DEFW $0000    ; Notebook name preserved. Current shipped read: first raw outer X-limit word
                      ; used by the hill/object suppression path. Visible major-entity passes seed
                      ; `FE1C/FE1E` from `XMAX/XMIN`; invisible cases park them at `$84D0/$84CF`.
 
-; Data block at FE1E
+; MIN1
 @label=MIN1
 b$FE1E DEFW $0000    ; Companion raw outer X-limit word for `FE1C`.
 
-; Data block at FE20
+; MAX2
 @label=MAX2
 b$FE20 DEFW $0000    ; Notebook name preserved. Current shipped read: second raw outer X-limit word
                      ; used by the hill/object suppression path, chiefly for the active obstacle /
                      ; object family selected at `0xA37B`.
 
-; Data block at FE22
+; MIN2
 @label=MIN2
 b$FE22 DEFW $0000    ; Companion raw outer X-limit word for `FE20`.
 
-; Data block at FE24
+; LIM1
 @label=LIM1
 b$FE24 DEFW $0000    ; Current shipped read: primary hill-clipped outer limit pair derived by
                      ; `MHLC` from `FE1C/FE1E/FE20/FE22`.
 
-; Data block at FE26
+; LIM2
 @label=LIM2
 b$FE26 DEFW $0000    ; Companion primary hill-clipped outer limit word for `FE24`.
 
-; Data block at FE28
+; LIM3
 @label=LIM3
 b$FE28 DEFW $0000    ; Current shipped read: secondary / inner hill-limit pair derived by `SHLC`
                      ; for the interior infill pass.
 
-; Data block at FE2A
+; LIM4
 @label=LIM4
 b$FE2A DEFW $0000    ; Companion secondary / inner hill-limit word for `FE28`.
 
-; Data block at FE2C
+; HLCNT
 @label=HLCNT
 b$FE2C DEFW $0000    ; Notebook name preserved. Current shipped-behaviour read: live hill-data
                      ; stream pointer. Initialised to `$6900` and adjusted by the player
                      ; turn/motion path before `MHLPT` / `SHLPT` consume it via `SP`.
 
-; Data block at FE2E
+; SHCNT
 @label=SHCNT
 b$FE2E DEFW $0000    ; Notebook name preserved. In shipped code this word behaves as the moving
                      ; inner-row stream pointer used by `SHLPTStepUpRow`.
 
-; Data block at FE30
+; LIM
 @label=LIM
 b$FE30 DEFW $0000    ; Current best shipped read: temporary inner-width / limit pair used by
                      ; `SHLPT` while stepping through the infill region.
 
-; Data block at FE32
+; XLOC
 @label=XLOC
 b$FE32 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointer to the current X
                      ; working list in the 3D->2D chain.
@@ -13554,7 +13561,7 @@ b$FE32 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointe
                      ; descending rotated-output pointer back here at `0x8B3A`. In attract mode it
                      ; is similarly repointed to fixed title/logo X tables.
 
-; Data block at FE34
+; YLOC
 @label=YLOC
 b$FE34 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the current fixed Y
                      ; vertex list consumed by `PERSP`.
@@ -13562,7 +13569,7 @@ b$FE34 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to
                      ; tumble hack it is repointed to the first rotated output list so the normal
                      ; pipeline sees a fake Y axis.
 
-; Data block at FE36
+; ZLOC
 @label=ZLOC
 b$FE36 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointer to the current Z
                      ; working list in the 3D->2D chain.
@@ -13571,97 +13578,98 @@ b$FE36 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointe
                      ; descending rotated-output pointer back here at `0x8BE8`. `PERSP` then
                      ; consumes the rotated Z list from this slot.
 
-; Data block at FE38
+; XPERS
 @label=XPERS
 b$FE38 DEFW $0000    ; Notebook name preserved. Current shipped read: end-pointer into the final
                      ; projected X output buffer (`XPERS` base around `$DE90`).
                      ; `PERSP` writes projected 2D X values downward via `SP`/`PUSH`, so callers
                      ; often seed this with an interior end-pointer such as `$DE98` or `$DEC4`.
 
-; Data block at FE3A
+; YPERS
 @label=YPERS
 b$FE3A DEFW $0000    ; Companion end-pointer into the final projected Y output buffer (`YPERS` base
                      ; around `$DEC8`). Again typically seeded with an interior end-pointer before
                      ; the descending `SP`-based write pass.
 
-; Data block at FE3C
+; XMAX
 @label=XMAX
 b$FE3C DEFW $0000    ; Notebook name preserved. Current shipped read: visible/projected X upper
                      ; limit tracked by `PERSPTrackVisibleRange` and then reused by caller-side
                      ; visibility / hill-suppression logic.
 
-; Data block at FE3E
+; XMIN
 @label=XMIN
 b$FE3E DEFW $0000    ; Companion visible/projected X lower limit tracked by `PERSPTrackVisibleRange`.
 
-; Data block at FE40
+; DYCNT
 @label=DYCNT
 b$FE40 DEFW $0000    ; Current shipped read: `PERSP` point-count / pass-control slot. Seeded from
                      ; `A` on entry, then reused to control the secondary projection pass.
 
-; Data block at FE42
+; XTAB
 @label=XTAB
 b$FE42 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the active X-side
                      ; coefficient-table family for `RotateXZLists`, i.e. the lookup stream used in
                      ; the X-side matrix multiply/add passes. Often seeded from `XTAB` (`$D9D0`) or
                      ; object-specific interior offsets.
 
-; Data block at FE44
+; YTAB
 @label=YTAB
 b$FE44 DEFW $0000    ; Notebook name preserved. No confident direct shipped-code role is isolated
                      ; yet; current transform/projection paths appear to use `YLOC`/`FE34` rather
                      ; than this slot directly.
 
-; Data block at FE46
+; ZTAB
 @label=ZTAB
 b$FE46 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the active Z-side
                      ; coefficient-table family for `RotateXZLists`, i.e. the lookup stream used in
                      ; the Z-side matrix multiply/add passes. Often seeded from `ZTAB` (`$DAC4`) or
                      ; object-specific interior offsets.
 
-; Data block at FE48
+; MMAT
 @label=MMAT
 b$FE48 DEFW $0000    ; Current shipped read: saved source-word continuation from the first
                      ; `RotateXZLists` pass, preserved between passes and reused by the later
                      ; transform phases as a compact pointer/sign carrier.
 
-; Data block at FE4A
+; XDIS
 @label=XDIS
 b$FE4A DEFW $0000    ; Notebook name preserved. Current shipped read: current X displacement /
                      ; world-offset word fed into `RotateXZLists` for the active entity/effect or
                      ; obstacle/object, i.e. the X positional offset added after rotation.
 
-; Data block at FE4C
+; ZDIS
 @label=ZDIS
 b$FE4C DEFW $0000    ; Companion current Z displacement / world-offset word fed into
                      ; `RotateXZLists`, i.e. the Z positional offset added after rotation.
 
-; Data block at FE4E
+; MUCNT
 @label=MUCNT
 b$FE4E DEFW $0000    ; Shared small count/control slot. In `RotateXZLists` it is the active element
                      ; count reused by each transform pass; in `PlayStartTheme` it becomes the
                      ; 10-phrase countdown; in the zero-lives branch it becomes the outer
                      ; drip-frame countdown.
 
-; Data block at FE50
+; EXBLP
 @label=EXBLP
 b$FE50 DEFW $0000    ; Notebook name preserved. Current shipped read: pointer to the last radar /
                      ; status blip byte. `RADARClearWorkspace` clears the previously plotted byte via
                      ; this slot before `RADARPlotBlip` updates it to the new destination.
 
-; Data block at FE52
+; EXSCN
 @label=EXSCN
 b$FE52 DEFW $0000    ; Notebook name preserved. Current shipped read: persistent radar/proximity
                      ; helper-table base, initialised to `$6300`. `RADARClearWorkspace`
                      ; temporarily uses it via `SP` while clearing transient radar state, and later
                      ; entity logic samples its first byte as a proximity/range reference.
 
-; Data block at FE54
+; TRIGA
 @label=TRIGA
 b$FE54 DEFW $0000    ; Notebook name preserved, but shipped behaviour is now clear: fire-request
                      ; latch. Keyboard/Kempston decode ORs fire into this slot, and the player-fire
                      ; path at `0x97D6` consumes and clears it.
 
+; KMOV
 ; Current best decoded movement-state byte:
 ; `0x00` idle, `0x80` forward, `0x40` back, `0xA0` forward+left, `0x90`
 ; forward+right, `0x60` back+left, `0x50` back+right, `0x08` left on the
@@ -13670,20 +13678,20 @@ b$FE54 DEFW $0000    ; Notebook name preserved, but shipped behaviour is now cle
 b$FE56 DEFW $0000    ; Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
                      ; `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
 
-; Data block at FE58
+; SIGHT
 @label=SIGHT
 b$FE58 DEFW $0000    ; Notebook name preserved. Current shipped read: one-frame sight / targeting
                      ; cue latch. Tank, supertank, and missile visibility/setup paths set it to
                      ; `$80`, and the later screen-overlay phase consumes and clears it while
                      ; drawing the extra sight marker.
 
-; Data block at FE5A
+; SP2
 @label=SP2
 b$FE5A DEFW $0000    ; Secondary stack-pointer save slot.
                      ; `PERSP` and related transform/presentation paths use this when they need a
                      ; nested stack redirect on top of the main `SP1` save/restore flow.
 
-; Data block at FE5C
+; TURN
 @label=TURN
 b$FE5C DEFW $0000    ; Current turn-handler dispatch pointer.
                      ; `KMOVTurnDecode` is the sole writer: it stores one of the four view-turn

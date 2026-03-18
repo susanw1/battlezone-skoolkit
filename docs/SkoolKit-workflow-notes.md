@@ -154,6 +154,11 @@ Practical rule:
   directives to create separate paragraphs instead of one huge description block
 - `#LIST` inside those description paragraphs does render as proper HTML bullet
   lists on asm pages
+- use a new `D $ADDR ...` only for a real paragraph boundary
+- if one thought contains a short list, keep it within a single `D` paragraph
+  and use `.` continuation lines plus `#LIST ... LIST#` for the bullets
+- if prose is just wrapping or extending the same thought, use `.` continuation
+  lines rather than starting a fresh `D`
 - by contrast, the Input/Output register tables are much stricter:
   the left-hand key column remains symbolic-only in this build
 - converting workspace slots from `g` entries to ordinary `b`/`w` entries does

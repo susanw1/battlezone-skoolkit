@@ -23,7 +23,11 @@ AddressAnchor={address#IF({base}==16)(:04x)}
 GameIndex=The complete<>RAM disassembly (work in progress)
 
 [Titles]
+Asm-b={entry[title]}
 Asm-c={entry[title]}
+Asm-t={entry[title]}
+Asm-u={entry[title]}
+Asm-w={entry[title]}
 
 [Expand]
 #DEF(#COLOUR(id)
