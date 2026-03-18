@@ -2022,9 +2022,7 @@ B $8D48,8,h8
 B $8D50,8,h8
 B $8D58,8,h8
 B $8D60,8,h8
-N $8D68
-. MHLC
-.
+D $8D68
 . Probable main-hill limit calculation from the notebook's SCREEN page. This
 . routine appears to derive clipped hill bounds from the current object edge
 . limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
@@ -2037,8 +2035,7 @@ R $8D68 MIN2 Raw outer X-limit word from the secondary object/obstacle family (#
 R $8D68 O:LIM1 Clipped outer hill limit for the main hill pass (#R$FE24($FE24))
 R $8D68 O:LIM2 Clipped outer hill limit for the main hill pass (#R$FE26($FE26))
 @ $8D68 label=MHLC
-c $8D68
-. MHLC
+c $8D68 MHLC
 C $8D68,h3
 . Load the first raw outer X-limit from #R$FE1C.
 C $8D82,h3
@@ -2049,9 +2046,7 @@ C $8DB1,h3
 . Load the matching second raw outer X-limit from #R$FE22.
 C $8DFF,h4
 . Store the clipped primary hill limits into #R$FE24 and #R$FE26.
-N $8E08
-. SHLC
-.
+D $8E08
 . Probable secondary-hill limit calculation from the notebook's SCREEN page.
 . It consumes the primary limits from #R$8D68 and derives a second pair of
 . hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
@@ -2062,15 +2057,12 @@ R $8E08 LIM2 Primary hill limit from `MHLC` (#R$FE26($FE26))
 R $8E08 O:LIM3 Secondary/inner hill limit for the infill pass (#R$FE28($FE28))
 R $8E08 O:LIM4 Secondary/inner hill limit for the infill pass (#R$FE2A($FE2A))
 @ $8E08 label=SHLC
-c $8E08
-. SHLC
+c $8E08 SHLC
 C $8E08,h4
 . Load the primary clipped hill limits from #R$FE24 and #R$FE26.
 C $8E2F,h4
 . Store the derived inner hill limits into #R$FE28 and #R$FE2A.
-N $8E38
-. MHLPT
-.
+D $8E38
 . Probable main-hill plotting stage from the notebook's SCREEN page. This
 . routine uses the stream pointer at FE2C together with the main-hill limits
 . derived by #R$8D68.
@@ -2083,8 +2075,7 @@ R $8E38 LIM2 Clipped outer hill limit from `MHLC` (#R$FE26($FE26))
 R $8E38 HLCNT Live hill-row data stream pointer (#R$FE2C($FE2C))
 R $8E38 O:HLCNT Advanced hill-row data stream pointer after the main hill pass (#R$FE2C($FE2C))
 @ $8E38 label=MHLPT
-c $8E38
-. MHLPT
+c $8E38 MHLPT
 C $8E38,h4
 . Save `SP` to #R$FE00 before reusing it as the hill-row stream pointer.
 C $8E3C,h4
@@ -2113,9 +2104,7 @@ C $8F3A,h4
 . Reload the companion outer hill limits from #R$FE26 for the second half of the fill.
 C $8F4E,h4
 . Restore `SP` from #R$FE00 after the hill stream pass completes.
-N $8F53
-. SHLPT
-.
+D $8F53
 . Probable secondary-hill plotting stage from the notebook's SCREEN page. It
 . reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
 . matching the recollected infill pass inside the object limits.
@@ -2130,8 +2119,7 @@ R $8F53 SHCNT Live hill-row stream pointer for the reverse/inner-row direction (
 R $8F53 O:SHCNT Advanced inner-row stream pointer after the infill pass (#R$FE2E($FE2E))
 R $8F53 O:LIM Updated temporary inner-width / limit pair used while stepping inward (#R$FE30($FE30))
 @ $8F53 label=SHLPT
-c $8F53
-. SHLPT
+c $8F53 SHLPT
 C $8F56,h4
 . Load the first inner hill limits from #R$FE28 and seed the temporary pair in #R$FE30.
 N $8F61
@@ -6242,8 +6230,7 @@ C $B552,h3
 C $B555,h2
 C $B557,h3
 C $B55A,h3
-c $B55D
-. AttractModeShowcaseFrame
+c $B55D AttractModeShowcaseFrame
 D $B55D
 . Used by the routine at #R$B587.
 . Current best read: helper for a single attract-mode showcase frame.
@@ -6276,8 +6263,7 @@ C $B57D,h9
 . prompt.
 C $B586,1
 . Return.
-c $B587
-. AttractModeEntityShowcase
+c $B587 AttractModeEntityShowcase
 D $B587
 . Entered from the attract/title sequence after the title flyoff/setup path.
 . Current best read: attract-mode stage C.
@@ -6417,8 +6403,7 @@ C $B663,h6
 . i.e. the standard ROM character set, before the instructions pages.)
 C $B669,h3
 . Jump to #R$B676.
-c $B66C
-. Print Characters
+c $B66C PrintCharacters
 D $B66C
 . Used by the routines at #R$B55D and #R$B676.
 R $B66C HL Address of text
@@ -6442,8 +6427,7 @@ C $B673,h2
 . #R$B66C until all characters have been printed.
 C $B675,1
 . Return.
-c $B676
-. AttractModeInstructionPages
+c $B676 AttractModeInstructionPages
 D $B676
 . Used by the routine at #R$B587.
 . Current best read: attract-mode stages D/E.

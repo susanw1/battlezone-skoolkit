@@ -3633,7 +3633,11 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 
 ; MHLC
 ;
-; Used by the routines at #R$A37B and #R$ADD4.
+; Probable main-hill limit calculation from the notebook's SCREEN page. This
+; routine appears to derive clipped hill bounds from the current object edge
+; limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
+; FE24/FE26 workspace pair.
+; The Input/Output tables below capture the preset workspace interface.
 ;
 ;   MAX1 Raw outer X-limit word from the primary visible object
 ; .      (#R$FE1C($FE1C))
@@ -3645,14 +3649,6 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
 ; .      (#R$FE22($FE22))
 ; O:LIM1 Clipped outer hill limit for the main hill pass (#R$FE24($FE24))
 ; O:LIM2 Clipped outer hill limit for the main hill pass (#R$FE26($FE26))
-;
-; MHLC
-; .
-; Probable main-hill limit calculation from the notebook's SCREEN page. This
-; routine appears to derive clipped hill bounds from the current object edge
-; limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
-; FE24/FE26 workspace pair.
-; The Input/Output tables below capture the preset workspace interface.
 @label=MHLC
 c$8D68 LD HL,($FE1C) ; Load the first raw outer X-limit from #R$FE1C.
  $8D6B LD DE,$0080   ;
@@ -3756,20 +3752,16 @@ c$8D68 LD HL,($FE1C) ; Load the first raw outer X-limit from #R$FE1C.
 
 ; SHLC
 ;
-; Used by the routines at #R$A37B and #R$ADD4.
-;
-;   LIM1 Primary hill limit from `MHLC` (#R$FE24($FE24))
-;   LIM2 Primary hill limit from `MHLC` (#R$FE26($FE26))
-; O:LIM3 Secondary/inner hill limit for the infill pass (#R$FE28($FE28))
-; O:LIM4 Secondary/inner hill limit for the infill pass (#R$FE2A($FE2A))
-;
-; SHLC
-; .
 ; Probable secondary-hill limit calculation from the notebook's SCREEN page.
 ; It consumes the primary limits from #R$8D68 and derives a second pair of
 ; hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
 ; hill infill pass for the object interior.
 ; The Input/Output tables below capture the preset workspace interface.
+;
+;   LIM1 Primary hill limit from `MHLC` (#R$FE24($FE24))
+;   LIM2 Primary hill limit from `MHLC` (#R$FE26($FE26))
+; O:LIM3 Secondary/inner hill limit for the infill pass (#R$FE28($FE28))
+; O:LIM4 Secondary/inner hill limit for the infill pass (#R$FE2A($FE2A))
 @label=SHLC
 c$8E08 LD BC,($FE24) ; Load the primary clipped hill limits from #R$FE24 and #R$FE26.
  $8E0C LD DE,($FE26) ;
@@ -3803,16 +3795,6 @@ c$8E08 LD BC,($FE24) ; Load the primary clipped hill limits from #R$FE24 and #R$
 
 ; MHLPT
 ;
-; Used by the routines at #R$A37B and #R$ADD4.
-;
-;   LIM1 Clipped outer hill limit from `MHLC` (#R$FE24($FE24))
-;   LIM2 Clipped outer hill limit from `MHLC` (#R$FE26($FE26))
-;   HLCNT Live hill-row data stream pointer (#R$FE2C($FE2C))
-; O:HLCNT Advanced hill-row data stream pointer after the main hill pass
-; .       (#R$FE2C($FE2C))
-;
-; MHLPT
-; .
 ; Probable main-hill plotting stage from the notebook's SCREEN page. This
 ; routine uses the stream pointer at FE2C together with the main-hill limits
 ; derived by #R$8D68.
@@ -3820,6 +3802,12 @@ c$8E08 LD BC,($FE24) ; Load the primary clipped hill limits from #R$FE24 and #R$
 ; Current best read: it copies hill-row data from the FE2C stream into the
 ; off-screen E700 playfield buffer for the left and right outer regions, then
 ; fills the interior span in E8A0..E8BF with `0xAA`.
+;
+;   LIM1 Clipped outer hill limit from `MHLC` (#R$FE24($FE24))
+;   LIM2 Clipped outer hill limit from `MHLC` (#R$FE26($FE26))
+;   HLCNT Live hill-row data stream pointer (#R$FE2C($FE2C))
+; O:HLCNT Advanced hill-row data stream pointer after the main hill pass
+; .       (#R$FE2C($FE2C))
 @label=MHLPT
 c$8E38 LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as the hill-row stream pointer.
  $8E3C LD SP,($FE2C) ; Switch `SP` to the live hill-row stream in #R$FE2C.
@@ -4039,7 +4027,13 @@ c$8E38 LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as the hill-row st
 
 ; SHLPT
 ;
-; Used by the routines at #R$A37B and #R$ADD4.
+; Probable secondary-hill plotting stage from the notebook's SCREEN page. It
+; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
+; matching the recollected infill pass inside the object limits.
+; The Input/Output tables below capture the preset workspace interface.
+; Current best read: it advances through the FE2C stream while only writing
+; into still-empty bytes of the off-screen E700 playfield buffer, then steps
+; inward by row until the infill region is complete.
 ;
 ;   LIM3 Inner hill limit from `SHLC` (#R$FE28($FE28))
 ;   LIM4 Inner hill limit from `SHLC` (#R$FE2A($FE2A))
@@ -4051,16 +4045,6 @@ c$8E38 LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as the hill-row st
 ; .       (#R$FE2E($FE2E))
 ; O:LIM Updated temporary inner-width / limit pair used while stepping inward
 ; .     (#R$FE30($FE30))
-;
-; SHLPT
-; .
-; Probable secondary-hill plotting stage from the notebook's SCREEN page. It
-; reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
-; matching the recollected infill pass inside the object limits.
-; The Input/Output tables below capture the preset workspace interface.
-; Current best read: it advances through the FE2C stream while only writing
-; into still-empty bytes of the off-screen E700 playfield buffer, then steps
-; inward by row until the infill region is complete.
 @label=SHLPT
 c$8F53 CALL $8F61    ;
  $8F56 LD BC,($FE28) ; Load the first inner hill limits from #R$FE28 and seed the temporary pair in #R$FE30.
@@ -9541,7 +9525,7 @@ c$B587 LD HL,$00C0   ;
                      ; }
  $B669 JP $B676      ; Jump to #R$B676.
 
-; Print Characters
+; PrintCharacters
 ;
 ; Used by the routines at #R$B55D and #R$B676.
 ;
