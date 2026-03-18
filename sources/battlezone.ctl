@@ -2038,6 +2038,7 @@ R $8D68 O:LIM1 Clipped outer hill limit for the main hill pass (#R$FE24($FE24))
 R $8D68 O:LIM2 Clipped outer hill limit for the main hill pass (#R$FE26($FE26))
 @ $8D68 label=MHLC
 c $8D68
+. MHLC
 C $8D68,h3
 . Load the first raw outer X-limit from #R$FE1C.
 C $8D82,h3
@@ -2062,6 +2063,7 @@ R $8E08 O:LIM3 Secondary/inner hill limit for the infill pass (#R$FE28($FE28))
 R $8E08 O:LIM4 Secondary/inner hill limit for the infill pass (#R$FE2A($FE2A))
 @ $8E08 label=SHLC
 c $8E08
+. SHLC
 C $8E08,h4
 . Load the primary clipped hill limits from #R$FE24 and #R$FE26.
 C $8E2F,h4
@@ -2082,6 +2084,7 @@ R $8E38 HLCNT Live hill-row data stream pointer (#R$FE2C($FE2C))
 R $8E38 O:HLCNT Advanced hill-row data stream pointer after the main hill pass (#R$FE2C($FE2C))
 @ $8E38 label=MHLPT
 c $8E38
+. MHLPT
 C $8E38,h4
 . Save `SP` to #R$FE00 before reusing it as the hill-row stream pointer.
 C $8E3C,h4
@@ -2128,6 +2131,7 @@ R $8F53 O:SHCNT Advanced inner-row stream pointer after the infill pass (#R$FE2E
 R $8F53 O:LIM Updated temporary inner-width / limit pair used while stepping inward (#R$FE30($FE30))
 @ $8F53 label=SHLPT
 c $8F53
+. SHLPT
 C $8F56,h4
 . Load the first inner hill limits from #R$FE28 and seed the temporary pair in #R$FE30.
 N $8F61
@@ -2209,6 +2213,7 @@ D $9132
 R $9132 O:A `KMOV` movement code
 @ $9132 label=KeyboardMovementDecode
 c $9132
+. KeyboardMovementDecode
 C $9132,h2
 C $9134,h2
 C $9136,1
@@ -2331,6 +2336,7 @@ R $91E6 O:BC Updated Z coordinate word
 R $91E6 O:HL Updated view-turn angle / accumulator
 @ $91E6 label=TurnTransformDispatcher
 c $91E6
+. TurnTransformDispatcher
 C $91E6,1
 N $91E7
 . Load the current indirect turn-handler entry from #R$FE5C.
@@ -2420,6 +2426,7 @@ R $924A O:BC Updated Z coordinate word
 R $924A O:HL Updated view-turn angle / accumulator
 @ $924A label=TurnHandlerRight1
 c $924A
+. TurnHandlerRight1
 C $924A,1
 C $924B,1
 C $924C,1
@@ -2498,6 +2505,7 @@ R $92AE O:BC Updated Z coordinate word
 R $92AE O:HL Updated view-turn angle / accumulator
 @ $92AE label=TurnHandlerLeft2
 c $92AE
+. TurnHandlerLeft2
 C $92AE,1
 C $92AF,1
 C $92B0,1
@@ -2576,6 +2584,7 @@ R $9312 O:BC Updated Z coordinate word
 R $9312 O:HL Updated view-turn angle / accumulator
 @ $9312 label=TurnHandlerRight2
 c $9312
+. TurnHandlerRight2
 C $9312,1
 C $9313,1
 C $9314,1
@@ -2661,6 +2670,7 @@ R $938A DE Signed Z component / world-space Z distance
 R $938A O:A Heading / bearing code
 @ $938A label=HeadingFromXZ
 c $938A
+. HeadingFromXZ
 u $943D
 . Padding / reserved growth space after `HeadingFromXZ`.
 . The 3-byte `NOP` run at `0x943D..0x943F` follows a hard `RET` and precedes
@@ -4062,6 +4072,7 @@ u $A0D6
 D $A122 Shared player-bullet / hostile-bullet update, project, draw, and hit-test block. It advances the active bullet state, installs the shared transform/perspective inputs, and either draws the visible bullet or queues the appropriate deferred hit/effect path.
 @ $A122 label=BulletUpdateAndRender
 c $A122
+. BulletUpdateAndRender
 @ $A133 label=PlayerBulletCheckActive
 @ $A155 label=PlayerBulletAdvanceAndRotate
 @ $A1D3 label=PlayerBulletVisible
@@ -4306,6 +4317,7 @@ C $A378,h3
 D $A37B Select the current obstacle/object family, seed its raw world `(X,Z)` pair plus line-data base, and either project/draw it or fall straight into the shared SCREEN phase.
 @ $A37B label=ObstacleSelectAndRender
 c $A37B
+. ObstacleSelectAndRender
 @ $A423 label=ObstacleRotateAndProject
 @ $A4CA label=ObstacleHidden
 @ $A4E1 label=ObstacleVisible
@@ -4596,6 +4608,7 @@ N $A685
 @ $A685 label=KEYIN
 @ $A685 label=InputDecodeAndMask
 c $A685
+. InputDecodeAndMask
 @ $A692 label=InputStoreKMOV
 @ $A695 label=InputMaskAgainstObstacles
 @ $A701 label=InputNoObstacleWarning
@@ -4671,6 +4684,7 @@ D $A714
 R $A714 A Surviving `KMOV` movement code after obstacle masking
 @ $A714 label=KMOVTurnDecode
 c $A714
+. KMOVTurnDecode
 C $A714,h3
 . Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
 . delta that matches the chosen turn rate/direction.
@@ -4719,6 +4733,7 @@ C $A76E,h3
 C $A771,h3
 @ $A774 label=WorldZScroll
 c $A774
+. WorldZScroll
 D $A774 Straight world-Z scroll pass after forward/back movement. The chosen signed delta in `DE` is applied to all obstacle Z slots and to the other world-space entity Z positions so the player remains effectively centred while the world moves.
 N $A778
 . Store the updated first obstacle Z slot back into #R$FE9A.
@@ -4769,6 +4784,7 @@ C $A7C1,h3
 C $A7C5,h3
 @ $A7C8 label=WorldTurnGate
 c $A7C8
+. WorldTurnGate
 C $A7C9,h2
 C $A7CB,h3
 . Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
@@ -4777,6 +4793,7 @@ N $A7CE
 C $A7CE,h3
 @ $A7D1 label=SharedWorldTurnPass
 c $A7D1
+. SharedWorldTurnPass
 D $A7D1 Shared world-turn rotation pass. `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn transform to each `(X,Z)` pair, and returns updated coordinates. The pass is used first on the four obstacle pairs, then on tank, saucer, missile, bullet, and deferred-effect world positions.
 N $A7D5
 . Load the first obstacle world `(X,Z)` pair from `Obstacle1X` / `Obstacle1Z` (`$FE98` / `$FE9A`).
@@ -4882,6 +4899,7 @@ C $A909,h4
 C $A90D,h4
 @ $A911 label=GameplayHoldLoop
 c $A911
+. GameplayHoldLoop
 C $A911,h3
 . Read the `ENTER L K J H` keyboard row.
 C $A916,h2
@@ -4911,6 +4929,7 @@ N $A934
 . - current best notebook match: `SAEXV`
 @ $A934 label=SaucerExplosionSetup
 c $A934
+. SaucerExplosionSetup
 C $A934,h3
 C $A937,h2
 . Clear the active saucer and player-bullet bits.
@@ -4969,6 +4988,7 @@ N $A9AC
 . - current best notebook match: `TKEXV`
 @ $A9AC label=TankExplosionSetup
 c $A9AC
+. TankExplosionSetup
 C $A9AC,h3
 C $A9AF,h2
 C $A9B1,h3
@@ -5008,6 +5028,7 @@ C $AA05,h3
 C $AA08,h3
 @ $AA0B label=MissileExplosionSetup
 c $AA0B
+. MissileExplosionSetup
 C $AA0B,h3
 C $AA0E,h2
 . Clear the active missile and player-bullet bits.
@@ -5075,6 +5096,7 @@ R $AA5D O:DeferredEffectYLOC Rebuilt temporary deferred-effect Y list pointer (#
 R $AA5D O:LINCD Installed deferred-effect line-data pointer for `LNLPT` (#R$FE02($FE02))
 @ $AA5D label=DeferredEffectAnimator
 c $AA5D
+. DeferredEffectAnimator
 C $AA5D,h2
 C $AA5F,h3
 . If the active source was a bullet, refresh the shared impact-effect seed first.
@@ -5227,6 +5249,7 @@ C $AC1B,h3
 C $AC1F,h3
 @ $AC22 label=BulletImpactEffectSetup
 c $AC22
+. BulletImpactEffectSetup
 C $AC22,h2
 N $AC24
 . Probable bullet-impact / bullet-explosion setup.
@@ -5385,6 +5408,7 @@ N $ADD4
 . This entry point is used by the routine at #R$977E.
 @ $ADD4 label=CRASH
 c $ADD4
+. CRASH
 C $ADD4,h2
 C $ADD6,h3
 C $ADD9,h3
@@ -5463,6 +5487,7 @@ N $AE90
 . then prints `GAME OVER` and later the `TODAYS GREATEST` heading.
 @ $AE90 label=BLOOD
 c $AE90
+. BLOOD
 C $AE90,h2
 C $AE92,h3
 C $AE95,h3
@@ -5793,7 +5818,7 @@ C $B1ED,h3
 . Start game.
 C $B1F1,h3
 c $B1F4
-. Routine at B1F4
+. AttractModeTitleSequence
 D $B1F4
 . Used by the primary entrypoint, gameplay abort/back-to-title paths, and the instructions loop.
 . Current best read: attract-mode stage A/B.
@@ -6232,7 +6257,7 @@ C $B555,h2
 C $B557,h3
 C $B55A,h3
 c $B55D
-. Routine at B55D
+. AttractModeShowcaseFrame
 D $B55D
 . Used by the routine at #R$B587.
 . Current best read: helper for a single attract-mode showcase frame.
@@ -6266,7 +6291,7 @@ C $B57D,h9
 C $B586,1
 . Return.
 c $B587
-. Routine at B587
+. AttractModeEntityShowcase
 D $B587
 . Entered from the attract/title sequence after the title flyoff/setup path.
 . Current best read: attract-mode stage C.
@@ -6432,7 +6457,7 @@ C $B673,h2
 C $B675,1
 . Return.
 c $B676
-. Routine at B676
+. AttractModeInstructionPages
 D $B676
 . Used by the routine at #R$B587.
 . Current best read: attract-mode stages D/E.

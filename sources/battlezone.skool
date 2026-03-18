@@ -3631,7 +3631,7 @@ b$8CA0 DEFB $10,$00,$01,$00,$00,$00,$00,$00
  $8D58 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8D60 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
-; Routine at 8D68
+; MHLC
 ;
 ; Used by the routines at #R$A37B and #R$ADD4.
 ;
@@ -3754,7 +3754,7 @@ c$8D68 LD HL,($FE1C) ; Load the first raw outer X-limit from #R$FE1C.
  $8E03 LD ($FE26),DE ;
  $8E07 RET           ;
 
-; Routine at 8E08
+; SHLC
 ;
 ; Used by the routines at #R$A37B and #R$ADD4.
 ;
@@ -3801,7 +3801,7 @@ c$8E08 LD BC,($FE24) ; Load the primary clipped hill limits from #R$FE24 and #R$
  $8E33 LD ($FE2A),BC ;
  $8E37 RET           ;
 
-; Routine at 8E38
+; MHLPT
 ;
 ; Used by the routines at #R$A37B and #R$ADD4.
 ;
@@ -4037,7 +4037,7 @@ c$8E38 LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as the hill-row st
 *$8F4E LD SP,($FE00) ; Restore `SP` from #R$FE00 after the hill stream pass completes.
  $8F52 RET           ;
 
-; Routine at 8F53
+; SHLPT
 ;
 ; Used by the routines at #R$A37B and #R$ADD4.
 ;
@@ -4410,7 +4410,7 @@ c$90BA PUSH HL       ;
 u$9123 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $912B DEFB $00,$00,$00,$00,$00,$00,$00
 
-; Routine at 9132
+; KeyboardMovementDecode
 ;
 ; Keyboard movement/button decode helper.
 ; Called from gameplay input handling and the start/demo code. It scans the
@@ -4536,7 +4536,7 @@ c$9132 LD D,$00                                         ;
  $91D5 DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ;
  $91E0 DEFB $00,$00,$00,$00,$00,$00                     ;
 
-; Routine at 91E6
+; TurnTransformDispatcher
 ;
 ; Shared turn/movement transform dispatcher.
 ; `0xA7D9` and related callers pass an `(X,Z)` pair in `DE/BC`. The routine
@@ -4624,7 +4624,7 @@ c$91E6 PUSH HL       ;
  $9247 RET           ;
  $9248 DEFB $00,$00  ;
 
-; Routine at 924A
+; TurnHandlerRight1
 ;
 ; Movement/turn handler variant selected via `TURN`.
 ; Current best read: single-speed right turn before the shared transform.
@@ -4704,7 +4704,7 @@ c$924A POP HL        ;
  $92AC RET           ;
  $92AD DEFB $00      ;
 
-; Routine at 92AE
+; TurnHandlerLeft2
 ;
 ; Movement/turn handler variant selected via `TURN`.
 ; Current best read: double-speed left turn before the shared transform.
@@ -4784,7 +4784,7 @@ c$92AE POP HL               ;
  $930D RET                  ;
  $930E DEFB $00,$00,$00,$00 ;
 
-; Routine at 9312
+; TurnHandlerRight2
 ;
 ; Movement/turn handler variant selected via `TURN`.
 ; Current best read: double-speed right turn before the shared transform.
@@ -4870,7 +4870,7 @@ c$9312 POP HL                               ;
  $9380 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
  $9388 DEFB $00,$00                         ;
 
-; Routine at 938A
+; HeadingFromXZ
 ;
 ; Used by the routines at #R$956A and #R$977E.
 ;
@@ -6709,7 +6709,7 @@ u$A0D6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $A116 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $A11E DEFB $00,$00,$00,$00
 
-; Routine at A122
+; BulletUpdateAndRender
 ;
 ; Shared player-bullet / hostile-bullet update, project, draw, and hit-test
 ; block. It advances the active bullet state, installs the shared
@@ -6986,7 +6986,7 @@ c$A122 LD A,$18      ;
  $A375 LD ($FE02),HL ;
  $A378 CALL $805C    ;
 
-; Routine at A37B
+; ObstacleSelectAndRender
 ;
 ; Select the current obstacle/object family, seed its raw world `(X,Z)` pair
 ; plus line-data base, and either project/draw it or fall straight into the
@@ -7353,7 +7353,7 @@ c$A37B LD A,$18      ;
  $A681 JP $A692      ;
  $A684 SUB A         ;
 
-; Routine at A685
+; InputDecodeAndMask
 ;
 ; Used by the routine at #R$A37B.
 ;
@@ -7435,7 +7435,7 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
  $A710 CALL $9452    ;
  $A713 POP BC        ;
 
-; Routine at A714
+; KMOVTurnDecode
 ;
 ; Shared `KMOV` turn/motion decoder.
 ; Decodes the surviving masked `KMOV` state into the selected turn-handler
@@ -7495,7 +7495,7 @@ c$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plu
  $A76E JP Z,$A7C8    ;
  $A771 LD DE,$0080   ;
 
-; Routine at A774
+; WorldZScroll
 ;
 ; Straight world-Z scroll pass after forward/back movement. The chosen signed
 ; delta in `DE` is applied to all obstacle Z slots and to the other world-space
@@ -7551,7 +7551,7 @@ c$A774 LD HL,($FE9A) ;
  $A7C4 ADD HL,DE     ;
  $A7C5 LD ($FEB6),HL ;
 
-; Routine at A7C8
+; WorldTurnGate
 ;
 ; Used by the routine at #R$A714.
 @label=WorldTurnGate
@@ -7561,7 +7561,7 @@ c$A7C8 LD A,C        ;
 ; Load the current shared turn accumulator from #R$FEA8 before rotating the live world-state tuples.
  $A7CE LD HL,($FEA8) ;
 
-; Routine at A7D1
+; SharedWorldTurnPass
 ;
 ; Shared world-turn rotation pass. `0x91E6` dispatches through `TURN` at
 ; `FE5C`, applies the current view-turn transform to each `(X,Z)` pair, and
@@ -7685,7 +7685,7 @@ c$A7D1 LD DE,($FE98) ;
  $A909 LD ($FECC),DE ;
  $A90D LD ($FED0),BC ;
 
-; Routine at A911
+; GameplayHoldLoop
 ;
 ; Used by the routines at #R$A7C8 and #R$A7D1.
 @label=GameplayHoldLoop
@@ -7704,7 +7704,7 @@ c$A911 LD BC,$BFFE   ; Read the `ENTER L K J H` keyboard row.
  $A92E JP $A927      ; Stay paused until `S` is pressed.
 *$A931 JP $977E      ;
 
-; Routine at A934
+; SaucerExplosionSetup
 ;
 ; Used by the routine at #R$A122.
 ;
@@ -7763,7 +7763,7 @@ c$A934 LD A,($FE6A)  ;
  $A9A7 OUT ($FE),A   ;
  $A9A9 JP $A36F      ;
 
-; Routine at A9AC
+; TankExplosionSetup
 ;
 ; Used by the routine at #R$A122.
 ;
@@ -7810,7 +7810,7 @@ c$A9AC LD A,($FE6A)  ;
  $AA05 LD ($FED4),HL ;
  $AA08 JP $A97A      ;
 
-; Routine at AA0B
+; MissileExplosionSetup
 ;
 ; Used by the routine at #R$A122.
 @label=MissileExplosionSetup
@@ -7844,7 +7844,7 @@ c$AA0B LD A,($FE6A)  ;
  $AA57 LD ($FED4),HL ;
  $AA5A JP $A97A      ;
 
-; Routine at AA5D
+; DeferredEffectAnimator
 ;
 ; Shared deferred explosion / impact animator. It advances the staged X/Z
 ; offset terms, refreshes the current phase angle and source position, rebuilds
@@ -8125,7 +8125,7 @@ c$AA5D AND $0C       ;
  $AC1E POP HL        ;
  $AC1F JP $9644      ;
 
-; Routine at AC22
+; BulletImpactEffectSetup
 ;
 ; Used by the routine at #R$AA5D.
 @label=BulletImpactEffectSetup
@@ -8303,7 +8303,7 @@ c$AD3E LD BC,$0000   ;
 u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $ADCC DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
-; Routine at ADD4
+; CRASH
 ;
 ; Used by the routines at #R$977E and #R$A122.
 ;
@@ -8401,7 +8401,7 @@ c$ADD4 LD A,$C9      ;
  $AE8A LD ($FE6E),A  ;
  $AE8D JP $9644      ;
 
-; Routine at AE90
+; BLOOD
 ;
 ; Used by the routine at #R$ADD4.
 ;
@@ -8934,7 +8934,7 @@ c$AE90 LD A,$02      ;
  $B1F0 DEC A         ;
  $B1F1 JP NZ,$B1D9   ;
 
-; Routine at B1F4
+; AttractModeTitleSequence
 ;
 ; Used by the primary entrypoint, gameplay abort/back-to-title paths, and the instructions loop.
 ; Current best read: attract-mode stage A/B.
@@ -9387,7 +9387,7 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B557 LD ($FE66),A  ;
  $B55A JP $B587      ;
 
-; Routine at B55D
+; AttractModeShowcaseFrame
 ;
 ; Used by the routine at #R$B587.
 ; Current best read: helper for a single attract-mode showcase frame.
@@ -9420,7 +9420,7 @@ c$B55D CALL $977E    ; Call #R$977E.
  $B585 RST $10       ; }
  $B586 RET           ; Return.
 
-; Routine at B587
+; AttractModeEntityShowcase
 ;
 ; Entered from the attract/title sequence after the title flyoff/setup path.
 ; Current best read: attract-mode stage C.
@@ -9564,7 +9564,7 @@ c$B66C LD A,(HL)     ; Load the next character from the text pointer in `HL`.
                      ; #R$B66C until all characters have been printed.
  $B675 RET           ; Return.
 
-; Routine at B676
+; AttractModeInstructionPages
 ;
 ; Used by the routine at #R$B587.
 ; Current best read: attract-mode stages D/E.

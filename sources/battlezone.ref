@@ -22,6 +22,9 @@ AddressAnchor={address#IF({base}==16)(:04x)}
 [PageHeaders]
 GameIndex=The complete<>RAM disassembly (work in progress)
 
+[Titles]
+Asm-c={entry[title]}
+
 [Expand]
 #DEF(#COLOUR(id)
   #LET(ink=$id&$07)#IF({ink}>=$00)(INK:
