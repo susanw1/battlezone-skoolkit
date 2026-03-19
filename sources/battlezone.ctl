@@ -1788,11 +1788,16 @@ u $88D9
 . Padding / reserved growth space between `PERSP` and `RotateXZLists`.
 . This 17-byte `NOP` run follows a `RET` and ends exactly at the next module
 . boundary `0x88EA`.
-c $88EA
-. Shared X/Z rotation transform
+c $88EA RotateXZLists
 D $88EA Used throughout gameplay and attract/title rendering. Current best read: reusable table-driven X/Z rotation stage. It consumes the current model-space X/Z vertex lists plus angle-dependent coefficient tables, applies the active X/Z world displacement, and rewrites the current X/Z working lists in place for later perspective projection.
 D $88EA Current best structural read: four repeated multiply/accumulate passes using the shared element count in `MUCNT`, the active coefficient-table pointers in `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved source-word continuation in `MMAT`.
-D $88EA Practical interface: callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC`; `RotateXZLists` processes those lists via `SP` and writes the descending rotated working-list pointers back into `XLOC`/`ZLOC`; callers then pass those rotated X/Z lists plus a separate fixed `YLOC` list into `PERSP`. The attract-mode title tumble reuses the same block by feeding it a non-standard Y/Z pair and then reusing the first rotated output list as the effective `YLOC`.
+D $88EA Practical interface:
+. #LIST
+. { callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC` }
+. { `RotateXZLists` processes those lists via `SP` and writes the descending rotated working-list pointers back into `XLOC`/`ZLOC` }
+. { callers then pass those rotated X/Z lists plus a separate fixed `YLOC` list into `PERSP` }
+. { the attract-mode title tumble reuses the same block by feeding it a non-standard Y/Z pair and then reusing the first rotated output list as the effective `YLOC` }
+. LIST#
 R $88EA XLOC Fixed model-space X vertex-list end-pointer for the current entity (#R$FE32($FE32))
 R $88EA ZLOC Fixed model-space Z vertex-list end-pointer for the current entity (#R$FE36($FE36))
 R $88EA XTAB Active X-side coefficient-table stream for the current angle (#R$FE42($FE42))
@@ -1945,10 +1950,9 @@ u $8C06
 . Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
 . This `NOP` run follows a hard `RET` and ends on the next separately built
 . module boundary at `0x8C3C`.
-c $8C3C
-. SDRAW
-D $8C3C
-. Used throughout gameplay, crash/death, and attract/title/showcase rendering.
+c $8C3C SDRAW
+D $8C3C Used throughout gameplay, crash/death, and attract/title/showcase rendering.
+D $8C3C Current best read: display presenter / screen copy helper. It copies the off-screen status strip and lower playfield buffers to the visible Spectrum bitmap, then clears those same off-screen buffers ready for the next frame.
 N $8C3C
 . #PUSHS
 . #UDGTABLE
@@ -2314,9 +2318,11 @@ D $91E6
 . jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
 . selected movement/turn variant, then returns updated coordinates in `DE/BC`
 . and the updated view-turn angle in `HL`.
-. Indirect-entry audit note: this `JP (HL)` is the only true computed routine
-. dispatch in the shipped gameplay code, and `KMOVTurnDecode` only seeds it
-. with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312`.
+. Indirect-entry audit note:
+. #LIST
+. { this `JP (HL)` is the only true computed routine dispatch in the shipped gameplay code }
+. { `KMOVTurnDecode` only seeds it with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312` }
+. LIST#
 R $91E6 DE Input X coordinate word
 R $91E6 BC Input Z coordinate word
 R $91E6 O:DE Updated X coordinate word
@@ -2325,20 +2331,19 @@ R $91E6 O:HL Updated view-turn angle / accumulator
 @ $91E6 label=TurnTransformDispatcher
 c $91E6 TurnTransformDispatcher
 C $91E6,1
-N $91E7
-. Load the current indirect turn-handler entry from #R$FE5C.
 C $91E7,h3
+. Load the current indirect turn-handler entry from #R$FE5C.
 C $91EA,1
-D $91EB
-. Movement/turn handler variant selected via `TURN`.
-. Current best read: single-speed left turn before the shared transform.
 R $91EB DE Input X coordinate word
 R $91EB BC Input Z coordinate word
 R $91EB O:DE Updated X coordinate word
 R $91EB O:BC Updated Z coordinate word
 R $91EB O:HL Updated view-turn angle / accumulator
 @ $91EB label=TurnHandlerLeft1
+c $91EB TurnHandlerLeft1
 C $91EB,1
+. Movement/turn handler variant selected via `TURN`; current best read:
+. single-speed left turn before the shared transform.
 C $91EC,1
 C $91ED,h2
 C $91EF,1
@@ -2856,7 +2861,7 @@ c $956A
 . Entered from the common start-game transition and the attract/showcase setup patch path.
 C $956A,h3
 C $956D,h3
-. Clear probable EXST1 / EXST2 state bytes.
+. Clear `EXST1` / `EXST2`.
 C $9570,h3
 C $9573,h3
 C $9576,h3
@@ -2866,7 +2871,7 @@ C $957F,h3
 C $9582,h3
 C $9585,h3
 C $9588,h3
-. Clear probable PRSTA / render-state byte.
+. Clear `PRSTA` / render-state byte.
 C $958B,h3
 C $958E,h3
 C $9591,h3
@@ -2943,12 +2948,12 @@ C $9641,h3
 N $9644
 . TEXST
 . This entry point is used by the routines at #R$977E and #R$AD3E.
-. Current best read: shipped `TEXST` / tank-family existence-spawn dispatcher.
+. Shipped `TEXST` / tank-family existence-spawn dispatcher.
 . It still does the notebook page-11/12 job of deciding whether the tank-family
 . should exist and seeding `TKX` / `TKZ` / `TKOR` / `TKDIR`, but the shipped
 . code has broadened into a score/random-driven dispatcher with an inlined
 . missile-setup branch at #R$972E.
-. Current best threshold reading:
+. Current threshold reading:
 . - score below 5: always seed the old-tank family
 . - score 5..24: choose old tank vs missile, matching the page-4 `M = 1/4`
 .   and `M|M = 3/4` style notes depending on whether the missile bit is
@@ -2972,7 +2977,7 @@ C $966C,h3
 C $966F,h2
 C $9672,h2
 N $9674
-. Set the active tank-family bit in `Probable_EXST1`.
+. Set the active tank-family bit in `EXST1`.
 C $9674,h3
 C $9678,h2
 C $967A,h2
@@ -3017,7 +3022,7 @@ C $96E0,h3
 C $96E3,h2
 C $96E5,h2
 N $96E9
-. Replace the active major-entity bits in `Probable_EXST1` with the selected tank/supertank family.
+. Replace the active major-entity bits in `EXST1` with the selected tank/supertank family.
 C $96E9,h3
 C $96EE,h2
 . Read `R` as a pseudo-random source for the signed tank X seed.
@@ -3050,9 +3055,9 @@ C $972B,h3
 N $972E
 . MSET
 . This entry point is used by the routine at #R$977E.
-. Current best read: shipped `MSET` missile-setup branch reached from #R$9644.
+. Shipped `MSET` missile-setup branch reached from #R$9644.
 . Seeds `MISX` / `MISY` / `MISZ`, derives `ZIG` from `MISCT`, initialises the
-. live missile strategy byte, and sets bit `0x10` in `Probable_EXST1`.
+. live missile strategy byte, and sets bit `0x10` in `EXST1`.
 @ $972E label=MSET
 C $972E,h2
 . Read `R` as a pseudo-random source for the initial signed missile X offset seed.
@@ -3096,7 +3101,7 @@ N $9776
 C $9776,h3
 C $9779,h2
 C $977B,h3
-. Enable the missile/existence bit in probable EXST1.
+. Enable the missile/existence bit in `EXST1`.
 c $977E
 . Main Game Loop
 D $977E
@@ -3122,11 +3127,11 @@ C $979E,h3
 C $97A1,h3
 C $97A4,h3
 C $97A7,h2
-. High nibble of probable PRSTA mirrors visible major entities.
+. High nibble of `PRSTA` mirrors visible major entities.
 C $97A9,h3
 C $97AC,h3
 C $97AF,h2
-. Saucer or missile already active in probable EXST1?
+. Saucer or missile already active in `EXST1`?
 C $97B1,h3
 . If no visible major entity is active and neither saucer nor missile is
 . already active, seed a fresh saucer here.
@@ -3152,7 +3157,7 @@ C $97D3,h3
 C $97D6,h3
 . Current best read: player-fire request path.
 . If `FE54` requests a shot and no player bullet is already active, seed the
-. player-bullet state and set bit `0x08` in `Probable_EXST1`.
+. player-bullet state and set bit `0x08` in `EXST1`.
 C $97DA,h3
 C $97DE,h3
 C $97E1,h3
@@ -3223,7 +3228,7 @@ C $98AC,h3
 C $98AF,h3
 C $98B2,h3
 C $98B5,h2
-. Set the hostile-bullet active bit in probable EXST1.
+. Set the hostile-bullet active bit in `EXST1`.
 C $98B7,h3
 C $98BA,h3
 C $98BD,h3
@@ -3248,13 +3253,13 @@ C $98EE,h3
 C $98F1,h3
 @ $98F4 label=TKSTRAT
 C $98F4,h3
-. Current best read: `TKSTRAT` core.
+. Tank strategy state machine.
 . Evidence:
 . - this is where `FE68` countdown/state timing, `FE66` strategy bits,
 .   `FE62` heading, and `FE5E/FE60` tank position are updated together
 . - the logic matches the notebook's `TKMCT`, `TKSTR`, `TKOR`, `TKX`, `TKZ`,
 .   `TKDIR`, `FRAME`, and `PHASE` cluster on page 13
-. Current best `TKSTR` bit reading from this block:
+. Current `TKSTR` bit reading from this block:
 . - bit 7 = kill/aggressive mode
 . - bit 6 = forward motion
 . - bit 5 = reverse/back motion
@@ -3789,7 +3794,7 @@ C $9E44,h2
 . Missile active?
 C $9E46,h3
 C $9E49,h3
-. Current best read: `MISSTRAT` / missile strategy state machine.
+. Missile strategy state machine.
 . Evidence:
 . - this block manipulates the live missile strategy byte in `MissileStrategy`
 . - it updates the signed missile offset/orientation slot in `MissileOrientation`
@@ -3978,7 +3983,7 @@ C $A03E,h3
 C $A042,h2
 C $A046,h3
 C $A04A,h3
-. Clear probable PRSTA when the missile/crash object is not drawable.
+. Clear `PRSTA` when the missile/crash object is not drawable.
 C $A04D,h2
 C $A04F,h3
 C $A052,h3
@@ -3993,7 +3998,7 @@ C $A066,h3
 C $A069,h3
 C $A06C,h2
 C $A06E,h3
-. Set the missile-visible bit in probable PRSTA.
+. Set the missile-visible bit in `PRSTA`.
 C $A073,h3
 C $A078,h3
 C $A07B,h2
@@ -4079,7 +4084,7 @@ C $A145,h2
 C $A147,h3
 C $A14A,h3
 C $A14D,h2
-. Queue the player-bullet deferred/restart bit in `Probable_EXST2`.
+. Queue the player-bullet deferred/restart bit in `EXST2`.
 C $A14F,h3
 C $A152,h3
 C $A155,h3
@@ -4180,7 +4185,7 @@ C $A24A,h2
 C $A24C,h3
 C $A24F,h3
 C $A252,h2
-. Queue the hostile-bullet deferred/restart bit in `Probable_EXST2`.
+. Queue the hostile-bullet deferred/restart bit in `EXST2`.
 C $A254,h3
 C $A257,h3
 C $A25A,h3
@@ -4304,7 +4309,7 @@ C $A37D,h2
 C $A37F,h2
 C $A381,h2
 N $A383
-. Seed the selected obstacle/object X/Z pair into the temporary selector slots at `$FEE8` / `$FEEA`.
+. Seed the selected obstacle/object X/Z pair into `SelectedObstacleX` / `SelectedObstacleZ`.
 C $A383,h3
 C $A386,h3
 . Probable OB3VU / pyramid line-data family.
@@ -4372,14 +4377,14 @@ C $A417,h3
 C $A41B,h3
 C $A420,h3
 C $A423,h3
-. Rotate/project the selected obstacle/object, update the low-bit selector in `EXST1`,
+. Rotate/project the selected obstacle/object, update the low-bit selector in `PRSTA`,
 . and split into hidden vs visible paths.
 C $A426,h4
 C $A42A,h3
 C $A42D,h4
 C $A431,h3
 C $A434,h2
-. Replace the current obstacle/object low-bit selector.
+. Replace the current obstacle/object low-bit selector in `PRSTA`.
 C $A437,h3
 C $A43A,h3
 C $A43F,h3
@@ -5220,7 +5225,7 @@ C $AC0E,h3
 @ $AC12 label=DeferredEffectRespawn
 C $AC13,h3
 C $AC16,1
-. Restore the deferred major-entity bit to probable EXST1
+. Restore the deferred major-entity bit to `EXST1`
 C $AC17,h3
 . before jumping into the reinitialisation path at #R$9644.
 C $AC1B,h3
@@ -5829,6 +5834,13 @@ C $B248,h5
 . Write `$30` to *#R$FE68.
 N $B24D
 . Current best read: attract-mode stage A, tumbling `QS` logo loop.
+.
+. Working model:
+. #LIST
+. { seed the QS-specific rotating Y/Z pair plus the shared zero-axis companion table }
+. { run the normal rotation/perspective pipeline as a Y/Z tumble hack }
+. { draw the QS line-data family, poll `S`, and loop until the later title-flash stage takes over }
+. LIST#
 @ $B24D label=AttractModeQSTumbleLoop
 C $B24D,h6
 . Point #R$FE42 at `$CA28`, the current best QS rotating Y/Z seed table.
@@ -5858,7 +5870,7 @@ C $B286,h3
 C $B289,h3
 C $B28C,h3
 C $B28F,h3
-. Current best read: `Probable_QS_FixedXTable`.
+. Current best read: `QS_FixedXTable`.
 C $B292,h3
 C $B295,h3
 C $B298,h3
@@ -5876,7 +5888,7 @@ C $B2AA,h2
 C $B2AC,h3
 . Start game from the intro/title animation loop.
 C $B2AF,h3
-. Current best read: `Probable_QS_LineData`.
+. Current best read: `QS_LineData`.
 C $B2B2,h3
 C $B2B5,h3
 C $B2B8,h3
@@ -5953,12 +5965,18 @@ C $B343,h3
 N $B346
 . Current best read: attract-mode stage B helper, drawing the split
 . `BATTLE` / `ZONE` title words with the same X-axis tumble hack used for `QS`.
+.
+. Working model:
+. #LIST
+. { first pass: install the `BATTLE` rotating Y/Z seed tables, fixed X table, and first title-word line-data family }
+. { second pass: repeat the same pipeline for the `ZONE` title word with its own rotating Y/Z seed tables, fixed X table, and companion line-data family }
+. LIST#
 @ $B346 label=AttractModeDrawBattleAndZone
 C $B346,h3
-. Current best read: `Probable_BATTLE_RotatingYZTable`.
+. Current best read: `BATTLE_RotatingYZTable`.
 C $B349,h3
 C $B34C,h3
-. Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
+. Current best read: `Attract_ZeroAxisCompanionTable`.
 C $B34F,h3
 C $B352,h3
 . First title word X offset.
@@ -5982,7 +6000,7 @@ C $B373,h3
 C $B376,h3
 . and reuse it as the Y-input table for #R$8660.
 C $B379,h3
-. Swap in `Probable_BATTLE_FixedXTable` before
+. Swap in `BATTLE_FixedXTable` before
 . perspective projection.
 C $B37C,h3
 C $B37F,h3
@@ -5997,10 +6015,10 @@ C $B393,h3
 C $B396,h3
 C $B399,h3
 C $B39C,h3
-. Current best read: `Probable_ZONE_RotatingYZTable`.
+. Current best read: `ZONE_RotatingYZTable`.
 C $B39F,h3
 C $B3A2,h3
-. Current best read: `Probable_Attract_ZeroAxisCompanionTable`.
+. Current best read: `Attract_ZeroAxisCompanionTable`.
 C $B3A5,h3
 C $B3A8,h3
 . Second title word X offset.
@@ -6021,7 +6039,7 @@ C $B3C6,h3
 C $B3C9,h3
 C $B3CC,h3
 C $B3CF,h3
-. Swap in `Probable_ZONE_FixedXTable`.
+. Swap in `ZONE_FixedXTable`.
 C $B3D2,h3
 C $B3D5,h3
 C $B3D8,h3
@@ -6031,7 +6049,7 @@ C $B3E1,h2
 C $B3E3,h3
 C $B3E9,h3
 . `LNLPT` advances FE02, so this second draw likely uses
-. `Probable_ZONE_LineData`; current best read: the
+. `ZONE_LineData`; current best read: the
 . narrower `ZONE` piece.
 C $B3EC,h3
 C $B3EF,h2
@@ -6040,6 +6058,9 @@ C $B3F3,h2
 C $B3F8,h3
 N $B3FB
 . Current best read: post-title separation / zoom-away phase.
+.
+. This block seeds the shared title-word positions and angles, then steps through
+. the later motion sub-phases at `B418`, `B43B`, `B451`, `B48C`, and `B4D1`.
 @ $B3FB label=AttractModeTitleSeparationAndFlyoff
 C $B3FB,h3
 C $B3FE,h3
@@ -6115,6 +6136,9 @@ C $B487,h2
 C $B489,h3
 N $B48C
 . Current best read: attract-mode credits/footer text stage.
+.
+. It prints the lower-screen footer text plus the `1984` year digits, pauses,
+. and then hands off to the later flyoff/footer redraw phase.
 @ $B48C label=AttractModeCreditsFooter
 C $B48C,h2
 C $B48E,h3
@@ -6159,6 +6183,9 @@ N $B4D1
 . Current best read: long flyoff pass with the credits/footer redrawn each
 . frame over the title words as their shared Z offset grows and their tumble
 . angles diverge further (`FE62 -= 8`, `FE92 += 8` each frame).
+.
+. This is the last long attract-title motion stage before the forced showcase
+. setup and entity-demo pages.
 @ $B4D1 label=AttractModeTitleFlyoffWithFooter
 C $B4D1,h3
 C $B4D4,h3
@@ -6276,10 +6303,11 @@ C $B58A,h3
 N $B58D
 . Current best read: tank showcase loop.
 . Evidence:
-. - `FE76` is loaded with `1`, matching the normal tank score reward
-. - no explicit major-entity bit is forced here after `0x956A` reset
-. - the reinitialisation path at `0x9644` defaults to bit `0x80` (tank) while
-.   the score/display value in `FE76` is below `5`
+. #LIST
+. { `FE76` is loaded with `1`, matching the normal tank score reward }
+. { no explicit major-entity bit is forced here after `0x956A` reset }
+. { the reinitialisation path at `0x9644` defaults to bit `0x80` (tank) while the score/display value in `FE76` is below `5` }
+. LIST#
 @ $B58D label=AttractModeShowcaseTank
 C $B58D,h3
 C $B590,h3
@@ -6306,8 +6334,10 @@ C $B5BF,h3
 N $B5C2
 . Current best read: supertank showcase loop.
 . Evidence:
-. - `FE6A` is forced to bit `0x40`
-. - `FE76` is loaded with `3`, matching the normal supertank score reward
+. #LIST
+. { `FE6A` is forced to bit `0x40` }
+. { `FE76` is loaded with `3`, matching the normal supertank score reward }
+. LIST#
 @ $B5C2 label=AttractModeShowcaseSupertank
 C $B5C2,h3
 C $B5C5,h3
@@ -6339,9 +6369,11 @@ C $B602,h3
 N $B605
 . Current best read: saucer showcase loop.
 . Evidence:
-. - `FE76` is loaded with `5`, matching the normal saucer score reward
-. - the loop waits on bit `0x20` in probable `PRSTA`
-. - the extra setup at `FE94/FE96` matches the current saucer-motion path
+. #LIST
+. { `FE76` is loaded with `5`, matching the normal saucer score reward }
+. { the loop waits on bit `0x20` in `PRSTA` }
+. { the extra setup at `FE94/FE96` matches the current saucer-motion path }
+. LIST#
 @ $B605 label=AttractModeShowcaseSaucer
 C $B605,h3
 C $B608,h3
@@ -6367,9 +6399,11 @@ C $B634,h3
 N $B637
 . Current best read: missile showcase loop.
 . Evidence:
-. - `FE76` is loaded with `2`, matching the normal missile score reward
-. - the loop watches `FE81`, which is already used in the live missile path
-. - `FE78/FE70` are primed instead of forcing a high-bit entity selector
+. #LIST
+. { `FE76` is loaded with `2`, matching the normal missile score reward }
+. { the loop watches `FE81`, which is already used in the live missile path }
+. { `FE78/FE70` are primed instead of forcing a high-bit entity selector }
+. LIST#
 @ $B637 label=AttractModeShowcaseMissile
 C $B637,h3
 C $B63A,h3
@@ -7026,8 +7060,8 @@ B $C6E2,8,h8
 B $C6EA,8,h8
 B $C6F2,1,h1
 N $C6F3
-. Probable `ZONE` line-data block in the paired title-word family.
-@ $C6F3 label=Probable_ZONE_LineData
+. `ZONE` line-data block in the paired title-word family.
+@ $C6F3 label=ZONE_LineData
 B $C6F3,7,h7
 B $C6FA,8,h8
 B $C702,8,h8
@@ -7053,8 +7087,8 @@ B $C79A,8,h8
 B $C7A2,8,h8
 B $C7AA,6,h6
 N $C7B0
-. Probable `BATTLE` rotating Y/Z seed table begins at $C7B0.
-@ $C7B0 label=Probable_BATTLE_RotatingYZTable
+. `BATTLE` rotating Y/Z seed table begins at $C7B0.
+@ $C7B0 label=BATTLE_RotatingYZTable
 B $C7B0,2,h2
 B $C7B2,8,h8
 B $C7BA,8,h8
@@ -7064,8 +7098,8 @@ B $C7D2,8,h8
 B $C7DA,8,h8
 B $C7E2,2,h2
 N $C7E4
-. Probable `ZONE` rotating Y/Z seed table begins at $C7E4.
-@ $C7E4 label=Probable_ZONE_RotatingYZTable
+. `ZONE` rotating Y/Z seed table begins at $C7E4.
+@ $C7E4 label=ZONE_RotatingYZTable
 B $C7E4,6,h6
 B $C7EA,8,h8
 B $C7F2,8,h8
@@ -7074,8 +7108,8 @@ B $C802,8,h8
 B $C80A,8,h8
 B $C812,2,h2
 N $C814
-. Probable `BATTLE` fixed X table.
-@ $C814 label=Probable_BATTLE_FixedXTable
+. `BATTLE` fixed X table.
+@ $C814 label=BATTLE_FixedXTable
 B $C814,6,h6
 B $C81A,8,h8
 B $C822,8,h8
@@ -7084,8 +7118,8 @@ B $C832,8,h8
 B $C83A,8,h8
 B $C842,6,h6
 N $C848
-. Probable `ZONE` fixed X table.
-@ $C848 label=Probable_ZONE_FixedXTable
+. `ZONE` fixed X table.
+@ $C848 label=ZONE_FixedXTable
 B $C848,6,h6
 B $C84E,4,h4
 B $C852,4,h4
@@ -7114,11 +7148,11 @@ B $C902,8,h8
 B $C90A,8,h8
 B $C912,8,h8
 N $C91A
-. Probable QS-logo line-data block.
+. QS-logo line-data block.
 . Current best evidence: the associated point tables at $C9F2/$CA28 split into
 . two large point clusters, fitting the two-letter QS mark better than the
 . later title words.
-@ $C91A label=Probable_QS_LineData
+@ $C91A label=QS_LineData
 B $C91A,8,h8
 B $C922,8,h8
 B $C92A,8,h8
@@ -7159,8 +7193,8 @@ B $C9E4,8,h8
 B $C9EC,6,h6
 . #UDG(#PC)
 N $C9F2
-. Probable QS fixed X table.
-@ $C9F2 label=Probable_QS_FixedXTable
+. QS fixed X table.
+@ $C9F2 label=QS_FixedXTable
 B $C9F2,2,h2
 . #UDG(#PC)
 B $C9F4,8,h8
@@ -7178,8 +7212,8 @@ B $CA1C,8,h8
 B $CA24,4,h4
 . #UDG(#PC)
 N $CA28
-. Probable QS rotating Y/Z seed table.
-@ $CA28 label=Probable_QS_RotatingYZTable
+. QS rotating Y/Z seed table.
+@ $CA28 label=QS_RotatingYZTable
 B $CA28,4,h4
 . #UDG(#PC)
 B $CA2C,8,h8
@@ -7198,7 +7232,7 @@ B $CA5C,2,h2
 . #UDG(#PC)
 N $CA5E
 . Common zero-axis companion table for the attract-mode X-axis rotation hack.
-@ $CA5E label=Probable_Attract_ZeroAxisCompanionTable
+@ $CA5E label=Attract_ZeroAxisCompanionTable
 B $CA5E,6,h6
 . #UDG(#PC)
 B $CA64,8,h8
@@ -7362,7 +7396,7 @@ N $CC5C
 . the pixel bitmap and writes attribute `42` for the touched cell.
 . Susan's recollection of slightly different drip speeds may correspond to
 . these per-column seed lengths/phases rather than a separate velocity field.
-@ $CC5C label=Probable_BloodDripSeedTable
+@ $CC5C label=BloodDripSeedTable
 B $CC5C,8,h8
 . #UDG(#PC)
 B $CC64,8,h8
@@ -9429,9 +9463,9 @@ b $FE68
 . Mixed transient state:
 . - FE68: movement/effect delay counter; current best tank-family overlay:
 .   `TKMCT`
-. - FE6A: probable EXST1 active-entity state byte
-. - FE6C: probable EXST2 deferred explosion/respawn state byte
-. - FE6E: probable PRSTA current render/visibility state byte
+. - FE6A: `EXST1` active-entity state byte
+. - FE6C: `EXST2` deferred explosion/respawn state byte
+. - FE6E: `PRSTA` current render/visibility state byte
 . Current best FE6A/FE6C/FE6E bit model:
 . - FE6A bit 7: tank active
 . - FE6A bit 6: supertank active
@@ -9451,11 +9485,11 @@ b $FE68
 @ $FE68 label=EntityMoveDelay
 @ $FE68 label=TankMoveCountdown
 B $FE68,2,h2
-@ $FE6A label=Probable_EXST1
+@ $FE6A label=EXST1
 B $FE6A,2,h2
-@ $FE6C label=Probable_EXST2
+@ $FE6C label=EXST2
 B $FE6C,2,h2
-@ $FE6E label=Probable_PRSTA
+@ $FE6E label=PRSTA
 B $FE6E,2,h2
 > $FE70 ; Current best mixed transient read:
 > $FE70 ; - `FE70` = shared frame/age counter advanced once per main-loop pass;
@@ -9463,14 +9497,14 @@ B $FE6E,2,h2
 > $FE70 ; - `FE72` = slower spawn/variation counter incremented by `TEXST` and
 > $FE70 ;   reused when deriving tank-family move delays
 B $FE70,4,h4
-b $FE74
-. Probable border/sound latch.
-. Current best read:
+b $FE74 BorderSoundLatch
+D $FE74 Border/sound latch.
+D $FE74 Current behaviour:
 . - written with `0` / `$18` by transient gameplay logic such as `0x9B39` and
 .   `0x9FA4`
 . - read by geometry/line routines before `OUT ($FE),A`
 . - likely controls combined border/beeper activity rather than game logic
-@ $FE74 label=Probable_BorderSoundLatch
+@ $FE74 label=BorderSoundLatch
 B $FE74,2,h2
 b $FE76
 . Packed-BCD score and nearby effect/state workspace.
@@ -9641,13 +9675,16 @@ b $FEE5
 . - `FEE4` = lives counter (`SHIPS` in the notebook)
 . - `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by
 .   `SCOPR`
-. - `FEE8/FEEA` = currently selected obstacle/object world-space `(X,Z)` pair
-.   passed into `ObstacleRotateAndProject`
+. - `FEE8/FEEA` = `SelectedObstacleX` / `SelectedObstacleZ`, the currently
+.   selected obstacle/object world-space `(X,Z)` pair passed into
+.   `ObstacleRotateAndProject`
 . - `FEEC` = small attract/start transition latch reused by the later input
 .   bridge at `0xA679`; exact semantics still cautious
 . - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation
 .   words fed into the shared deferred-effect setup at `0xAC22`
 B $FEE5,8,h8
+@ $FEE8 label=SelectedObstacleX
+@ $FEEA label=SelectedObstacleZ
 B $FEED,8,h8
 B $FEF5,8,h8
 B $FEFD,8,h8

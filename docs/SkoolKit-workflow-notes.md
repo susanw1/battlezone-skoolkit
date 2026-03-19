@@ -159,6 +159,10 @@ Practical rule:
   and use `.` continuation lines plus `#LIST ... LIST#` for the bullets
 - if prose is just wrapping or extending the same thought, use `.` continuation
   lines rather than starting a fresh `D`
+- for internal labels that remain inside a larger contiguous code page, keep the
+  structural explanation on the parent page; a nested `D $ADDR ...` block will
+  not reliably surface as a separate visible sub-entry unless that label really
+  becomes its own rendered block/page
 - by contrast, the Input/Output register tables are much stricter:
   the left-hand key column remains symbolic-only in this build
 - converting workspace slots from `g` entries to ordinary `b`/`w` entries does

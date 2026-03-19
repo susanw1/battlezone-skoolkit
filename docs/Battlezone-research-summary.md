@@ -269,7 +269,7 @@ Working summary of verified facts, local source material, and open questions for
     - `MissileCount` / `MissileManoeuvreCounter` at `0xFE78 / 0xFE7A`
     - `MissileX` / `MissileY` / `MissileZ` at `0xFE7C / 0xFE7E / 0xFE80`
     - `MissileZigCount` / `MissileStrategy` / `MissileOrientation` / `MissilePhaseSign` at `0xFE82 / 0xFE84 / 0xFE86 / 0xFE88`
-    - `Probable_BorderSoundLatch` at `0xFE74`
+    - `BorderSoundLatch` at `0xFE74`
   - exact rendered saucer-family workspace anchors now exposed in the generated skool:
     - `SaucerX` / `SaucerZ` / `SaucerPhase` at `0xFE8E / 0xFE90 / 0xFE92`
     - `SaucerDriftCountdown` / `SaucerDriftStep` at `0xFE94 / 0xFE96`
@@ -420,7 +420,7 @@ Working summary of verified facts, local source material, and open questions for
   - the tail of the game-status buffer is also less anonymous now:
     - `FEE4` = lives counter
     - `FEE6/FEE7` = next extra-life threshold in packed BCD
-    - `FEE8/FEEA` = currently selected obstacle/object `(X,Z)` pair for obstacle rendering
+    - `SelectedObstacleX` / `SelectedObstacleZ` at `0xFEE8 / 0xFEEA` = currently selected obstacle/object `(X,Z)` pair for obstacle rendering
     - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words
     - `FE94` = saucer drift-change countdown
     - `FE96` = saucer signed X-drift step / velocity
@@ -801,9 +801,9 @@ Working summary of verified facts, local source material, and open questions for
     - `MBLVU` / `HBLVU` at `0xD488`
     - `OB3VU` at `0xD554`
 - Added a probable state-byte mapping around the main loop:
-  - `0xFE6A` = probable `EXST1` active-entity existence/state byte
-  - `0xFE6C` = probable `EXST2` deferred explosion/respawn state byte
-  - `0xFE6E` = probable `PRSTA` current render/visibility state byte
+  - `0xFE6A` = `EXST1` active-entity existence/state byte
+  - `0xFE6C` = `EXST2` deferred explosion/respawn state byte
+  - `0xFE6E` = `PRSTA` current render/visibility state byte
   - current best interpretation:
     - `FE6A` carries the active major-entity bits (tank/supertank, saucer, missile, my bullet, his bullet) plus low-bit obstacle/object state
     - `FE6C` receives matching bits when an entity transitions into an explosion/effect path
@@ -898,15 +898,15 @@ Working summary of verified facts, local source material, and open questions for
 ## Recent disassembly progress
 
 - The attract-mode `QS` / `BATTLE` / `ZONE` asset mapping is now strong enough to carry provisional exact-address labels in `battlezone.skool`.
-  - `Probable_QS_LineData` = `$C91A`
-  - `Probable_QS_FixedXTable` = `$C9F2`
-  - `Probable_QS_RotatingYZTable` = `$CA28`
-  - `Probable_Attract_ZeroAxisCompanionTable` = `$CA5E`
-  - `Probable_BATTLE_RotatingYZTable` = `$C7B0`
-  - `Probable_BATTLE_FixedXTable` = `$C814`
-  - `Probable_ZONE_LineData` = `$C6F3`
-  - `Probable_ZONE_RotatingYZTable` = `$C7E4`
-  - `Probable_ZONE_FixedXTable` = `$C848`
+  - `QS_LineData` = `$C91A`
+  - `QS_FixedXTable` = `$C9F2`
+  - `QS_RotatingYZTable` = `$CA28`
+  - `Attract_ZeroAxisCompanionTable` = `$CA5E`
+  - `BATTLE_RotatingYZTable` = `$C7B0`
+  - `BATTLE_FixedXTable` = `$C814`
+  - `ZONE_LineData` = `$C6F3`
+  - `ZONE_RotatingYZTable` = `$C7E4`
+  - `ZONE_FixedXTable` = `$C848`
 - Current best mechanical reading of the attract-mode tumble:
   - the title/logo code appears to abuse the normal `X/Z` rotator at `$88EA` on a non-standard coordinate pair,
   - copy one rotated output table into the usual Y-input slot,
