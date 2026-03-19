@@ -1253,8 +1253,8 @@ C $805B,1
 . Return.
 c $805C
 . LNLPT
-D $805C Current best notebook match: `LNLPT` / line plotting routine. `FE02` points at line-data blocks encoded as: 1 byte line count, then one record per line, each record being four 16-bit pointers into the current projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
-D $805C The Input/Output tables below capture the preset workspace interface. On return, `FE02` is updated from `SP` at `0x80D1`, so consecutive line-data blocks can be chained in memory and consumed one after another by repeated calls.
+D $805C Current best notebook match: `LNLPT` / line plotting routine. `#R$FE02` points at line-data blocks encoded as: 1 byte line count, then one record per line, each record being four 16-bit pointers into the current projected-coordinate buffers; current best order is `Y1`, `Y2`, `X1`, `X2`.
+D $805C The Input/Output tables below capture the preset workspace interface. On return, `#R$FE02` is updated from `SP` at `0x80D1`, so consecutive line-data blocks can be chained in memory and consumed one after another by repeated calls.
 D $805C `LNLPT` does not read `XPERS` / `YPERS` directly. Instead, each line record already contains four pointers into the currently prepared projected X/Y buffers, so those buffers are an indirect upstream dependency rather than a direct workspace input at the call site.
 D $805C The `0x7C00..0x7FFF` block used later in the routine is now best read as a precomputed fixed-point trig/slope lookup family, not as raw pixel-mask tables. The repeated 8-step shift/compare/subtract segments inside the four major branches are current-best matches for unrolled slope-division / gradient setup code. There is a dedicated vertical fast path at `0x85C7` when `XD = 0`; the horizontal case currently looks folded into the zero-gradient subpaths inside the X-major branches rather than split out as a separate top-level entrypoint.
 R $805C LINCD Current line-data block pointer (#R$FE02($FE02))
@@ -2108,8 +2108,8 @@ B $8D60,8,h8
 D $8D68
 . Probable main-hill limit calculation from the notebook's SCREEN page. This
 . routine appears to derive clipped hill bounds from the current object edge
-. limits in FE1C/FE1E/FE20/FE22 and store the primary hill pass limits in the
-. FE24/FE26 workspace pair.
+. limits in `#R$FE1C`/`#R$FE1E`/`#R$FE20`/`#R$FE22` and store the primary hill pass
+. limits in the `#R$FE24`/`#R$FE26` workspace pair.
 . The Input/Output tables below capture the preset workspace interface.
 R $8D68 MAX1 Raw outer X-limit word from the primary visible object (#R$FE1C($FE1C))
 R $8D68 MIN1 Raw outer X-limit word from the primary visible object (#R$FE1E($FE1E))
@@ -2132,7 +2132,7 @@ C $8DFF,h4
 D $8E08
 . Probable secondary-hill limit calculation from the notebook's SCREEN page.
 . It consumes the primary limits from #R$8D68 and derives a second pair of
-. hill limits in FE28/FE2A, matching Susan Witts' recollection of a second
+. hill limits in #R$FE28/#R$FE2A, matching Susan Witts' recollection of a second
 . hill infill pass for the object interior.
 . The Input/Output tables below capture the preset workspace interface.
 R $8E08 LIM1 Primary hill limit from `MHLC` (#R$FE24($FE24))
@@ -2147,10 +2147,10 @@ C $8E2F,h4
 . Store the derived inner hill limits into #R$FE28 and #R$FE2A.
 D $8E38
 . Probable main-hill plotting stage from the notebook's SCREEN page. This
-. routine uses the stream pointer at FE2C together with the main-hill limits
-. derived by #R$8D68.
+. routine uses the stream pointer in #R$FE2C together with the main-hill
+. limits derived by #R$8D68.
 . The Input/Output tables below capture the preset workspace interface.
-. Current best read: it copies hill-row data from the FE2C stream into the
+. Current best read: it copies hill-row data from the #R$FE2C stream into the
 . off-screen E700 playfield buffer for the left and right outer regions, then
 . fills the interior span in E8A0..E8BF with `0xAA`.
 R $8E38 LIM1 Clipped outer hill limit from `MHLC` (#R$FE24($FE24))
@@ -2189,10 +2189,10 @@ C $8F4E,h4
 . Restore `SP` from #R$FE00 after the hill stream pass completes.
 D $8F53
 . Probable secondary-hill plotting stage from the notebook's SCREEN page. It
-. reuses the hill plot core with the FE28/FE2A limits derived by #R$8E08,
+. reuses the hill plot core with the #R$FE28/#R$FE2A limits derived by #R$8E08,
 . matching the recollected infill pass inside the object limits.
 . The Input/Output tables below capture the preset workspace interface.
-. Current best read: it advances through the FE2C stream while only writing
+. Current best read: it advances through the #R$FE2C stream while only writing
 . into still-empty bytes of the off-screen E700 playfield buffer, then steps
 . inward by row until the infill region is complete.
 R $8F53 LIM3 Inner hill limit from `SHLC` (#R$FE28($FE28))
@@ -2236,7 +2236,7 @@ D $90BA
 . Takes a world-space `(X,Z)` pair in `HL`/`DE`, clears the transient
 . radar/status blip state, converts the coordinate pair into a radar
 . cell/bit position, and plots the blip into the status buffer.
-. The Input/Output tables below capture the register and preset-workspace interface. Current best shipped read: `FE50` remembers the last plotted destination byte so it can be cleared, and `FE52` is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
+. The Input/Output tables below capture the register and preset-workspace interface. Current best shipped read: #R$FE50 remembers the last plotted destination byte so it can be cleared, and #R$FE52 is a persistent radar/proximity helper-table base (initialised to `$6300`) that `RADARClearWorkspace` temporarily uses via `SP`.
 . The cell/bit conversion path uses the shared plotting lookup family at
 . #R$7C00.
 R $90BA HL Signed X component / world-space X distance
@@ -2268,7 +2268,8 @@ D $9132
 . Keyboard movement/button decode helper.
 . Called from gameplay input handling and the start/demo code. It scans the
 . keyboard matrix rows, normalises contradictory directions, latches the fire
-. request in `FE54`, and returns the same compact `KMOV` code in `A` as the
+. request in #R$FE54, and returns the same compact `KMOV`
+. code in `A` as the
 . Kempston routine at `0xAD3E`.
 . Current best `KMOV` code table:
 . #LIST
@@ -2394,7 +2395,7 @@ B $91E0,6,h6
 D $91E6
 . Shared turn/movement transform dispatcher.
 . `0xA7D9` and related callers pass an `(X,Z)` pair in `DE/BC`. The routine
-. jumps through the handler pointer in `TURN` (`FE5C`) to apply the currently
+. jumps through the handler pointer in #R$FE5C to apply the currently
 . selected movement/turn variant, then returns updated coordinates in `DE/BC`
 . and the updated view-turn angle in `HL`.
 . Indirect-entry audit note:
@@ -3235,7 +3236,7 @@ N $97D3
 C $97D3,h3
 C $97D6,h3
 . Current best read: player-fire request path.
-. If `FE54` requests a shot and no player bullet is already active, seed the
+. If #R$FE54 requests a shot and no player bullet is already active, seed the
 . player-bullet state and set bit `0x08` in `EXST1`.
 C $97DA,h3
 C $97DE,h3
@@ -4856,7 +4857,7 @@ C $A7CE,h3
 @ $A7D1 label=SharedWorldTurnPass
 c $A7D1
 . SharedWorldTurnPass
-D $A7D1 Shared world-turn rotation pass. `0x91E6` dispatches through `TURN` at `FE5C`, applies the current view-turn transform to each `(X,Z)` pair, and returns updated coordinates. The pass is used first on the four obstacle pairs, then on tank, saucer, missile, bullet, and deferred-effect world positions.
+D $A7D1 Shared world-turn rotation pass. `0x91E6` dispatches through #R$FE5C, applies the current view-turn transform to each `(X,Z)` pair, and returns updated coordinates. The pass is used first on the four obstacle pairs, then on tank, saucer, missile, bullet, and deferred-effect world positions.
 N $A7D5
 . Load the first obstacle world `(X,Z)` pair from `Obstacle1X` / `Obstacle1Z` (`$FE98` / `$FE9A`).
 C $A7D5,h4
@@ -6342,7 +6343,7 @@ D $B55D
 . Current best read: helper for a single attract-mode showcase frame.
 . It runs one frame of the main loop, redraws the score strip using `NUMBA`,
 . and then prints the `PRESS S TO START` prompt. In the showcase stage, the
-. value written to `FE76` matches the normal score reward for the displayed
+. value written to #R$FE76 matches the normal score reward for the displayed
 . entity (`1/3/5/2` for tank/supertank/saucer/missile), which makes it a
 . useful anchor for identifying the four sub-stages.
 @ $B55D label=AttractModeShowcaseFrame
@@ -6383,9 +6384,9 @@ N $B58D
 . Current best read: tank showcase loop.
 . Evidence:
 . #LIST
-. { `FE76` is loaded with `1`, matching the normal tank score reward }
+. { #R$FE76 is loaded with `1`, matching the normal tank score reward }
 . { no explicit major-entity bit is forced here after `0x956A` reset }
-. { the reinitialisation path at `0x9644` defaults to bit `0x80` (tank) while the score/display value in `FE76` is below `5` }
+. { the reinitialisation path at `0x9644` defaults to bit `0x80` (tank) while the score/display value in #R$FE76 is below `5` }
 . LIST#
 @ $B58D label=AttractModeShowcaseTank
 C $B58D,h3
@@ -6414,8 +6415,8 @@ N $B5C2
 . Current best read: supertank showcase loop.
 . Evidence:
 . #LIST
-. { `FE6A` is forced to bit `0x40` }
-. { `FE76` is loaded with `3`, matching the normal supertank score reward }
+. { #R$FE6A is forced to bit `0x40` }
+. { #R$FE76 is loaded with `3`, matching the normal supertank score reward }
 . LIST#
 @ $B5C2 label=AttractModeShowcaseSupertank
 C $B5C2,h3
@@ -6449,9 +6450,9 @@ N $B605
 . Current best read: saucer showcase loop.
 . Evidence:
 . #LIST
-. { `FE76` is loaded with `5`, matching the normal saucer score reward }
+. { #R$FE76 is loaded with `5`, matching the normal saucer score reward }
 . { the loop waits on bit `0x20` in `PRSTA` }
-. { the extra setup at `FE94/FE96` matches the current saucer-motion path }
+. { the extra setup at #R$FE94 / #R$FE96 matches the current saucer-motion path }
 . LIST#
 @ $B605 label=AttractModeShowcaseSaucer
 C $B605,h3
@@ -6479,9 +6480,9 @@ N $B637
 . Current best read: missile showcase loop.
 . Evidence:
 . #LIST
-. { `FE76` is loaded with `2`, matching the normal missile score reward }
+. { #R$FE76 is loaded with `2`, matching the normal missile score reward }
 . { the loop watches `FE81`, which is already used in the live missile path }
-. { `FE78/FE70` are primed instead of forcing a high-bit entity selector }
+. { #R$FE70 is primed instead of forcing a high-bit entity selector }
 . LIST#
 @ $B637 label=AttractModeShowcaseMissile
 C $B637,h3
@@ -9313,11 +9314,11 @@ b $FE1C MAX1
 W $FE1C,2,h2
 . Notebook name preserved. Current shipped read: first raw outer X-limit word
 . used by the hill/object suppression path. Visible major-entity passes seed
-. `FE1C/FE1E` from `XMAX/XMIN`; invisible cases park them at `$84D0/$84CF`.
+. `#R$FE1C`/`#R$FE1E` from `XMAX`/`XMIN`; invisible cases park them at `$84D0/$84CF`.
 b $FE1E MIN1
 @ $FE1E label=MIN1
 W $FE1E,2,h2
-. Companion raw outer X-limit word for `FE1C`.
+. Companion raw outer X-limit word for `#R$FE1C`.
 b $FE20 MAX2
 @ $FE20 label=MAX2
 W $FE20,2,h2
@@ -9327,16 +9328,16 @@ W $FE20,2,h2
 b $FE22 MIN2
 @ $FE22 label=MIN2
 W $FE22,2,h2
-. Companion raw outer X-limit word for `FE20`.
+. Companion raw outer X-limit word for `#R$FE20`.
 b $FE24 LIM1
 @ $FE24 label=LIM1
 W $FE24,2,h2
 . Current shipped read: primary hill-clipped outer limit pair derived by
-. `MHLC` from `FE1C/FE1E/FE20/FE22`.
+. `MHLC` from `#R$FE1C`/`#R$FE1E`/`#R$FE20`/`#R$FE22`.
 b $FE26 LIM2
 @ $FE26 label=LIM2
 W $FE26,2,h2
-. Companion primary hill-clipped outer limit word for `FE24`.
+. Companion primary hill-clipped outer limit word for `#R$FE24`.
 b $FE28 LIM3
 @ $FE28 label=LIM3
 W $FE28,2,h2
@@ -9345,7 +9346,7 @@ W $FE28,2,h2
 b $FE2A LIM4
 @ $FE2A label=LIM4
 W $FE2A,2,h2
-. Companion secondary / inner hill-limit word for `FE28`.
+. Companion secondary / inner hill-limit word for `#R$FE28`.
 b $FE2C HLCNT
 @ $FE2C label=HLCNT
 W $FE2C,2,h2

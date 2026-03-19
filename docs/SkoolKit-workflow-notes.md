@@ -196,9 +196,13 @@ Preset-workspace rule:
   - `Workspace outputs:`
 - where it helps readability, use `#LIST` under those headings
 - the left-hand symbol column in `R` tables stays symbolic
-- the stable pattern for the description cell is
-  `#R$FE38($FE38)`, which renders as a linked visible address while leaving the
-  left-hand symbol column untouched
+- the stable pattern for the description cell is `#R$FE38($FE38)`, which
+  renders as a linked visible address while leaving the left-hand symbol column
+  untouched
+- use `#R$ADDR` in prose/comments when the link text being the symbol is
+  enough; reserve `#R$ADDR($ADDR)` for table-description cells where we want the
+  visible address text
+- avoid duplicating the symbol and the same linked label in one phrase
 - prefer putting the workspace address mapping in the relevant table
   description cell rather than duplicating a long `Workspace anchors:` list in
   the surrounding prose when the mapping is straightforward
