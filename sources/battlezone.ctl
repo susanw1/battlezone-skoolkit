@@ -1625,23 +1625,27 @@ u $8640
 . This 32-byte `NOP` run follows a hard `RET` and ends on the round boundary
 . at `0x8660`, strongly suggesting separately assembled module padding.
 c $8660
-. PERSP
-D $8660 Used throughout gameplay and attract/title rendering. Current best notebook match: `PERSP`. Shared perspective / clip stage. It consumes transformed coordinate tables, writes projected coordinates into the `XPERS` / `YPERS` buffers, derives visible X limits, and returns status in `C` for caller-side draw/visibility decisions.
+. PERSP Perspective [X/Z Y/Z] array calculation 
+D $8660 Used throughout gameplay and attract/title rendering. Current best notebook match: `PERSP`. Shared perspective / clip stage. It consumes transformed coordinate tables, writes projected coordinates into the `XPERS` / `YPERS` buffers, derives visible X limits, and returns status in #REGc for caller-side draw/visibility decisions.
 D $8660 Register contract:
 . #LIST
-. { `A` seeds `DYCNT` for the later Y pass. }
-. { `HL` points at `XLOC` in the primary pass and `YLOC` in the secondary pass. }
-. { `DE` points at `ZLOC` in both passes. }
+. { #REGa seeds `DYCNT` for the later Y pass. }
+. { #REGhl points at `XLOC` in the primary pass and `YLOC` in the secondary pass. }
+. { #REGde points at `ZLOC` in both passes. }
 . LIST#
-D $8660 The 15 unrolled division stages are numbered `PERS_XDIV_00..14` for the primary X/Z pass and `PERS_YDIV_00..14` for the secondary Y/Z pass.
-D $8660 Current best status-code read from the shipped callers: `C=0` drawable / visible enough to continue; `C=1` primary depth failure: at least one source Z value is too near / behind the projection threshold; `C=2` projected X overflow or visible-range failure.
-R $8660 A Point-count / secondary-pass seed (#R$FE40($FE40))
-R $8660 XLOC Current rotated X coordinate-list pointer (#R$FE32($FE32))
-R $8660 YLOC Current fixed Y coordinate-list pointer (#R$FE34($FE34))
-R $8660 ZLOC Current rotated Z coordinate-list pointer (#R$FE36($FE36))
-R $8660 XPERS Projected X output buffer end-pointer for the current pass (#R$FE38($FE38))
-R $8660 YPERS Projected Y output buffer end-pointer for the current pass (#R$FE3A($FE3A))
-R $8660 DYCNT Point count / pass-control slot for the current projection pass (#R$FE40($FE40))
+D $8660 The 15 unrolled division stages are numbered `PERS_XDIV_00..14` for the primary X/Z pass and `PERS_YDIV_00..14` for the secondary Y/Z pass; the companion branch-entry labels use an `_A` suffix.
+D $8660 Current best status-code read from the shipped callers:
+. #LIST
+. { `#REGc = 0` drawable / visible enough to continue. }
+. { `#REGc = 1` primary depth failure: at least one source Z value is too near / behind the projection threshold. }
+. { `#REGc = 2` projected X overflow or visible-range failure. }
+. LIST#
+R $8660 A Point-count (number of XLOC,YLOC,ZLOC items to process)
+R $8660 XLOC Current X coordinate-list pointer (#R$FE32($FE32))
+R $8660 YLOC Current Y coordinate-list pointer (#R$FE34($FE34))
+R $8660 ZLOC Current Z coordinate-list pointer (#R$FE36($FE36))
+R $8660 XPERS Projected X output buffer *end*-pointer for the current pass (#R$FE38($FE38))
+R $8660 YPERS Projected Y output buffer *end*-pointer for the current pass (#R$FE3A($FE3A))
 R $8660 O:XPERS Projected X words written into the buffer addressed by `XPERS` (#R$FE38($FE38))
 R $8660 O:YPERS Projected Y words written into the buffer addressed by `YPERS` (#R$FE3A($FE3A))
 R $8660 O:XMAX Tracked visible projected X maximum (#R$FE3C($FE3C))
@@ -1649,32 +1653,48 @@ R $8660 O:XMIN Tracked visible projected X minimum (#R$FE3E($FE3E))
 R $8660 O:C Status code on return (`0` drawable, `1` near/depth failure, `2` projected-X overflow or visible-range failure)
 @ $8660 label=PERSP
 C $8660,h4
+. Save #REGsp to #R$FE00 - #REGsp is used as a general pointer to the XPERS result location
 @ $8676 label=PERSPProjectPrimary
 @ $86D4 label=PERS_XDIV_00
+@ $86D6 label=PERS_XDIV_00_A
 @ $86DE label=PERS_XDIV_01
+@ $86E0 label=PERS_XDIV_01_A
 @ $86E8 label=PERS_XDIV_02
+@ $86EA label=PERS_XDIV_02_A
 @ $86F2 label=PERS_XDIV_03
+@ $86F4 label=PERS_XDIV_03_A
 @ $86FC label=PERS_XDIV_04
+@ $86FE label=PERS_XDIV_04_A
 @ $8706 label=PERS_XDIV_05
+@ $8708 label=PERS_XDIV_05_A
 @ $8710 label=PERS_XDIV_06
+@ $8712 label=PERS_XDIV_06_A
 @ $871A label=PERS_XDIV_07
+@ $871C label=PERS_XDIV_07_A
 @ $8724 label=PERS_XDIV_08
+@ $8726 label=PERS_XDIV_08_A
 @ $872E label=PERS_XDIV_09
+@ $8730 label=PERS_XDIV_09_A
 @ $8738 label=PERS_XDIV_10
+@ $873A label=PERS_XDIV_10_A
 @ $8742 label=PERS_XDIV_11
+@ $8744 label=PERS_XDIV_11_A
 @ $874C label=PERS_XDIV_12
+@ $874E label=PERS_XDIV_12_A
 @ $8756 label=PERS_XDIV_13
+@ $8758 label=PERS_XDIV_13_A
 @ $8760 label=PERS_XDIV_14
+@ $8762 label=PERS_XDIV_14_A
 C $8664,h3
-. Save `#REGa` to `DYCNT` (#R$FE40($FE40)) for the later Y pass.
+. Save #REGa to `DYCNT` (#R$FE40($FE40)) for the later Y pass.
 C $8667,h4
-. Switch `SP` to the projected X output buffer end-pointer in #R$FE38.
+. Switch #REGsp to the projected X output buffer end-pointer in #R$FE38.
 C $866C,h3
-. Load the current rotated X list pointer from #R$FE32.
+. Load the current X list pointer from #R$FE32.
 C $866F,h4
-. Load the current rotated Z list pointer from #R$FE36.
+. Load the current Z list pointer from #R$FE36.
 C $8673,h2
-. Initialise `#REGb` to `$84` for the unrolled primary division ladder.
+. Initialise #REGb to `$84` for the unrolled primary division ladder.
 C $867C,h2
 . Reject the point if the primary depth/Z word is below the shipped near threshold.
 C $867E,h3
@@ -1760,23 +1780,38 @@ C $87D9,h4
 C $87DD,h4
 @ $87E1 label=PERSPProjectSecondary
 @ $882F label=PERS_YDIV_00
+@ $8831 label=PERS_YDIV_00_A
 @ $8839 label=PERS_YDIV_01
+@ $883B label=PERS_YDIV_01_A
 @ $8843 label=PERS_YDIV_02
+@ $8845 label=PERS_YDIV_02_A
 @ $884D label=PERS_YDIV_03
+@ $884F label=PERS_YDIV_03_A
 @ $8857 label=PERS_YDIV_04
+@ $8859 label=PERS_YDIV_04_A
 @ $8861 label=PERS_YDIV_05
+@ $8863 label=PERS_YDIV_05_A
 @ $886B label=PERS_YDIV_06
+@ $886D label=PERS_YDIV_06_A
 @ $8875 label=PERS_YDIV_07
+@ $8877 label=PERS_YDIV_07_A
 @ $887F label=PERS_YDIV_08
+@ $8881 label=PERS_YDIV_08_A
 @ $8889 label=PERS_YDIV_09
+@ $888B label=PERS_YDIV_09_A
 @ $8893 label=PERS_YDIV_10
+@ $8895 label=PERS_YDIV_10_A
 @ $889D label=PERS_YDIV_11
+@ $889F label=PERS_YDIV_11_A
 @ $88A7 label=PERS_YDIV_12
+@ $88A9 label=PERS_YDIV_12_A
 @ $88B1 label=PERS_YDIV_13
+@ $88B3 label=PERS_YDIV_13_A
 @ $88BB label=PERS_YDIV_14
+@ $88BD label=PERS_YDIV_14_A
 C $87E1,h4
 . Begin the secondary/Y projection pass.
-. Secondary Y/Z division ladder starts here; the 15 unrolled stages are numbered `PERS_YDIV_00..14`.
+. Secondary Y/Z division ladder starts here; the 15 unrolled stages are numbered `PERS_YDIV_00..14`, with `_A` used for the companion branch-entry labels.
 C $87E5,h4
 . Switch `SP` to the projected Y output buffer end-pointer in #R$FE3A.
 C $87E9,h3

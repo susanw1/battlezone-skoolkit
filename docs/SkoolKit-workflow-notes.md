@@ -176,6 +176,15 @@ Register-doc rule:
 - use `R $ADDR` only when the register interface is actually clear
 - input lines can be plain register names such as `HL packed BCD value`
 - use an `O:` prefix for outputs, e.g. `O:C status code on return`
+- `#REG...` is fine inside list bullets when you want styled register names in
+  the prose, but keep the bullets plain enough that the renderer can still
+  build a list
+- for callable helpers, give the asm entry a short title that states the
+  function rather than the address or an implementation detail
+- treat `SP` as a temporary workspace register when a routine repurposes it
+  internally; document that in prose instead of pretending it is a real input
+- do not list transient scratch like `DYCNT` as a routine parameter unless the
+  caller actually supplies it as part of the interface
 
 Preset-workspace rule:
 
@@ -195,6 +204,9 @@ Preset-workspace rule:
   the surrounding prose when the mapping is straightforward
 - use this only for routines where the workspace contract is part of the real
   callable interface, not for every incidental scratch location
+- for repeated unrolled ladder stages, keep the main stage label unsuffixed and
+  use an `_A` suffix for the companion branch-entry label when there are two
+  entry points into the same repeated step
 
 ## HTML/linking reality
 
