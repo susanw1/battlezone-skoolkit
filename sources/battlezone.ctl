@@ -9482,10 +9482,18 @@ W $FE54,2,h2
 . path at `0x97D6` consumes and clears it.
 b $FE56 KMOV
 @ $FE56 label=KMOV
-. Current best decoded movement-state byte:
-. `0x00` idle, `0x80` forward, `0x40` back, `0xA0` forward+left, `0x90`
-. forward+right, `0x60` back+left, `0x50` back+right, `0x08` left on the
-. spot, `0x04` right on the spot.
+. Current best decoded movement-state byte.
+. #LIST
+. { `0x00` idle }
+. { `0x80` forward }
+. { `0x40` back }
+. { `0xA0` forward+left }
+. { `0x90` forward+right }
+. { `0x60` back+left }
+. { `0x50` back+right }
+. { `0x08` left on the spot }
+. { `0x04` right on the spot }
+. LIST#
 W $FE56,2,h2
 . Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
 . `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
@@ -9510,28 +9518,28 @@ W $FE5C,2,h2
 . handlers (`0x91EB`, `0x924A`, `0x92AE`, `0x9312`) here, and
 . `TurnTransformDispatcher` then jumps through it via `JP (HL)`.
 b $FE5E
-. Current entity/effect X position used by several transient setup paths.
-. In the attract title code this is reused as the first title word's X offset.
-. Current best gameplay overlay: tank-family `TKX`.
+. Current entity/effect position/orientation workspace.
+. #LIST
+. { `FE5E/FE60` = current X/Z position }
+. { `FE62` = current orientation / title-word angle reuse }
+. { `FE64` = desired heading }
+. { `FE66` = strategy/state bits }
+. LIST#
 @ $FE5E label=EntityXPos
 @ $FE5E label=TankX
 W $FE5E,2,h2
 b $FE60
-. Current entity/effect Z position used by several transient setup paths.
-. In the attract title code this is reused as the first title word's Z offset.
-. Current best gameplay overlay: tank-family `TKZ`.
+. Companion Z position within the same workspace family.
 @ $FE60 label=EntityZPos
 @ $FE60 label=TankZ
 W $FE60,2,h2
-b $FE62
-. Current entity/effect heading/orientation and nearby transient state.
-. In the attract title code this is reused as the first title word's angle.
-. Current best gameplay overlays:
-. - `FE62` = probable tank-family `TKOR`
-. - `FE64` = probable `TKDIR` (direction-to-player / desired heading)
-. - `FE66` = probable `TKSTR` strategy/state bits:
-.   bit 7 kill/aggressive, bit 6 forward, bit 5 back, bit 4 left, bit 3
-.   right
+b $FE62 Tank State
+D $FE62 Current entity/effect heading/orientation and nearby transient state.
+. #LIST
+. { `FE62` = tank-family orientation / title-word angle reuse }
+. { `FE64` = tank-family direction-to-player / desired heading }
+. { `FE66` = tank-family strategy/state bits }
+. LIST#
 @ $FE62 label=EntityHeadingOrOrient
 @ $FE62 label=TankOrientation
 W $FE62,2,h2
@@ -9540,28 +9548,23 @@ W $FE64,2,h2
 @ $FE66 label=TankStrategy
 B $FE66,2,h2
 b $FE68
-. Mixed transient state:
-. - FE68: movement/effect delay counter; current best tank-family overlay:
-.   `TKMCT`
-. - FE6A: `EXST1` active-entity state byte
-. - FE6C: `EXST2` deferred explosion/respawn state byte
-. - FE6E: `PRSTA` current render/visibility state byte
-. Current best FE6A/FE6C/FE6E bit model:
-. - FE6A bit 7: tank active
-. - FE6A bit 6: supertank active
-. - FE6A bit 5: saucer active
-. - FE6A bit 4: missile active
-. - FE6A bit 3: player bullet active
-. - FE6A bit 2: hostile bullet active
-. - FE6A bits 1-0: current obstacle/object selector (`00` none, `01` low
-.   block, `10` cube, `11` pyramid)
-. - FE6C is a deferred restart/effect queue rather than a full mirror:
-.   bits `0x80/0x20/0x10/0x08/0x04` are used, with tank and supertank
-.   collapsing onto the shared `0x80` tank-family bit
-. - FE6E high bits mirror the visible/drawable subset of FE6A:
-.   `0x80/0x40/0x20/0x10/0x08/0x04` = tank/supertank/saucer/missile/player
-.   bullet/hostile bullet visible
-. - FE6E bits 1-0 mirror the currently visible obstacle/object selector
+. Mixed transient state.
+. #LIST
+. { `FE68` = movement/effect delay counter (`TKMCT`) }
+. { `FE6A` = `EXST1` active-entity state byte }
+. { `FE6C` = `EXST2` deferred explosion/respawn state byte }
+. { `FE6E` = `PRSTA` current render/visibility state byte }
+. { `FE6A` bit 7 = tank active }
+. { `FE6A` bit 6 = supertank active }
+. { `FE6A` bit 5 = saucer active }
+. { `FE6A` bit 4 = missile active }
+. { `FE6A` bit 3 = player bullet active }
+. { `FE6A` bit 2 = hostile bullet active }
+. { `FE6A` bits 1-0 = current obstacle/object selector (`00` none, `01` low block, `10` cube, `11` pyramid) }
+. { `FE6C` is a deferred restart/effect queue rather than a full mirror }
+. { `FE6E` high bits mirror the visible/drawable subset of `FE6A` }
+. { `FE6E` bits 1-0 mirror the currently visible obstacle/object selector }
+. LIST#
 @ $FE68 label=EntityMoveDelay
 @ $FE68 label=TankMoveCountdown
 B $FE68,2,h2
@@ -9598,18 +9601,18 @@ B $FE76,2,h2
 . paths temporarily reuse the same slot as a generic small packed-BCD value
 . before restoring normal score-strip behaviour.
 b $FE78
-. Missile-family live workspace:
-. - `FE78` = probable `MISCT` (missiles fired so far)
-. - `FE7A` = probable `MSMCT` manoeuvre/frame counter
-. - `FE7C` = probable `MISX`
-. - `FE7E` = probable `MISY`
-. - `FE80` = probable `MISZ`
-. - `FE82` = probable `ZIG` / remaining-zig counter derived from `MISCT`
-. - `FE84` = probable missile strategy/action bitfield; notebook `MSTRJ`
-.   and `MSTRT` now look like alternate names/usages for this same byte
-. - `FE86` = probable `MSOR` signed missile offset/orientation register
-. - `FE88` = current best missile phase/sign toggle used when building the live
-.   missile transform angle each frame
+. Missile-family live workspace.
+. #LIST
+. { `FE78` = missile count }
+. { `FE7A` = manoeuvre / frame counter }
+. { `FE7C` = missile X position }
+. { `FE7E` = missile Y position }
+. { `FE80` = missile Z position }
+. { `FE82` = remaining-zig counter derived from `FE78` }
+. { `FE84` = missile strategy/action bitfield }
+. { `FE86` = signed missile offset / orientation register }
+. { `FE88` = missile phase / sign toggle used for the live transform angle }
+. LIST#
 @ $FE78 label=MissileCount
 B $FE78,2,h2
 @ $FE7A label=MissileManoeuvreCounter
@@ -9631,12 +9634,14 @@ B $FE88,2,h2
 N $FE8E
 . In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 . word's X offset, Z offset, and angle.
-. Current best gameplay overlays:
-. - `FE8E` = saucer X position
-. - `FE90` = saucer Z position
-. - `FE92` = saucer animation/view phase cycling `0..3`
-. - `FE94` = saucer drift-change countdown
-. - `FE96` = saucer signed X-drift step / velocity
+. Current gameplay overlay:
+. #LIST
+. { `FE8E` = saucer X position }
+. { `FE90` = saucer Z position }
+. { `FE92` = saucer animation/view phase cycling `0..3` }
+. { `FE94` = saucer drift-change countdown }
+. { `FE96` = saucer signed X-drift step / velocity }
+. LIST#
 @ $FE8E label=SaucerX
 B $FE8E,2,h2
 @ $FE90 label=SaucerZ
@@ -9648,15 +9653,16 @@ B $FE94,2,h2
 @ $FE96 label=SaucerDriftStep
 B $FE96,2,h2
 b $FE98
-. Obstacle world-position workspace, four packed `(X,Z)` pairs:
-. - `FE98/FE9A` = obstacle 1 X/Z
-. - `FE9C/FE9E` = obstacle 2 X/Z
-. - `FEA0/FEA2` = obstacle 3 X/Z
-. - `FEA4/FEA6` = obstacle 4 X/Z
-. The same block is reused by:
-. - `0x9A92..0x9AE7` tank evasive/proximity checks
-. - `0xA37B..0xA420` obstacle-family selection for rendering/collision
-. - `0xA695..0xA714` movement masking against nearby obstacles
+. Obstacle world-position workspace.
+. #LIST
+. { `FE98/FE9A` = obstacle 1 X/Z }
+. { `FE9C/FE9E` = obstacle 2 X/Z }
+. { `FEA0/FEA2` = obstacle 3 X/Z }
+. { `FEA4/FEA6` = obstacle 4 X/Z }
+. { reused by tank evasive/proximity checks at `0x9A92..0x9AE7` }
+. { reused by obstacle-family selection for rendering/collision at `0xA37B..0xA420` }
+. { reused by movement masking against nearby obstacles at `0xA695..0xA714` }
+. LIST#
 @ $FE98 label=Obstacle1X
 B $FE98,2,h2
 @ $FE9A label=Obstacle1Z
@@ -9680,9 +9686,11 @@ b $FEA8
 . entered via `0x91E6`.
 @ $FEA8 label=ViewTurnAngle
 B $FEA8,4,h4
-. Live bullet workspace:
-. - `FEAC/FEAE/FEB0/FEB2` = player-bullet X/Z/orientation/life
-. - `FEB4/FEB6/FEB8/FEBA` = hostile-bullet X/Z/orientation/life
+. Live bullet workspace.
+. #LIST
+. { `FEAC/FEAE/FEB0/FEB2` = player-bullet X/Z/orientation/life }
+. { `FEB4/FEB6/FEB8/FEBA` = hostile-bullet X/Z/orientation/life }
+. LIST#
 @ $FEAC label=PlayerBulletX
 B $FEAC,2,h2
 @ $FEAE label=PlayerBulletZ
@@ -9699,17 +9707,18 @@ B $FEB6,2,h2
 B $FEB8,2,h2
 @ $FEBA label=HostileBulletLife
 B $FEBA,2,h2
-. Deferred effect / explosion animator workspace:
-. - `FEBC/FEC0/FEC4/FEC8` = four staged X-offset terms applied to `EXBXL`
-. - `FEBE/FEC2/FEC6/FECA` = four staged Z-offset terms applied to `EXBZL`
-. - `FECC/FED0` = deferred effect source X/Z pair
-. - `FECE/FED2` = deferred effect Y bias and descending Y base
-. - `FED4` = deferred effect angle / phase term
-. - `FED6` = deferred effect phase countdown
-. - `FED8/FEDA` = primary/secondary point-count pairs used while rewriting
-.   effect geometry and while projecting the generated point list
-. - `FEDC` = deferred effect line-data pointer
-. - `FEDE/FEE0/FEE2` = deferred effect XTAB/ZTAB/YLOC companion pointers
+. Deferred effect / explosion animator workspace.
+. #LIST
+. { `FEBC/FEC0/FEC4/FEC8` = four staged X-offset terms applied to `EXBXL` }
+. { `FEBE/FEC2/FEC6/FECA` = four staged Z-offset terms applied to `EXBZL` }
+. { `FECC/FED0` = deferred effect source X/Z pair }
+. { `FECE/FED2` = deferred effect Y bias and descending Y base }
+. { `FED4` = deferred effect angle / phase term }
+. { `FED6` = deferred effect phase countdown }
+. { `FED8/FEDA` = primary/secondary point-count pairs used while rewriting effect geometry and projecting the generated point list }
+. { `FEDC` = deferred effect line-data pointer }
+. { `FEDE/FEE0/FEE2` = deferred effect XTAB/ZTAB/YLOC companion pointers }
+. LIST#
 @ $FEBC label=DeferredEffectXOffsetA
 B $FEBC,2,h2
 @ $FEBE label=DeferredEffectZOffsetA
@@ -9755,17 +9764,14 @@ b $FEE4
 @ $FEE4 label=Lives
 B $FEE4,1,h1
 b $FEE5
-. Current best tail-status read:
-. - `FEE4` = lives counter (`SHIPS` in the notebook)
-. - `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by
-.   `SCOPR`
-. - `FEE8/FEEA` = `SelectedObstacleX` / `SelectedObstacleZ`, the currently
-.   selected obstacle/object world-space `(X,Z)` pair passed into
-.   `ObstacleRotateAndProject`
-. - `FEEC` = small attract/start transition latch reused by the later input
-.   bridge at `0xA679`; exact semantics still cautious
-. - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation
-.   words fed into the shared deferred-effect setup at `0xAC22`
+. Current best tail-status read.
+. #LIST
+. { `FEE4` = lives counter (`SHIPS` in the notebook) }
+. { `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by `SCOPR` }
+. { `FEE8/FEEA` = `SelectedObstacleX` / `SelectedObstacleZ`, the currently selected obstacle/object world-space `(X,Z)` pair passed into `ObstacleRotateAndProject` }
+. { `FEEC` = small attract/start transition latch reused by the later input bridge at `0xA679` }
+. { `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words fed into the shared deferred-effect setup at `0xAC22` }
+. LIST#
 B $FEE5,8,h8
 @ $FEE8 label=SelectedObstacleX
 @ $FEEA label=SelectedObstacleZ
