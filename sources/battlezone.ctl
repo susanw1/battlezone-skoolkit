@@ -3335,8 +3335,8 @@ C $98F1,h3
 C $98F4,h3
 . Tank strategy state machine.
 . Evidence:
-. - this is where `FE68` countdown/state timing, `FE66` strategy bits,
-.   `FE62` heading, and `FE5E/FE60` tank position are updated together
+. - this is where #R$FE68 countdown/state timing, #R$FE66 strategy bits,
+.   #R$FE62 heading, and #R$FE5E/#R$FE60 tank position are updated together
 . - the logic matches the notebook's `TKMCT`, `TKSTR`, `TKOR`, `TKX`, `TKZ`,
 .   `TKDIR`, `FRAME`, and `PHASE` cluster on page 13
 . Current `TKSTR` bit reading from this block:
@@ -3351,7 +3351,7 @@ C $98F4,h3
 .   turn/forward selected from `TKDIR` vs `TKOR`
 . - `0x28` = current best canned evasive state: back + right turn, forced
 .   when the tank gets too close to the player or to one of the obstacle
-.   proximity boxes tested at `0x9A92..0x9AE7`
+.   proximity boxes tested at #R$9A92..#R$9AE7
 . Current best phase split:
 . - `0x98F4` = active-countdown path
 . - `0x9919` / `0x992C` = left/right heading update
@@ -3419,7 +3419,7 @@ C $99A2,h3
 @ $99A5 label=TankStrategySelectNextState
 C $99A7,h3
 . Manoeuvre timer expired. Choose trundle/passive/aggressive state and reseed
-. `TKMCT` from the slower variation counter in `FE72`.
+. `TKMCT` from the slower variation counter in #R$FE72.
 C $99AA,h2
 . Read `R` as the main pseudo-random variation source for the next
 . tank/supertank strategy choice.
@@ -3512,7 +3512,7 @@ C $9A8E,h3
 @ $9A92 label=TankStrategyObstacleEvasionCheck
 C $9A92,h3
 . Current best read: obstacle-proximity test, not player-proximity.
-. `FE98..FEA7` holds four obstacle `(X,Z)` pairs; this block checks whether the
+. #R$FE98($FE98..$FEA7) holds four obstacle `(X,Z)` pairs; this block checks whether the
 . tank's current high-byte position lies inside any obstacle's near box and,
 . if so, forces the canned evasive `TKSTR=0x28` state.
 C $9A96,h2
@@ -9571,12 +9571,16 @@ B $FE6A,2,h2
 B $FE6C,2,h2
 @ $FE6E label=PRSTA
 B $FE6E,2,h2
-> $FE70 ; Current best mixed transient read:
-> $FE70 ; - `FE70` = shared frame/age counter advanced once per main-loop pass;
-> $FE70 ;   used by tank strategy timing and also primed by the attract missile showcase
-> $FE70 ; - `FE72` = slower spawn/variation counter incremented by `TEXST` and
-> $FE70 ;   reused when deriving tank-family move delays
-B $FE70,4,h4
+b $FE70 SharedFrameAgeCounter
+@ $FE70 label=SharedFrameAgeCounter
+W $FE70,2,h2
+. Shared frame/age counter advanced once per main-loop pass.
+. Used by tank strategy timing and also primed by the attract missile showcase.
+b $FE72 SpawnVariationCounter
+@ $FE72 label=SpawnVariationCounter
+W $FE72,2,h2
+. Slower spawn/variation counter incremented by `TEXST`.
+. Reused when deriving tank-family move delays.
 b $FE74 BorderSoundLatch
 D $FE74 Border/sound latch.
 D $FE74 Current behaviour:

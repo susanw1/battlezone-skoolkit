@@ -227,6 +227,8 @@ So:
   ordinary `b`/`w` entries rather than `g` entries
 - if you need linked visible address text in a table description, use
   `#R$ADDR($ADDR)`
+- for memory blocks that span a range, keep the link on the start address and
+  put the range in the anchor text, e.g. `#R$FE98($FE98..$FEA7)`
 
 Example pattern:
 
