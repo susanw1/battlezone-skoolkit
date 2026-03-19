@@ -1627,7 +1627,15 @@ u $8640
 c $8660
 . PERSP
 D $8660 Used throughout gameplay and attract/title rendering. Current best notebook match: `PERSP`. Shared perspective / clip stage. It consumes transformed coordinate tables, writes projected coordinates into the `XPERS` / `YPERS` buffers, derives visible X limits, and returns status in `C` for caller-side draw/visibility decisions.
+D $8660 Register contract:
+. #LIST
+. { `A` seeds `DYCNT` for the later Y pass. }
+. { `HL` points at `XLOC` in the primary pass and `YLOC` in the secondary pass. }
+. { `DE` points at `ZLOC` in both passes. }
+. LIST#
+D $8660 The 15 unrolled division stages are numbered `PERS_XDIV_00..14` for the primary X/Z pass and `PERS_YDIV_00..14` for the secondary Y/Z pass.
 D $8660 Current best status-code read from the shipped callers: `C=0` drawable / visible enough to continue; `C=1` primary depth failure: at least one source Z value is too near / behind the projection threshold; `C=2` projected X overflow or visible-range failure.
+R $8660 A Point-count / secondary-pass seed (#R$FE40($FE40))
 R $8660 XLOC Current rotated X coordinate-list pointer (#R$FE32($FE32))
 R $8660 YLOC Current fixed Y coordinate-list pointer (#R$FE34($FE34))
 R $8660 ZLOC Current rotated Z coordinate-list pointer (#R$FE36($FE36))
@@ -1642,7 +1650,23 @@ R $8660 O:C Status code on return (`0` drawable, `1` near/depth failure, `2` pro
 @ $8660 label=PERSP
 C $8660,h4
 @ $8676 label=PERSPProjectPrimary
+@ $86D4 label=PERS_XDIV_00
+@ $86DE label=PERS_XDIV_01
+@ $86E8 label=PERS_XDIV_02
+@ $86F2 label=PERS_XDIV_03
+@ $86FC label=PERS_XDIV_04
+@ $8706 label=PERS_XDIV_05
+@ $8710 label=PERS_XDIV_06
+@ $871A label=PERS_XDIV_07
+@ $8724 label=PERS_XDIV_08
+@ $872E label=PERS_XDIV_09
+@ $8738 label=PERS_XDIV_10
+@ $8742 label=PERS_XDIV_11
+@ $874C label=PERS_XDIV_12
+@ $8756 label=PERS_XDIV_13
+@ $8760 label=PERS_XDIV_14
 C $8664,h3
+. Save `#REGa` to `DYCNT` (#R$FE40($FE40)) for the later Y pass.
 C $8667,h4
 . Switch `SP` to the projected X output buffer end-pointer in #R$FE38.
 C $866C,h3
@@ -1650,6 +1674,7 @@ C $866C,h3
 C $866F,h4
 . Load the current rotated Z list pointer from #R$FE36.
 C $8673,h2
+. Initialise `#REGb` to `$84` for the unrolled primary division ladder.
 C $867C,h2
 . Reject the point if the primary depth/Z word is below the shipped near threshold.
 C $867E,h3
@@ -1734,16 +1759,35 @@ C $87D4,h4
 C $87D9,h4
 C $87DD,h4
 @ $87E1 label=PERSPProjectSecondary
+@ $882F label=PERS_YDIV_00
+@ $8839 label=PERS_YDIV_01
+@ $8843 label=PERS_YDIV_02
+@ $884D label=PERS_YDIV_03
+@ $8857 label=PERS_YDIV_04
+@ $8861 label=PERS_YDIV_05
+@ $886B label=PERS_YDIV_06
+@ $8875 label=PERS_YDIV_07
+@ $887F label=PERS_YDIV_08
+@ $8889 label=PERS_YDIV_09
+@ $8893 label=PERS_YDIV_10
+@ $889D label=PERS_YDIV_11
+@ $88A7 label=PERS_YDIV_12
+@ $88B1 label=PERS_YDIV_13
+@ $88BB label=PERS_YDIV_14
 C $87E1,h4
 . Begin the secondary/Y projection pass.
+. Secondary Y/Z division ladder starts here; the 15 unrolled stages are numbered `PERS_YDIV_00..14`.
 C $87E5,h4
 . Switch `SP` to the projected Y output buffer end-pointer in #R$FE3A.
 C $87E9,h3
+. Reload the saved point-count seed from `DYCNT` (#R$FE40($FE40)) and add four for the Y pass.
 C $87EC,h2
 C $87EE,h4
 . Reload the rotated Z list pointer from #R$FE36 for the Y pass.
 C $87F2,h3
 . Load the fixed Y list pointer from #R$FE34.
+C $87F5,h2
+. Load the adjusted point-count seed into `#REGb` for the secondary division ladder.
 C $8804,h2
 C $8813,h3
 C $8816,h3

@@ -157,6 +157,8 @@ Practical rule:
 - use a new `D $ADDR ...` only for a real paragraph boundary
 - if one thought contains a short list, keep it within a single `D` paragraph
   and use `.` continuation lines plus `#LIST ... LIST#` for the bullets
+- keep `#R` refs out of those bullet items when possible; the renderer can
+  flatten or drop the list if the bullets are too macro-heavy
 - if prose is just wrapping or extending the same thought, use `.` continuation
   lines rather than starting a fresh `D`
 - for internal labels that remain inside a larger contiguous code page, keep the

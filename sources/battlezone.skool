@@ -2560,11 +2560,22 @@ u$8640 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; buffers, derives visible X limits, and returns status in `C` for caller-side
 ; draw/visibility decisions.
 ; .
+; Register contract:
+; #LIST
+; { `A` seeds `DYCNT` for the later Y pass. }
+; { `HL` points at `XLOC` in the primary pass and `YLOC` in the secondary pass. }
+; { `DE` points at `ZLOC` in both passes. }
+; LIST#
+; .
+; The 15 unrolled division stages are numbered `PERS_XDIV_00..14` for the
+; primary X/Z pass and `PERS_YDIV_00..14` for the secondary Y/Z pass.
+; .
 ; Current best status-code read from the shipped callers: `C=0` drawable /
 ; visible enough to continue; `C=1` primary depth failure: at least one source
 ; Z value is too near / behind the projection threshold; `C=2` projected X
 ; overflow or visible-range failure.
 ;
+;   A Point-count / secondary-pass seed (#R$FE40($FE40))
 ;   XLOC Current rotated X coordinate-list pointer (#R$FE32($FE32))
 ;   YLOC Current fixed Y coordinate-list pointer (#R$FE34($FE34))
 ;   ZLOC Current rotated Z coordinate-list pointer (#R$FE36($FE36))
@@ -2584,12 +2595,12 @@ u$8640 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; .   projected-X overflow or visible-range failure)
 @label=PERSP
 c$8660 LD ($FE00),SP ;
- $8664 LD ($FE40),A  ;
+ $8664 LD ($FE40),A  ; Save `#REGa` to `DYCNT` (#R$FE40($FE40)) for the later Y pass.
  $8667 LD SP,($FE38) ; Switch `SP` to the projected X output buffer end-pointer in #R$FE38.
  $866B EXX           ;
  $866C LD HL,($FE32) ; Load the current rotated X list pointer from #R$FE32.
  $866F LD DE,($FE36) ; Load the current rotated Z list pointer from #R$FE36.
- $8673 LD B,$84      ;
+ $8673 LD B,$84      ; Initialise `#REGb` to `$84` for the unrolled primary division ladder.
  $8675 EXX           ;
 @label=PERSPProjectPrimary
 *$8676 EXX           ;
@@ -2650,6 +2661,7 @@ c$8660 LD ($FE00),SP ;
  $86CF JR C,$86D4    ;
  $86D1 CP B          ;
  $86D2 JR C,$86D6    ;
+@label=PERS_XDIV_00
 *$86D4 SUB B         ;
  $86D5 INC H         ;
 *$86D6 SLA H         ;
@@ -2657,6 +2669,7 @@ c$8660 LD ($FE00),SP ;
  $86D9 JR C,$86DE    ;
  $86DB CP B          ;
  $86DC JR C,$86E0    ;
+@label=PERS_XDIV_01
 *$86DE SUB B         ;
  $86DF INC H         ;
 *$86E0 SLA H         ;
@@ -2664,6 +2677,7 @@ c$8660 LD ($FE00),SP ;
  $86E3 JR C,$86E8    ;
  $86E5 CP B          ;
  $86E6 JR C,$86EA    ;
+@label=PERS_XDIV_02
 *$86E8 SUB B         ;
  $86E9 INC H         ;
 *$86EA SLA H         ;
@@ -2671,6 +2685,7 @@ c$8660 LD ($FE00),SP ;
  $86ED JR C,$86F2    ;
  $86EF CP B          ;
  $86F0 JR C,$86F4    ;
+@label=PERS_XDIV_03
 *$86F2 SUB B         ;
  $86F3 INC H         ;
 *$86F4 SLA H         ;
@@ -2678,6 +2693,7 @@ c$8660 LD ($FE00),SP ;
  $86F7 JR C,$86FC    ;
  $86F9 CP B          ;
  $86FA JR C,$86FE    ;
+@label=PERS_XDIV_04
 *$86FC SUB B         ;
  $86FD INC H         ;
 *$86FE SLA H         ;
@@ -2685,6 +2701,7 @@ c$8660 LD ($FE00),SP ;
  $8701 JR C,$8706    ;
  $8703 CP B          ;
  $8704 JR C,$8708    ;
+@label=PERS_XDIV_05
 *$8706 SUB B         ;
  $8707 INC H         ;
 *$8708 SLA H         ;
@@ -2692,6 +2709,7 @@ c$8660 LD ($FE00),SP ;
  $870B JR C,$8710    ;
  $870D CP B          ;
  $870E JR C,$8712    ;
+@label=PERS_XDIV_06
 *$8710 SUB B         ;
  $8711 INC H         ;
 *$8712 SLA L         ;
@@ -2699,6 +2717,7 @@ c$8660 LD ($FE00),SP ;
  $8715 JR C,$871A    ;
  $8717 CP B          ;
  $8718 JR C,$871C    ;
+@label=PERS_XDIV_07
 *$871A SUB B         ;
  $871B INC L         ;
 *$871C SLA L         ;
@@ -2706,6 +2725,7 @@ c$8660 LD ($FE00),SP ;
  $871F JR C,$8724    ;
  $8721 CP B          ;
  $8722 JR C,$8726    ;
+@label=PERS_XDIV_08
 *$8724 SUB B         ;
  $8725 INC L         ;
 *$8726 SLA L         ;
@@ -2713,6 +2733,7 @@ c$8660 LD ($FE00),SP ;
  $8729 JR C,$872E    ;
  $872B CP B          ;
  $872C JR C,$8730    ;
+@label=PERS_XDIV_09
 *$872E SUB B         ;
  $872F INC L         ;
 *$8730 SLA L         ;
@@ -2720,6 +2741,7 @@ c$8660 LD ($FE00),SP ;
  $8733 JR C,$8738    ;
  $8735 CP B          ;
  $8736 JR C,$873A    ;
+@label=PERS_XDIV_10
 *$8738 SUB B         ;
  $8739 INC L         ;
 *$873A SLA L         ;
@@ -2727,6 +2749,7 @@ c$8660 LD ($FE00),SP ;
  $873D JR C,$8742    ;
  $873F CP B          ;
  $8740 JR C,$8744    ;
+@label=PERS_XDIV_11
 *$8742 SUB B         ;
  $8743 INC L         ;
 *$8744 SLA L         ;
@@ -2734,6 +2757,7 @@ c$8660 LD ($FE00),SP ;
  $8747 JR C,$874C    ;
  $8749 CP B          ;
  $874A JR C,$874E    ;
+@label=PERS_XDIV_12
 *$874C SUB B         ;
  $874D INC L         ;
 *$874E SLA L         ;
@@ -2741,6 +2765,7 @@ c$8660 LD ($FE00),SP ;
  $8751 JR C,$8756    ;
  $8753 CP B          ;
  $8754 JR C,$8758    ;
+@label=PERS_XDIV_13
 *$8756 SUB B         ;
  $8757 INC L         ;
 *$8758 SLA L         ;
@@ -2748,6 +2773,7 @@ c$8660 LD ($FE00),SP ;
  $875B JR C,$8760    ;
  $875D CP B          ;
  $875E JR C,$8762    ;
+@label=PERS_XDIV_14
 *$8760 SUB B         ;
  $8761 INC L         ;
 *$8762 EX AF,AF'     ;
@@ -2807,13 +2833,14 @@ c$8660 LD ($FE00),SP ;
  $87DD LD SP,($FE5A) ;
 @label=PERSPProjectSecondary
 *$87E1 LD ($FE38),SP ; Begin the secondary/Y projection pass.
+                     ; Secondary Y/Z division ladder starts here; the 15 unrolled stages are numbered `PERS_YDIV_00..14`.
  $87E5 LD SP,($FE3A) ; Switch `SP` to the projected Y output buffer end-pointer in #R$FE3A.
- $87E9 LD A,($FE40)  ;
+ $87E9 LD A,($FE40)  ; Reload the saved point-count seed from `DYCNT` (#R$FE40($FE40)) and add four for the Y pass.
  $87EC ADD A,$04     ;
  $87EE LD DE,($FE36) ; Reload the rotated Z list pointer from #R$FE36 for the Y pass.
  $87F2 LD HL,($FE34) ; Load the fixed Y list pointer from #R$FE34.
- $87F5 LD B,A        ;
-*$87F6 LD A,(DE)     ;
+ $87F5 LD B,A        ; {Load the adjusted point-count seed into `#REGb` for the secondary division ladder.
+*$87F6 LD A,(DE)     ; }
  $87F7 INC DE        ;
  $87F8 EX AF,AF'     ;
  $87F9 LD A,(DE)     ;
@@ -2857,6 +2884,7 @@ c$8660 LD ($FE00),SP ;
  $882A JR C,$882F    ;
  $882C CP B          ;
  $882D JR C,$8831    ;
+@label=PERS_YDIV_00
 *$882F SUB B         ;
  $8830 INC H         ;
 *$8831 SLA H         ;
@@ -2864,6 +2892,7 @@ c$8660 LD ($FE00),SP ;
  $8834 JR C,$8839    ;
  $8836 CP B          ;
  $8837 JR C,$883B    ;
+@label=PERS_YDIV_01
 *$8839 SUB B         ;
  $883A INC H         ;
 *$883B SLA H         ;
@@ -2871,6 +2900,7 @@ c$8660 LD ($FE00),SP ;
  $883E JR C,$8843    ;
  $8840 CP B          ;
  $8841 JR C,$8845    ;
+@label=PERS_YDIV_02
 *$8843 SUB B         ;
  $8844 INC H         ;
 *$8845 SLA H         ;
@@ -2878,6 +2908,7 @@ c$8660 LD ($FE00),SP ;
  $8848 JR C,$884D    ;
  $884A CP B          ;
  $884B JR C,$884F    ;
+@label=PERS_YDIV_03
 *$884D SUB B         ;
  $884E INC H         ;
 *$884F SLA H         ;
@@ -2885,6 +2916,7 @@ c$8660 LD ($FE00),SP ;
  $8852 JR C,$8857    ;
  $8854 CP B          ;
  $8855 JR C,$8859    ;
+@label=PERS_YDIV_04
 *$8857 SUB B         ;
  $8858 INC H         ;
 *$8859 SLA H         ;
@@ -2892,6 +2924,7 @@ c$8660 LD ($FE00),SP ;
  $885C JR C,$8861    ;
  $885E CP B          ;
  $885F JR C,$8863    ;
+@label=PERS_YDIV_05
 *$8861 SUB B         ;
  $8862 INC H         ;
 *$8863 SLA H         ;
@@ -2899,6 +2932,7 @@ c$8660 LD ($FE00),SP ;
  $8866 JR C,$886B    ;
  $8868 CP B          ;
  $8869 JR C,$886D    ;
+@label=PERS_YDIV_06
 *$886B SUB B         ;
  $886C INC H         ;
 *$886D SLA L         ;
@@ -2906,6 +2940,7 @@ c$8660 LD ($FE00),SP ;
  $8870 JR C,$8875    ;
  $8872 CP B          ;
  $8873 JR C,$8877    ;
+@label=PERS_YDIV_07
 *$8875 SUB B         ;
  $8876 INC L         ;
 *$8877 SLA L         ;
@@ -2913,6 +2948,7 @@ c$8660 LD ($FE00),SP ;
  $887A JR C,$887F    ;
  $887C CP B          ;
  $887D JR C,$8881    ;
+@label=PERS_YDIV_08
 *$887F SUB B         ;
  $8880 INC L         ;
 *$8881 SLA L         ;
@@ -2920,6 +2956,7 @@ c$8660 LD ($FE00),SP ;
  $8884 JR C,$8889    ;
  $8886 CP B          ;
  $8887 JR C,$888B    ;
+@label=PERS_YDIV_09
 *$8889 SUB B         ;
  $888A INC L         ;
 *$888B SLA L         ;
@@ -2927,6 +2964,7 @@ c$8660 LD ($FE00),SP ;
  $888E JR C,$8893    ;
  $8890 CP B          ;
  $8891 JR C,$8895    ;
+@label=PERS_YDIV_10
 *$8893 SUB B         ;
  $8894 INC L         ;
 *$8895 SLA L         ;
@@ -2934,6 +2972,7 @@ c$8660 LD ($FE00),SP ;
  $8898 JR C,$889D    ;
  $889A CP B          ;
  $889B JR C,$889F    ;
+@label=PERS_YDIV_11
 *$889D SUB B         ;
  $889E INC L         ;
 *$889F SLA L         ;
@@ -2941,6 +2980,7 @@ c$8660 LD ($FE00),SP ;
  $88A2 JR C,$88A7    ;
  $88A4 CP B          ;
  $88A5 JR C,$88A9    ;
+@label=PERS_YDIV_12
 *$88A7 SUB B         ;
  $88A8 INC L         ;
 *$88A9 SLA L         ;
@@ -2948,6 +2988,7 @@ c$8660 LD ($FE00),SP ;
  $88AC JR C,$88B1    ;
  $88AE CP B          ;
  $88AF JR C,$88B3    ;
+@label=PERS_YDIV_13
 *$88B1 SUB B         ;
  $88B2 INC L         ;
 *$88B3 SLA L         ;
@@ -2955,6 +2996,7 @@ c$8660 LD ($FE00),SP ;
  $88B6 JR C,$88BB    ;
  $88B8 CP B          ;
  $88B9 JR C,$88BD    ;
+@label=PERS_YDIV_14
 *$88BB SUB B         ;
  $88BC INC L         ;
 *$88BD EX AF,AF'     ;
