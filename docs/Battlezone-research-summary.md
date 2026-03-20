@@ -498,6 +498,8 @@ Working summary of verified facts, local source material, and open questions for
   - `FE6E` (`PRSTA`) is the current render/visibility byte:
     - high bits `0x80/0x40/0x20/0x10/0x08/0x04` mirror the visible subset of tank/supertank/saucer/missile/player bullet/hostile bullet
     - low bits mirror the currently visible obstacle/object selector
+  - several of the state bytes are stored on even boundaries with one byte of padding after them:
+    - `FE66` (`TKSTR`), `FE6A` (`EXST1`), `FE6C` (`EXST2`), `FE6E` (`PRSTA`), and `FE74` (`BorderSoundLatch`) are all single-byte states in code usage, even though the data page keeps them aligned as byte-plus-padding pairs
   - `0x9644` is now best read as the entity spawn/reinitialisation dispatcher:
     - low score forces tank-family respawn
     - higher score uses thresholds plus `R`-based randomness to choose tank-family / supertank-family / missile setup

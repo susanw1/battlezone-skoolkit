@@ -13837,9 +13837,14 @@ b$FE62 DEFW $0000
 @label=TankDesiredHeading
  $FE64 DEFW $0000
 @label=TankStrategy
- $FE66 DEFB $00,$00
+ $FE66 DEFB $00
 
-; Mixed transient state.
+; Unused
+u$FE67 DEFB $00
+
+; Mixed Transient State
+;
+; Mixed transient state for active entities and render/visibility flags.
 ; #LIST
 ; { `FE68` = movement/effect delay counter (`TKMCT`) }
 ; { `FE6A` = `EXST1` active-entity state byte }
@@ -13860,11 +13865,20 @@ b$FE62 DEFW $0000
 @label=TankMoveCountdown
 b$FE68 DEFB $00,$00
 @label=EXST1
- $FE6A DEFB $00,$00
+ $FE6A DEFB $00      ; Indicates which entities exist
+
+; Unused
+u$FE6B DEFB $00
 @label=EXST2
- $FE6C DEFB $00,$00
+ $FE6C DEFB $00
+
+; Unused
+u$FE6D DEFB $00
 @label=PRSTA
- $FE6E DEFB $00,$00
+ $FE6E DEFB $00
+
+; Unused
+u$FE6F DEFB $00
 
 ; SharedFrameAgeCounter
 @label=SharedFrameAgeCounter
@@ -13886,7 +13900,10 @@ b$FE72 DEFW $0000    ; Slower spawn/variation counter incremented by `TEXST`.
 ; - read by geometry/line routines before `OUT ($FE),A`
 ; - likely controls combined border/beeper activity rather than game logic
 @label=BorderSoundLatch
-b$FE74 DEFB $00,$00
+b$FE74 DEFB $00
+
+; Unused
+u$FE75 DEFB $00
 
 ; Packed-BCD score and nearby effect/state workspace.
 @label=ScoreBCD
@@ -13894,6 +13911,8 @@ b$FE76 DEFB $00,$00  ; The main visible score word used by `SCOPR`/`NUMBA`; some
                      ; paths temporarily reuse the same slot as a generic small packed-BCD value
                      ; before restoring normal score-strip behaviour.
 
+; Missile Workspace
+;
 ; Missile-family live workspace.
 ; #LIST
 ; { `FE78` = missile count }
@@ -13907,7 +13926,7 @@ b$FE76 DEFB $00,$00  ; The main visible score word used by `SCOPR`/`NUMBA`; some
 ; { `FE88` = missile phase / sign toggle used for the live transform angle }
 ; LIST#
 @label=MissileCount
-b$FE78 DEFB $00,$00
+b$FE78 DEFB $00,$00         ; Number of missiles so far
 @label=MissileManoeuvreCounter
  $FE7A DEFB $00,$00
 @label=MissileX
@@ -13925,9 +13944,11 @@ b$FE78 DEFB $00,$00
 @label=MissilePhaseSign
  $FE88 DEFB $00,$00
  $FE8A DEFB $00,$00,$00,$00
+
+; Saucer Workspace
+;
 ; In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 ; word's X offset, Z offset, and angle.
-; Current gameplay overlay:
 ; #LIST
 ; { `FE8E` = saucer X position }
 ; { `FE90` = saucer Z position }
@@ -13936,7 +13957,7 @@ b$FE78 DEFB $00,$00
 ; { `FE96` = saucer signed X-drift step / velocity }
 ; LIST#
 @label=SaucerX
- $FE8E DEFB $00,$00
+b$FE8E DEFB $00,$00
 @label=SaucerZ
  $FE90 DEFB $00,$00
 @label=SaucerPhase
@@ -13946,6 +13967,8 @@ b$FE78 DEFB $00,$00
 @label=SaucerDriftStep
  $FE96 DEFB $00,$00
 
+; Obstacle Workspace
+;
 ; Obstacle world-position workspace.
 ; #LIST
 ; { `FE98/FE9A` = obstacle 1 X/Z }
@@ -14051,10 +14074,13 @@ b$FEA8 DEFB $00,$00,$00,$00 ; Live bullet workspace.
 @label=DeferredEffectYLOC
  $FEE2 DEFB $00,$00
 
+; Tail Status
 ; Lives
 @label=Lives
 b$FEE4 DEFB $00
 
+; Data block at FEE5
+;
 ; Current best tail-status read.
 ; #LIST
 ; { `FEE4` = lives counter (`SHIPS` in the notebook) }

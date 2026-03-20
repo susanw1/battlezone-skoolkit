@@ -9546,9 +9546,10 @@ W $FE62,2,h2
 @ $FE64 label=TankDesiredHeading
 W $FE64,2,h2
 @ $FE66 label=TankStrategy
-B $FE66,2,h2
-b $FE68
-. Mixed transient state.
+B $FE66,1,h1
+u $FE67
+b $FE68 Mixed Transient State
+D $FE68 Mixed transient state for active entities and render/visibility flags.
 . #LIST
 . { `FE68` = movement/effect delay counter (`TKMCT`) }
 . { `FE6A` = `EXST1` active-entity state byte }
@@ -9569,11 +9570,14 @@ b $FE68
 @ $FE68 label=TankMoveCountdown
 B $FE68,2,h2
 @ $FE6A label=EXST1
-B $FE6A,2,h2
+B $FE6A,1,h1 Indicates which entities exist
+u $FE6B
 @ $FE6C label=EXST2
-B $FE6C,2,h2
+B $FE6C,1,h1
+u $FE6D
 @ $FE6E label=PRSTA
-B $FE6E,2,h2
+B $FE6E,1,h1
+u $FE6F
 b $FE70 SharedFrameAgeCounter
 @ $FE70 label=SharedFrameAgeCounter
 W $FE70,2,h2
@@ -9592,7 +9596,8 @@ D $FE74 Current behaviour:
 . - read by geometry/line routines before `OUT ($FE),A`
 . - likely controls combined border/beeper activity rather than game logic
 @ $FE74 label=BorderSoundLatch
-B $FE74,2,h2
+B $FE74,1,h1
+u $FE75
 b $FE76
 . Packed-BCD score and nearby effect/state workspace.
 @ $FE76 label=ScoreBCD
@@ -9600,8 +9605,8 @@ B $FE76,2,h2
 . The main visible score word used by `SCOPR`/`NUMBA`; some attract/showcase
 . paths temporarily reuse the same slot as a generic small packed-BCD value
 . before restoring normal score-strip behaviour.
-b $FE78
-. Missile-family live workspace.
+b $FE78 Missile Workspace
+D $FE78 Missile-family live workspace.
 . #LIST
 . { `FE78` = missile count }
 . { `FE7A` = manoeuvre / frame counter }
@@ -9614,7 +9619,7 @@ b $FE78
 . { `FE88` = missile phase / sign toggle used for the live transform angle }
 . LIST#
 @ $FE78 label=MissileCount
-B $FE78,2,h2
+B $FE78,2,h2 Number of missiles so far
 @ $FE7A label=MissileManoeuvreCounter
 B $FE7A,2,h2
 @ $FE7C label=MissileX
@@ -9631,10 +9636,9 @@ B $FE84,2,h2
 B $FE86,2,h2
 @ $FE88 label=MissilePhaseSign
 B $FE88,2,h2
-N $FE8E
-. In the attract title code, `FE8E/FE90/FE92` are reused as the second title
+b $FE8E Saucer Workspace
+D $FE8E In the attract title code, `FE8E/FE90/FE92` are reused as the second title
 . word's X offset, Z offset, and angle.
-. Current gameplay overlay:
 . #LIST
 . { `FE8E` = saucer X position }
 . { `FE90` = saucer Z position }
@@ -9652,8 +9656,8 @@ B $FE92,2,h2
 B $FE94,2,h2
 @ $FE96 label=SaucerDriftStep
 B $FE96,2,h2
-b $FE98
-. Obstacle world-position workspace.
+b $FE98 Obstacle Workspace
+D $FE98 Obstacle world-position workspace.
 . #LIST
 . { `FE98/FE9A` = obstacle 1 X/Z }
 . { `FE9C/FE9E` = obstacle 2 X/Z }
@@ -9759,12 +9763,12 @@ B $FEDE,2,h2
 B $FEE0,2,h2
 @ $FEE2 label=DeferredEffectYLOC
 B $FEE2,2,h2
-b $FEE4
+b $FEE4 Tail Status
 . Lives
 @ $FEE4 label=Lives
 B $FEE4,1,h1
 b $FEE5
-. Current best tail-status read.
+D $FEE5 Current best tail-status read.
 . #LIST
 . { `FEE4` = lives counter (`SHIPS` in the notebook) }
 . { `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by `SCOPR` }
