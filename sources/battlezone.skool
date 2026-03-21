@@ -7816,28 +7816,28 @@ c$A934 LD A,($FE6A)  ;
  $A94A LD ($FE6C),A  ;
  $A94D LD HL,($FE8E) ;
  $A950 LD ($FECC),HL ; Store the deferred effect source X/Z pair in #R$FECC / #R$FED0.
- $A953 LD HL,($FE90) ;
- $A956 LD ($FED0),HL ;
- $A959 LD HL,$0505   ;
+ $A953 LD HL,($FE90) ; #REGhl = #R$FE90.
+ $A956 LD ($FED0),HL ; #R$FED0 = #REGhl.
+ $A959 LD HL,$0505   ; #REGhl = $0505.
  $A95C LD ($FED8),HL ; Install #R$FED8, #R$FEDA, #R$FEDC, and the #R$FEDE/#R$FEE0/#R$FEE2
                      ; companions.
- $A95F LD ($FEDA),HL ;
- $A962 LD HL,$D7CC   ;
- $A965 LD ($FEDC),HL ;
- $A968 LD HL,$DA1E   ;
- $A96B LD ($FEDE),HL ;
- $A96E LD HL,$DB12   ;
- $A971 LD ($FEE0),HL ;
- $A974 LD HL,$DC06   ;
- $A977 LD ($FEE2),HL ;
-*$A97A LD HL,$0000   ;
- $A97D LD ($FECE),HL ;
+ $A95F LD ($FEDA),HL ; #R$FEDA = #REGhl.
+ $A962 LD HL,$D7CC   ; #REGhl = #R$D7CC.
+ $A965 LD ($FEDC),HL ; #R$FEDC = #REGhl.
+ $A968 LD HL,$DA1E   ; #REGhl = #R$DA1E.
+ $A96B LD ($FEDE),HL ; #R$FEDE = #REGhl.
+ $A96E LD HL,$DB12   ; #REGhl = #R$DB12.
+ $A971 LD ($FEE0),HL ; #R$FEE0 = #REGhl.
+ $A974 LD HL,$DC06   ; #REGhl = #R$DC06.
+ $A977 LD ($FEE2),HL ; #R$FEE2 = #REGhl.
+*$A97A LD HL,$0000   ; #REGhl = $0000.
+ $A97D LD ($FECE),HL ; #R$FECE = #REGhl.
  $A980 LD HL,$00E0   ; Seed #R$FECE and #R$FED2.
- $A983 LD ($FED2),HL ;
- $A986 LD HL,$0000   ;
+ $A983 LD ($FED2),HL ; #R$FED2 = #REGhl.
+ $A986 LD HL,$0000   ; #REGhl = $0000.
  $A989 LD ($FEBC),HL ; Clear the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
                      ; #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms.
- $A98C LD ($FEC0),HL ;
+ $A98C LD ($FEC0),HL ; #R$FEC0 = #REGhl.
  $A98F LD ($FEC4),HL ;
  $A992 LD ($FEC8),HL ;
  $A995 LD ($FEBE),HL ;

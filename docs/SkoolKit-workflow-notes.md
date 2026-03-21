@@ -210,6 +210,19 @@ Mechanical checklist for lower-context workers:
 - specifically check that summary-list items render as one link plus prose, not
   a duplicated link label plus plain-text label
 
+Address-decoding rule:
+
+- when a page is hard to read line-by-line, add a short decode on the
+  instruction row instead of another long prose paragraph
+- for the common load/store shapes, prefer terse fragments such as
+  `#REGhl = #R$FE90` or `#R$FED0 = #REGhl`
+- if a direct address has no real ctl target yet, leave it as a plain address
+  rather than forcing a broken `#R` link
+- keep the richer behavioural explanation in the surrounding prose, but make
+  sure the row-level note still names the relevant `#R$...` slot
+- use `utils/addr_comment_audit.py` to list address-bearing instruction rows and
+  get a conservative set of suggested decode fragments before editing
+
 Worked example:
 
 - `A685` stays one page: `c $A685`

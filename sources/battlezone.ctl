@@ -5057,30 +5057,47 @@ C $A94D,h3
 C $A950,h3
 . Store the deferred effect source X/Z pair in #R$FECC / #R$FED0.
 C $A953,h3
+. #REGhl = #R$FE90.
 C $A956,h3
+. #R$FED0 = #REGhl.
 C $A959,h3
+. #REGhl = $0505.
 C $A95C,h3
 . Install #R$FED8, #R$FEDA, #R$FEDC, and the #R$FEDE/#R$FEE0/#R$FEE2
 . companions.
 C $A95F,h3
+. #R$FEDA = #REGhl.
 C $A962,h3
+. #REGhl = #R$D7CC.
 C $A965,h3
+. #R$FEDC = #REGhl.
 C $A968,h3
+. #REGhl = #R$DA1E.
 C $A96B,h3
+. #R$FEDE = #REGhl.
 C $A96E,h3
+. #REGhl = #R$DB12.
 C $A971,h3
+. #R$FEE0 = #REGhl.
 C $A974,h3
+. #REGhl = #R$DC06.
 C $A977,h3
+. #R$FEE2 = #REGhl.
 C $A97A,h3
+. #REGhl = $0000.
 C $A97D,h3
+. #R$FECE = #REGhl.
 C $A980,h3
 . Seed #R$FECE and #R$FED2.
 C $A983,h3
+. #R$FED2 = #REGhl.
 C $A986,h3
+. #REGhl = $0000.
 C $A989,h3
 . Clear the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
 . #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms.
 C $A98C,h3
+. #R$FEC0 = #REGhl.
 C $A98F,h3
 C $A992,h3
 C $A995,h3
