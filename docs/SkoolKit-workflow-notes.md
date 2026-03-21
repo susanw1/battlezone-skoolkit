@@ -218,10 +218,31 @@ Address-decoding rule:
   `#REGhl = #R$FE90` or `#R$FED0 = #REGhl`
 - if a direct address has no real ctl target yet, leave it as a plain address
   rather than forcing a broken `#R` link
+- before rebuilding, run `utils/duplicate_row_audit.py sources/battlezone.ctl`
+  if you have added any new row decodes; duplicated `C $ADDR` markers on the
+  same address can hide the row comment or attach it to the wrong place
 - keep the richer behavioural explanation in the surrounding prose, but make
   sure the row-level note still names the relevant `#R$...` slot
 - use `utils/addr_comment_audit.py` to list address-bearing instruction rows and
   get a conservative set of suggested decode fragments before editing
+
+Status taxonomy:
+
+- `known`: the field has a stable role and can be named directly
+- `prob_`: the field is strongly supported but still provisional
+- `unknown`: the field is known to exist and has been inspected, but its role is
+  still unconfirmed
+- `unprocessed`: the area has not yet been audited carefully enough to classify
+  it
+- `skipped`: the field or span was intentionally left alone, usually because no
+  real ctl target exists yet or because the row would have produced a broken
+  link
+
+Concrete example:
+
+- `FEE5` is currently `unknown`
+- `FEE6/FEE7`, `FEE8/FEEA`, `FEEC`, and `FEEE/FEF0/FEF2` are `known`
+  or `prob_`-quality fields depending on the surrounding evidence
 
 Worked example:
 

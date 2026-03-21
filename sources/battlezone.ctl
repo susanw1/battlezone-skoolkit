@@ -5300,9 +5300,9 @@ C $AA66,h3
 @ $AA6B label=DeferredEffectAdvanceState
 C $AA6B,h3
 C $AA6E,h3
+. #REGhl = #R$FEC6.
 . Advance the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
 . #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms and related per-phase counters.
-C $AA6E,h3
 C $AA72,h3
 . #R$FEC6 = #REGhl.
 C $AA75,h3
@@ -5339,28 +5339,37 @@ C $AAAC,h3
 C $AAAF,h3
 . Install the current #R$FEDE / #R$FEE0 pair.
 C $AAB2,h3
+. #R$FE42 = #REGhl.
 C $AAB5,h3
+. #REGhl = #R$FEE0.
 C $AAB8,h3
+. #R$FE46 = #REGhl.
 C $AABB,h3
 . Install the fixed deferred-effect companion X list in #R$FE32.
 C $AABE,h3
+. #R$FE32 = #REGhl.
 C $AAC1,h3
 . Install the fixed deferred-effect companion Z list in #R$FE36.
 C $AAC4,h3
+. #R$FE36 = #REGhl.
 C $AAC7,h3
+. #REGa = #R$FED6.
 C $AACB,h3
+. #R$FED6 = #REGa.
 C $AACE,h3
 . When the phase countdown reaches zero, finish the animation immediately.
 @ $AAD1 label=DeferredEffectPhaseSetup
 C $AAD1,h3
-C $AAD4,h3
 . Seed the current effect phase: advance #R$FED4, install #R$FECC /
 . #R$FED0, and run the shared transform helper.
 C $AAD4,h3
+. #REGde = $0034.
 C $AAD8,h3
 C $AADB,h4
+. #REGde = #R$FED8.
 . Load the current #R$FED8 / #R$FEDA pair for the rewrite pass.
 C $AAE1,h4
+. #REGde = #R$FEDA.
 . Reuse the current deferred-effect source pair as the shared X/Z displacement in #R$FE4A / #R$FE4C.
 C $AAE7,h3
 . #REGhl = #R$FECC.
@@ -5394,55 +5403,77 @@ C $AB1F,h4
 C $AB23,h3
 . Reuse #REGsp as the mutable deferred-effect X companion list (#R$DD6E) and rewrite its four staged sections from #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8.
 C $AB26,h4
+. #REGde = #R$FEBC.
 C $AB2A,h4
+. #REGbc = #R$FED8.
 C $AB35,h2
 C $AB37,h4
+. #REGde = #R$FEC0.
 C $AB41,h2
 C $AB43,h4
+. #REGde = #R$FEC4.
 C $AB47,h4
+. #REGbc = #R$FEDA.
 C $AB52,h2
 C $AB55,h4
+. #REGde = #R$FEC8.
 C $AB5E,h2
 C $AB60,h3
 . Reuse #REGsp as the mutable deferred-effect Z companion list (#R$DE1E) and rewrite its four staged sections from #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA.
 C $AB63,h4
+. #REGde = #R$FEBE.
 C $AB67,h4
+. #REGbc = #R$FED8.
 C $AB72,h2
 C $AB74,h4
+. #REGde = #R$FEC2.
 C $AB7E,h2
 C $AB80,h4
+. #REGde = #R$FEC6.
 C $AB84,h4
+. #REGbc = #R$FEDA.
 C $AB8F,h2
 C $AB92,h4
+. #REGde = #R$FECA.
 C $AB9B,h2
 C $AB9D,h3
 . Advance the descending Y-base in #R$FED2, combine it with #R$FECE, and start rebuilding the temporary Y list.
 C $ABA0,h3
 C $ABA5,h3
+. #R$FED2 = #REGhl.
 C $ABA8,h4
+. #REGde = #R$FECE.
 C $ABAD,h3
+. #R$FECE = #REGhl.
 C $ABB0,h4
+. #REGde = #R$FECE.
 . Reuse #REGsp as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and #R$FEE2.
 C $ABB4,h3
 C $ABB7,h4
+. #REGbc = #R$FED8.
 C $ABBD,h4
+. #REGbc = #R$FEDA.
 C $ABC3,h4
+. #REGbc = #R$FEE2.
 C $ABD3,h2
 C $ABD6,h4
+. #R$FE34 = #REGsp.
 . Store the rebuilt temporary Y list pointer in #R$FE34.
 C $ABDA,h4
 @ $ABDE label=DeferredEffectDraw
 C $ABDE,h3
-C $ABE1,h3
 . Install #R$FEDC in #R$FE02.
 . Install the line-data pointer in #R$FE02, run perspective/line draw, and present the
 . current explosion frame.
 C $ABE1,h3
+. #R$FE02 = #REGhl.
 C $ABE4,h3
+. #REGhl = #R$FED8.
 . Load the current count pair for the perspective/draw pass from #R$FED8 / #R$FEDA.
 C $ABE7,h2
 C $ABE9,h2
 C $ABED,h3
+. #REGhl = #R$FEDA.
 C $ABF2,h2
 C $ABF4,h3
 C $ABFA,h3
@@ -5451,17 +5482,23 @@ C $ABFE,h2
 C $AC01,1
 . Latch the new #R$FED6 value and decide whether any deferred major-entity bit must be restored.
 C $AC02,h3
+. #R$FED6 = #REGa.
 C $AC05,h3
+. #REGa = #R$FE6C.
 C $AC08,h2
 C $AC0A,h3
+. #R$AC12.
 C $AC0E,h3
 @ $AC12 label=DeferredEffectRespawn
 C $AC13,h3
+. #REGa = #R$FE6A.
 C $AC16,1
 . Restore the deferred major-entity bit to #R$FE6A
 C $AC17,h3
+. #R$FE6A = #REGa.
 . before jumping into the reinitialisation path at #R$9644.
 C $AC1B,h3
+. #R$FE6C = #REGa.
 C $AC1F,h3
 @ $AC22 label=BulletImpactEffectSetup
 c $AC22
@@ -5472,57 +5509,98 @@ N $AC24
 . Entry at `0xAC22` selects player-bullet vs hostile-bullet source coordinates
 . and then falls into this shared setup.
 C $AC24,h3
+. #R$AC48.
 C $AC27,h3
+. #REGa = #R$FE6A.
 C $AC2A,h2
 C $AC2C,h3
+. #R$FE6A = #REGa.
 C $AC2F,h2
 C $AC31,h2
 C $AC33,h3
+. #REGhl = $DD1A.
 C $AC36,h3
+. $FEEE = #REGhl.
 C $AC39,h3
+. #REGhl = $DDCA.
 C $AC3C,h3
+. $FEF0 = #REGhl.
 C $AC3F,h3
+. #REGhl = #R$FEB0.
 C $AC42,h3
+. $FEF2 = #REGhl.
 C $AC45,h3
+. #R$AC5A.
 C $AC48,h3
+. #REGhl = $DD22.
 C $AC4B,h3
+. $FEEE = #REGhl.
 C $AC4E,h3
+. #REGhl = $DDD2.
 C $AC51,h3
+. $FEF0 = #REGhl.
 C $AC54,h3
+. #REGhl = #R$FEB8.
 C $AC57,h3
+. $FEF2 = #REGhl.
 C $AC5A,h3
+. #REGhl = $DA6A.
 C $AC5D,h3
+. #R$FE42 = #REGhl.
 C $AC60,h3
+. #REGa = #R$FE6C.
 C $AC63,h2
 C $AC65,h3
+. #R$FE6C = #REGa.
 C $AC68,h3
+. #REGhl = $DB5E.
 C $AC6B,h3
+. #R$FE46 = #REGhl.
 C $AC6E,h3
+. #REGhl = $DD82.
 C $AC71,h3
+. #R$FE32 = #REGhl.
 C $AC74,h3
+. #REGhl = $DE32.
 C $AC77,h3
+. #R$FE36 = #REGhl.
 C $AC7A,h2
 C $AC7C,h3
+. #REGhl = $FEEE.
 C $AC7F,h3
+. #R$FE4A = #REGhl.
 C $AC82,h3
+. #REGhl = $FEF0.
 C $AC85,h3
+. #R$FE4C = #REGhl.
 C $AC88,h3
+. #REGhl = $FEF2.
 C $AC8F,h3
+. Call #R$88EA.
 C $AC93,h2
 C $AC95,h3
+. #REGhl = $DEA4.
 C $AC98,h3
+. #R$FE38 = #REGhl.
 C $AC9B,h3
+. #REGhl = $DEDC.
 C $AC9E,h3
+. #R$FE3A = #REGhl.
 C $ACA1,h2
 C $ACA3,h3
+. #REGhl = $DC52.
 C $ACA6,h3
+. #R$FE34 = #REGhl.
 C $ACA9,h3
+. Call #R$8660.
 C $ACAF,h3
 . `EXBLT` line-data family.
 C $ACB2,h3
+. #REGhl = #R$D95C.
 C $ACB5,h2
 C $ACB7,h2
 C $ACB9,h3
+. #R$FE02 = #REGhl.
 C $ACBD,h2
 u $ACC0
 . Padding / reserved growth space between the deferred-effect block and the
@@ -9940,18 +10018,34 @@ b $FEE4 Tail Status
 @ $FEE4 label=Lives
 B $FEE4,1,h1
 b $FEE5
-D $FEE5 Current best tail-status read.
+D $FEE5 Tail-status block.
 . #LIST
 . { `FEE4` = lives counter (`SHIPS` in the notebook) }
+. { `FEE5` = unknown tail-status byte; known to exist, meaning still unconfirmed }
 . { `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by `SCOPR` }
 . { `FEE8/FEEA` = `SelectedObstacleX` / `SelectedObstacleZ`, the currently selected obstacle/object world-space `(X,Z)` pair passed into `ObstacleRotateAndProject` }
 . { `FEEC` = small attract/start transition latch reused by the later input bridge at `0xA679` }
 . { `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words fed into the shared deferred-effect setup at `0xAC22` }
 . LIST#
-B $FEE5,8,h8
+B $FEE5,1,h1
+@ $FEE5 label=prob_TailStatusByte
+B $FEE6,2,h2
+@ $FEE6 label=ExtraLifeThresholdBCD
+@ $FEEC label=AttractStartLatch
+B $FEEC,1,h1
+B $FEED,1,h1
 @ $FEE8 label=SelectedObstacleX
+B $FEE8,2,h2
 @ $FEEA label=SelectedObstacleZ
-B $FEED,8,h8
+B $FEEA,2,h2
+@ $FEEE label=BulletImpactSourceX
+B $FEEE,2,h2
+@ $FEF0 label=BulletImpactSourceZ
+B $FEF0,2,h2
+@ $FEF2 label=BulletImpactSourceOrientation
+B $FEF2,2,h2
+@ $FEF4 label=TailStatusPad
+B $FEF4,1,h1
 B $FEF5,8,h8
 B $FEFD,8,h8
 B $FF05,8,h8

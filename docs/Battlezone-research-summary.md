@@ -419,6 +419,7 @@ Working summary of verified facts, local source material, and open questions for
     - `FE8E/FE90/FE92` = live saucer `X/Z/phase` in gameplay, but second title-word `X/Z/angle` in attract mode
   - the tail of the game-status buffer is also less anonymous now:
     - `FEE4` = lives counter
+    - `FEE5` = still-unknown tail-status byte
     - `FEE6/FEE7` = next extra-life threshold in packed BCD
     - `SelectedObstacleX` / `SelectedObstacleZ` at `0xFEE8 / 0xFEEA` = currently selected obstacle/object `(X,Z)` pair for obstacle rendering
     - `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words
