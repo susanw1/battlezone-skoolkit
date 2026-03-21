@@ -5033,29 +5033,33 @@ N $A934
 . and bullet-impact cases, then hands each family into the common animator.
 D $A934 Functional phases on this page:
 . #LIST
-. { #R$A934: entity explosion seed install. }
-. { #R$A9AC: tank / supertank explosion setup and deferred-effect seed install. }
-. { #R$AA0B: missile explosion / impact setup and deferred-effect seed install. }
+. { #R$A934: saucer explosion seed install - called from #R$A201. }
+. { #R$A9AC: tank / supertank explosion setup and deferred-effect seed install - called from #R$A21D. }
+. { #R$AA0B: missile explosion / impact setup and deferred-effect seed install - called from #R$A20F. }
 . { #R$AA5D: shared deferred explosion / impact animator. }
 . LIST#
-@ $A934 label=ExplosionSetup
+@ $A934 label=SaucerExplosionSetup
 c $A934
-. ExplosionSetup
+. Explosion Setup
 C $A934,h3
 C $A937,h2
 . Clear the active saucer and player-bullet bits.
 C $A939,h3
 C $A93C,h2
 C $A93E,h3
+. Call #R$94AC.
 C $A941,h2
 C $A943,h2
 C $A945,h3
+. #REGa = #R$FE6C.
 C $A948,h2
-. Queue the matching deferred saucer/effect bit.
+. Queue the matching deferred saucer/effect bit in #R$FE6C.
 C $A94A,h3
+. #R$FE6C = #REGa.
 C $A94D,h3
+. #REGhl = #R$FE8E.
 C $A950,h3
-. Store the deferred effect source X/Z pair in #R$FECC / #R$FED0.
+. #R$FECC = #REGhl.
 C $A953,h3
 . #REGhl = #R$FE90.
 C $A956,h3
@@ -5099,15 +5103,29 @@ C $A989,h3
 C $A98C,h3
 . #R$FEC0 = #REGhl.
 C $A98F,h3
+. #R$FEC4 = #REGhl.
 C $A992,h3
+. #R$FEC8 = #REGhl.
 C $A995,h3
+. #R$FEBE = #REGhl.
 C $A998,h3
+. #R$FEC2 = #REGhl.
 C $A99B,h3
+. #R$FEC6 = #REGhl.
 C $A99E,h3
+. #R$FECA = #REGhl.
 C $A9A1,h2
+. #REGa = $18.
+. #REGa = $18.
 C $A9A3,h3
+. #R$FED6 = #REGa.
+. #R$FED6 = #REGa.
 C $A9A7,h2
+. border / sound latch write.
+. border / sound latch write.
 C $A9A9,h3
+. #R$A36F.
+. #R$A36F.
 N $A9AC
 . Probable tank / supertank explosion setup:
 . - awards score increment `1` or `3`
@@ -5116,77 +5134,126 @@ N $A9AC
 . - current best notebook match: #R$D6B8
 @ $A9AC label=TankExplosionSetup
 C $A9AC,h3
+. #REGa = #R$FE6A.
 C $A9AF,h2
 C $A9B1,h3
+. #R$A36F.
 C $A9B4,h2
 C $A9B6,h3
+. #R$A9BB.
 C $A9B9,h2
 C $A9BB,h3
+. #R$94AC.
 C $A9BE,h2
 C $A9C0,h2
 C $A9C2,h3
+. #REGa = #R$FE6A.
 C $A9C5,h2
 . Clear the active tank/supertank and player-bullet bits.
 C $A9C7,h3
+. #R$FE6A = #REGa.
 C $A9CA,h3
+. #REGa = #R$FE6C.
 C $A9CD,h2
-. Queue the matching deferred tank/supertank effect bit.
+. Queue the matching deferred tank/supertank effect bit in #R$FE6C.
 C $A9CF,h3
+. #R$FE6C = #REGa.
 C $A9D2,h3
+. #REGhl = #R$FE5E.
 C $A9D5,h3
+. #R$FECC = #REGhl.
 C $A9D8,h3
+. #REGhl = #R$FE60.
 C $A9DB,h3
+. #R$FED0 = #REGhl.
 C $A9DE,h3
+. #REGhl = $0806.
 C $A9E1,h3
-. Install the tank-effect count pairs, line data, and XTAB/ZTAB/YLOC companions.
+. Install #R$FED8, #R$FEDA, #R$FEDC, and #R$FEDE/#R$FEE0/#R$FEE2 companions.
 C $A9E4,h3
+. #REGhl = $0608.
 C $A9E7,h3
+. #R$FED8 = #REGhl.
 C $A9EA,h3
+. #REGhl = #R$D6B8.
 C $A9ED,h3
+. #R$FEDC = #REGhl.
 C $A9F0,h3
+. #REGhl = #R$D9E6.
 C $A9F3,h3
+. #R$FEDE = #REGhl.
 C $A9F6,h3
+. #REGhl = #R$DADA.
 C $A9F9,h3
+. #R$FEE0 = #REGhl.
 C $A9FC,h3
+. #REGhl = #R$DBCE.
 C $A9FF,h3
+. #R$FEE2 = #REGhl.
 C $AA02,h3
+. #REGhl = #R$FE62.
 C $AA05,h3
+. #R$FED4 = #REGhl.
 C $AA08,h3
+. #R$A97A.
 @ $AA0B label=MissileExplosionSetup
 N $AA0B
 . MissileExplosionSetup
 C $AA0B,h3
+. #REGa = #R$FE6A.
 C $AA0E,h2
-. Clear the active missile and player-bullet bits.
+. Clear the active missile and player-bullet bits in #R$FE6A.
 C $AA10,h3
+. #R$FE6A = #REGa.
 C $AA13,h2
 C $AA15,h2
 C $AA17,h3
+. #REGa = #R$FE6C.
 C $AA1A,h2
-. Queue the matching deferred missile/effect bit.
+. Queue the matching deferred missile/effect bit in #R$FE6C.
 C $AA1C,h3
+. #R$FE6C = #REGa.
 C $AA1F,h2
 C $AA21,h3
+. Call #R$94AC.
 C $AA24,h3
+. #REGhl = #R$FE7C.
 C $AA27,h3
+. #R$FECC = #REGhl.
 C $AA2A,h3
+. #REGhl = #R$FE80.
 C $AA2D,h3
+. #R$FED0 = #REGhl.
 C $AA30,h3
-. Install the missile-effect count pairs, line data, and XTAB/ZTAB/YLOC companions.
+. Install #R$FED8, #R$FEDA, #R$FEDC, and #R$FEDE/#R$FEE0/#R$FEE2 companions.
 C $AA33,h3
+. #REGhl = $0404.
 C $AA36,h3
+. #R$FED8 = #REGhl.
 C $AA39,h3
+. #REGhl = $0604.
 C $AA3C,h3
+. #R$FEDA = #REGhl.
 C $AA3F,h3
+. #REGhl = #R$D8B0.
 C $AA42,h3
+. #R$FEDC = #REGhl.
 C $AA45,h3
+. #REGhl = #R$DA46.
 C $AA48,h3
+. #R$FEDE = #REGhl.
 C $AA4B,h3
+. #REGhl = #R$DB3A.
 C $AA4E,h3
+. #R$FEE0 = #REGhl.
 C $AA51,h3
+. #REGhl = #R$DC2E.
 C $AA54,h3
+. #R$FEE2 = #REGhl.
 C $AA57,h3
+. #REGhl = #R$FE86.
 C $AA5A,h3
+. #R$FED4 = #REGhl.
 N $AA5D
 . Probable missile explosion / impact setup:
 . - awards score increment `2`
@@ -5225,10 +5292,11 @@ N $AA5D
 . DeferredEffectAnimator
 C $AA5D,h2
 C $AA5F,h3
-. If the active source was a bullet, refresh the shared impact-effect seed first.
+. If the active source was a bullet, refresh the shared impact-effect seed at #R$AC22 first.
 C $AA62,h2
 C $AA64,h2
 C $AA66,h3
+. #REGa = #R$FE6C.
 @ $AA6B label=DeferredEffectAdvanceState
 C $AA6B,h3
 C $AA6E,h3
@@ -5236,23 +5304,38 @@ C $AA6E,h3
 . #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms and related per-phase counters.
 C $AA6E,h3
 C $AA72,h3
+. #R$FEC6 = #REGhl.
 C $AA75,h3
+. #REGhl = #R$FEC8.
 C $AA79,h3
+. #R$FEC8 = #REGhl.
 C $AA7C,h3
 C $AA7F,h3
+. #REGhl = #R$FECA.
 C $AA83,h3
+. #R$FECA = #REGhl.
 C $AA86,h3
+. #REGhl = #R$FEBC.
 C $AA8A,h3
+. #R$FEBC = #REGhl.
 C $AA8D,h3
 C $AA90,h3
+. #REGhl = #R$FEBE.
 C $AA94,h3
+. #R$FEBE = #REGhl.
 C $AA97,h3
+. #REGhl = #R$FEC0.
 C $AA9B,h3
+. #R$FEC0 = #REGhl.
 C $AA9E,h3
 C $AAA1,h3
+. #REGhl = #R$FEC2.
 C $AAA5,h3
+. #R$FEC2 = #REGhl.
 C $AAA8,h3
+. #REGhl = #R$FEC4.
 C $AAAC,h3
+. #R$FEC4 = #REGhl.
 C $AAAF,h3
 . Install the current #R$FEDE / #R$FEE0 pair.
 C $AAB2,h3
@@ -5280,9 +5363,13 @@ C $AADB,h4
 C $AAE1,h4
 . Reuse the current deferred-effect source pair as the shared X/Z displacement in #R$FE4A / #R$FE4C.
 C $AAE7,h3
+. #REGhl = #R$FECC.
 C $AAEA,h3
+. #R$FE4A = #REGhl.
 C $AAED,h3
+. #REGhl = #R$FED0.
 C $AAF0,h3
+. #R$FE4C = #REGhl.
 C $AAF3,h3
 . Feed the current #R$FED4 into the shared rotation helper at #R$88EA.
 C $AAFA,h2
@@ -5296,11 +5383,14 @@ C $AB0D,h3
 C $AB11,h2
 @ $AB13 label=DeferredEffectRewriteGeometry
 C $AB13,h3
-. Install the temporary projected X/Y buffers for the rewritten deferred-effect geometry.
+. Install the temporary projected X/Y buffers in #R$FE38 / #R$FE3A for the rewritten deferred-effect geometry.
 C $AB16,h3
+. #R$FE38 = #REGhl.
 C $AB19,h3
 C $AB1C,h3
+. #R$FE3A = #REGhl.
 C $AB1F,h4
+. #R$FE00 = #REGsp.
 C $AB23,h3
 . Reuse #REGsp as the mutable deferred-effect X companion list (#R$DD6E) and rewrite its four staged sections from #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8.
 C $AB26,h4
@@ -5345,11 +5435,11 @@ C $ABDA,h4
 C $ABDE,h3
 C $ABE1,h3
 . Install #R$FEDC in #R$FE02.
-. Install the line-data pointer, run perspective/line draw, and present the
+. Install the line-data pointer in #R$FE02, run perspective/line draw, and present the
 . current explosion frame.
 C $ABE1,h3
 C $ABE4,h3
-. Load the current count pair for the perspective/draw pass.
+. Load the current count pair for the perspective/draw pass from #R$FED8 / #R$FEDA.
 C $ABE7,h2
 C $ABE9,h2
 C $ABED,h3
