@@ -162,14 +162,75 @@ Practical rule:
 - if prose is just wrapping or extending the same thought, use `.` continuation
   lines rather than starting a fresh `D`
 - for internal labels that remain inside a larger contiguous code page, keep the
-  structural explanation on the parent page; a nested `D $ADDR ...` block will
-  not reliably surface as a separate visible sub-entry unless that label really
-  becomes its own rendered block/page
+  structural explanation on the parent page; a nested `D $ADDR ...` block on an
+  internal mid-block label does not reliably surface in the generated `skool`
+  or HTML unless that label really becomes its own rendered block/page
+- in practice, that means:
+- use `D $parent` for page-level summaries
+- use `@ $ADDR label=...` plus `C $ADDR ...` for internal phase names and
+  per-instruction detail
+- promote the phase to its own `c $ADDR` entry only when it genuinely needs a
+  separate page
 - by contrast, the Input/Output register tables are much stricter:
   the left-hand key column remains symbolic-only in this build
 - converting workspace slots from `g` entries to ordinary `b`/`w` entries does
   not change that symbolic-only key column, but it does help with ordinary
   entry links and `#R$...` address targets elsewhere
+
+Large-page structuring rule:
+
+- when a long code chain is one coherent routine page, do not split it into
+  extra `c $ADDR` pages just to expose phase names
+- keep one parent `c $PARENT` page
+- add one `D $PARENT` summary block at the top
+- inside that summary, include a `#LIST` of the major functional areas on the
+  page
+- in those summary-list items, prefer `#R$ADDR: description` so the item shows
+  one linked phase name followed by its description
+- do not write `#R$ADDR \`PhaseName\`: ...`, because that renders as a linked
+  label plus a second plain-text copy of the same name
+- for each genuine internal phase, add:
+  - `@ $ADDR label=PhaseName`
+  - `N $ADDR`
+  - 1-2 short paragraphs describing that phase
+- for one-off load/store explanations, do not use `N $ADDR`; put the text on
+  the relevant `C $ADDR ...` line instead
+- only promote a phase to its own `c $ADDR` page when it has a real independent
+  interface and should be navigated to separately
+
+Mechanical checklist for lower-context workers:
+
+- identify the single parent page address
+- identify the real internal phase starts
+- add/update one `D $PARENT` summary with a `#LIST` of those phases
+- add `@ $ADDR label=...` plus `N $ADDR` for real phase boundaries
+- move individual load/store notes to `C $ADDR ...`
+- rebuild with `utils/rebuild_html.sh`
+- verify in both `sources/battlezone.skool` and `build/html/.../ADDR.html`
+- specifically check that summary-list items render as one link plus prose, not
+  a duplicated link label plus plain-text label
+
+Worked example:
+
+- `A685` stays one page: `c $A685`
+- top summary lives on `D $A685`
+- internal phases use `N` at:
+  - `A714` `KMOVTurnDecode`
+  - `A774` `WorldZScroll`
+  - `A7C8` `WorldTurnGate`
+  - `A7D1` `SharedWorldTurnPass`
+  - `A911` `GameplayHoldLoop`
+- the top summary list should use:
+  - `#R$A692: ...`
+  - `#R$A695: ...`
+  - `#R$A701 and #R$A70C: ...`
+  - `#R$A714: ...`
+  - `#R$A774: ...`
+  - `#R$A7C8: ...`
+  - `#R$A7D1: ...`
+  - `#R$A911: ...`
+- individual notes such as `A746`, `A75E`, `A778`, `A77B`, `A7CE`, `A7D5`,
+  and `A7DC` stay as inline `C` comments
 
 Register-doc rule:
 
@@ -260,6 +321,15 @@ site structure:
 ```bash
 utils/mkhtml.py -q
 ```
+
+When checking whether a change actually landed, compare the generated content,
+not just file existence or timestamps. A stale HTML artifact can remain on disk
+if its content did not change, and an apparently older file may still be the
+current generated output.
+
+For a clean end-to-end rebuild, use `utils/rebuild_html.sh` from the repo root.
+It removes `build/html`, regenerates `sources/battlezone.skool`, and then
+rebuilds the HTML tree so stale pages cannot linger.
 
 ## Using other SkoolKit projects
 

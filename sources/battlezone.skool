@@ -7426,7 +7426,21 @@ c$A37B LD A,$18      ;
 
 ; InputDecodeAndMask
 ;
-; Used by the routine at #R$A37B.
+; KEYIN / keyboard interpretation plus world-motion handoff.
+; This page merges Kempston and keyboard input, masks movement against nearby
+; obstacles, decodes the surviving `KMOV` state into turn/world-motion setup,
+; and handles the gameplay hold-key pause loop.
+; Functional phases on this page:
+; #LIST
+; { #R$A692: store the merged keyboard/Kempston movement code in `KMOV`. }
+; { #R$A695: mask disallowed movement bits against the four nearby obstacle pairs. }
+; { #R$A701 and #R$A70C: erase or print the obstacle warning message. }
+; { #R$A714: decode turn behaviour and the matching hill-pointer delta. }
+; { #R$A774: apply the forward/back world-Z scroll. }
+; { #R$A7C8: decide whether the shared world-turn pass is needed. }
+; { #R$A7D1: rotate the obstacle/entity `(X,Z)` tuples. }
+; { #R$A911: pause until the hold-key sequence is released. }
+; LIST#
 ;
 ; .
 ;
@@ -7505,25 +7519,21 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
  $A70F PUSH BC       ;
  $A710 CALL $9452    ;
  $A713 POP BC        ;
-
-; KMOVTurnDecode
-;
-; Shared `KMOV` turn/motion decoder.
-; Decodes the surviving masked `KMOV` state into the selected turn-handler
-; entry plus the matching hill-pointer delta.
-;
-; A Surviving `KMOV` movement code after obstacle masking
+; KMOV turn decoder and hill-pointer adjustment.
+; .
+; Decode the surviving masked `KMOV` state into turn behaviour plus the
+; hill-pointer delta that matches the chosen turn rate/direction.
+; #LIST
+; { bit 5 -> `0x91EB` single-speed left turn }
+; { bit 4 -> `0x924A` single-speed right turn }
+; { bit 3 -> `0x92AE` double-speed left turn }
+; { bit 2 -> `0x9312` double-speed right turn }
+; { no turn bits -> no explicit turn handler selected here }
+; LIST#
+; This is the sole writer of the indirect `TURN` dispatch pointer used by
+; `TurnTransformDispatcher`.
 @label=KMOVTurnDecode
-c$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plus the hill-pointer
-                     ; delta that matches the chosen turn rate/direction.
-                     ; Bits 5/4/3/2 select the turn handler and turn step:
-                     ; - bit 5 -> `0x91EB` single-speed left turn
-                     ; - bit 4 -> `0x924A` single-speed right turn
-                     ; - bit 3 -> `0x92AE` double-speed left turn
-                     ; - bit 2 -> `0x9312` double-speed right turn
-                     ; - no turn bits -> no explicit turn handler selected here
-                     ; This is the sole writer of the indirect `TURN` dispatch pointer used by
-                     ; `TurnTransformDispatcher`.
+*$A714 LD A,($FE56)  ;
  $A717 AND C         ;
  $A718 LD ($FE56),A  ; Store the masked movement bits back into #R$FE56 before selecting the turn handler.
  $A71B BIT 5,A       ;
@@ -7543,8 +7553,8 @@ c$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plu
  $A73E JR Z,$A746    ;
  $A740 LD BC,$9312   ;
  $A743 LD DE,$0020   ;
-; Load the current hill-row stream pointer from #R$FE2C before applying the selected turn-rate delta.
-*$A746 LD HL,($FE2C) ;
+@label=KMOVAdjustHillPointer
+*$A746 LD HL,($FE2C) ; Load the current hill-row stream pointer from #R$FE2C before applying the selected turn-rate delta.
  $A749 ADD HL,DE     ;
  $A74A LD ($FE5C),BC ; Store the selected turn-handler entry in `TURN` and clamp the hill pointer
                      ; before the later forward/back world-Z scroll and shared world-turn transform.
@@ -7556,8 +7566,7 @@ c$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plu
 *$A757 CP $69        ;
  $A759 JP P,$A75E    ;
  $A75C LD H,$78      ;
-; Store the clamped hill-row stream pointer back into #R$FE2C.
-*$A75E LD ($FE2C),HL ;
+*$A75E LD ($FE2C),HL ; Store the clamped hill-row stream pointer back into #R$FE2C.
  $A761 BIT 7,C       ;
  $A763 JP Z,$A76C    ;
  $A766 LD DE,$FF80   ;
@@ -7565,86 +7574,67 @@ c$A714 LD A,($FE56)  ; Decode the surviving `KMOV` state into turn behaviour plu
 *$A76C BIT 6,C       ;
  $A76E JP Z,$A7C8    ;
  $A771 LD DE,$0080   ;
-
-; WorldZScroll
-;
-; Straight world-Z scroll pass after forward/back movement. The chosen signed
-; delta in `DE` is applied to all obstacle Z slots and to the other world-space
-; entity Z positions so the player remains effectively centred while the world
-; moves.
+; Straight world-Z scroll pass.
+; .
+; Apply the selected signed `DE` delta to the live obstacle/entity Z slots so
+; the player remains effectively centred while the world scrolls forward or
+; backward.
 @label=WorldZScroll
-c$A774 LD HL,($FE9A) ;
+*$A774 LD HL,($FE9A) ;
  $A777 ADD HL,DE     ;
-; Store the updated first obstacle Z slot back into #R$FE9A.
- $A778 LD ($FE9A),HL ;
-; Load the second obstacle Z slot from #R$FE9E.
- $A77B LD HL,($FE9E) ;
+ $A778 LD ($FE9A),HL ; Store the updated first obstacle Z slot back into #R$FE9A.
+ $A77B LD HL,($FE9E) ; Load the second obstacle Z slot from #R$FE9E.
  $A77E ADD HL,DE     ;
  $A77F LD ($FE9E),HL ;
-; Load the third obstacle Z slot from #R$FEA2.
- $A782 LD HL,($FEA2) ;
+ $A782 LD HL,($FEA2) ; Load the third obstacle Z slot from #R$FEA2.
  $A785 ADD HL,DE     ;
  $A786 LD ($FEA2),HL ;
-; Load the fourth obstacle Z slot from #R$FEA6.
- $A789 LD HL,($FEA6) ;
+ $A789 LD HL,($FEA6) ; Load the fourth obstacle Z slot from #R$FEA6.
  $A78C ADD HL,DE     ;
  $A78D LD ($FEA6),HL ;
-; Load the active tank-family Z position from #R$FE60.
- $A790 LD HL,($FE60) ;
+ $A790 LD HL,($FE60) ; Load the active tank-family Z position from #R$FE60.
  $A793 ADD HL,DE     ;
  $A794 LD ($FE60),HL ;
-; Load the active saucer Z position from #R$FE90.
- $A797 LD HL,($FE90) ;
+ $A797 LD HL,($FE90) ; Load the active saucer Z position from #R$FE90.
  $A79A ADD HL,DE     ;
  $A79B LD ($FE90),HL ;
-; Load the missile companion/shared Z slot from `$DDBA`.
- $A79E LD HL,($DDBA) ;
+ $A79E LD HL,($DDBA) ; Load the missile companion/shared Z slot from `$DDBA`.
  $A7A1 ADD HL,DE     ;
  $A7A2 LD ($DDBA),HL ;
-; Load the temporary deferred-effect source Z from #R$FED0.
- $A7A5 LD HL,($FED0) ;
+ $A7A5 LD HL,($FED0) ; Load the temporary deferred-effect source Z from #R$FED0.
  $A7A8 ADD HL,DE     ;
  $A7A9 LD ($FED0),HL ;
-; Load the player-bullet companion/shared Z slot from `$DDCA`.
- $A7AC LD HL,($DDCA) ;
+ $A7AC LD HL,($DDCA) ; Load the player-bullet companion/shared Z slot from `$DDCA`.
  $A7AF ADD HL,DE     ;
  $A7B0 LD ($DDCA),HL ;
-; Load the live player-bullet Z position from #R$FEAE before applying the world scroll.
- $A7B3 LD HL,($FEAE) ;
+ $A7B3 LD HL,($FEAE) ; Load the live player-bullet Z position from #R$FEAE before applying the world scroll.
  $A7B6 ADD HL,DE     ;
  $A7B7 LD ($FEAE),HL ;
-; Load the hostile-bullet companion/shared Z slot from `$DDD2`.
- $A7BA LD HL,($DDD2) ;
+ $A7BA LD HL,($DDD2) ; Load the hostile-bullet companion/shared Z slot from `$DDD2`.
  $A7BD ADD HL,DE     ;
  $A7BE LD ($DDD2),HL ;
-; Load the live hostile-bullet Z position from #R$FEB6 for the final world-scroll update.
- $A7C1 LD HL,($FEB6) ;
+ $A7C1 LD HL,($FEB6) ; Load the live hostile-bullet Z position from #R$FEB6 for the final world-scroll update.
  $A7C4 ADD HL,DE     ;
  $A7C5 LD ($FEB6),HL ;
-
-; WorldTurnGate
-;
-; Used by the routine at #R$A714.
+; World-turn gate.
+; .
+; If no surviving non-scroll movement bits remain, skip the shared world-turn
+; pass and fall straight into the hold-key logic.
 @label=WorldTurnGate
-c$A7C8 LD A,C        ;
+*$A7C8 LD A,C        ;
  $A7C9 AND $3F       ;
  $A7CB JP Z,$A911    ; Skip the shared world-turn pass entirely if no non-scroll movement bits remain.
-; Load the current shared turn accumulator from #R$FEA8 before rotating the live world-state tuples.
- $A7CE LD HL,($FEA8) ;
-
-; SharedWorldTurnPass
-;
-; Shared world-turn rotation pass. `0x91E6` dispatches through #R$FE5C, applies
-; the current view-turn transform to each `(X,Z)` pair, and returns updated
-; coordinates. The pass is used first on the four obstacle pairs, then on tank,
-; saucer, missile, bullet, and deferred-effect world positions.
+ $A7CE LD HL,($FEA8) ; Load the current shared turn accumulator from #R$FEA8 before rotating the live world-state tuples.
+; Shared world-turn rotation pass.
+; .
+; `0x91E6` dispatches through #R$FE5C, applies the current view-turn transform
+; to each live `(X,Z)` tuple, and returns updated coordinates in `DE/BC` plus
+; the updated turn accumulator in `HL`.
 @label=SharedWorldTurnPass
-c$A7D1 LD DE,($FE98) ;
-; Load the first obstacle world `(X,Z)` pair from `Obstacle1X` / `Obstacle1Z` (`$FE98` / `$FE9A`).
- $A7D5 LD BC,($FE9A) ;
+ $A7D1 LD DE,($FE98) ;
+ $A7D5 LD BC,($FE9A) ; Load the first obstacle world `(X,Z)` pair from `Obstacle1X` / `Obstacle1Z` (`$FE98` / `$FE9A`).
  $A7D9 CALL $91E6    ;
-; Store the updated turn accumulator back into #R$FEA8 for the later tuples in the same frame.
- $A7DC LD ($FEA8),HL ;
+ $A7DC LD ($FEA8),HL ; Store the updated turn accumulator back into #R$FEA8 for the later tuples in the same frame.
  $A7DF LD ($FE98),DE ;
  $A7E3 LD ($FE9A),BC ;
  $A7E7 LD A,$18      ;
@@ -7754,12 +7744,12 @@ c$A7D1 LD DE,($FE98) ;
  $A906 CALL $91E6    ;
  $A909 LD ($FECC),DE ;
  $A90D LD ($FED0),BC ;
-
-; GameplayHoldLoop
-;
-; Used by the routines at #R$A7C8 and #R$A7D1.
+; Gameplay hold loop.
+; .
+; Poll the hold-key sequence until the player either aborts back to the
+; title/instructions flow or releases hold and resumes the main loop.
 @label=GameplayHoldLoop
-c$A911 LD BC,$BFFE   ; Read the `ENTER L K J H` keyboard row.
+*$A911 LD BC,$BFFE   ; Read the `ENTER L K J H` keyboard row.
  $A914 IN A,(C)      ;
  $A916 AND $10       ; `H` pressed?
  $A918 JP NZ,$A931   ;
@@ -8383,6 +8373,7 @@ u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; Current best refinement from the data it uses:
 ; #LIST
 ; { `CC9C` is a probable screen-break / crack line-data block drawn three times before the life counter is decremented }
+; { the zero-lives `BLOOD` branch continues the death sequence with the blood/drip setup, `GAME OVER`, and `TODAYS GREATEST` }
 ; { the zero-lives branch uses `CDE8` for the `GAME OVER` text and later `CDFA` for the `TODAYS GREATEST` high-score heading }
 ; { `CC5C` is reused as a mutable table/workspace during the blood/end-screen effect rather than as a static text block }
 ; LIST#
@@ -8465,14 +8456,7 @@ c$ADD4 LD A,$C9      ;
  $AE87 LD ($FE6C),A  ;
  $AE8A LD ($FE6E),A  ;
  $AE8D JP $9644      ;
-
-; BLOOD
-;
-; Current best `BLOOD` / final zero-lives branch match.
-; This is the late branch of `CRASH`: it enters the blood/end-screen effect,
-; then prints `GAME OVER` and later the `TODAYS GREATEST` heading.
-@label=BLOOD
-c$AE90 LD A,$02      ;
+*$AE90 LD A,$02      ;
  $AE92 LD HL,$0000   ;
  $AE95 LD DE,$0000   ;
  $AE98 LD BC,$4E20   ;
@@ -8889,7 +8873,7 @@ c$B0EF LD ($FE00),SP ;
  $B144 JP NZ,$B0F8   ;
  $B147 LD SP,($FE00) ;
  $B14B RET           ;
-; This entry point is used by the routine at #R$AE90.
+; This entry point is used by the routine at #R$ADD4.
 *$B14C LD HL,$4000   ;
  $B14F LD DE,$4001   ;
  $B152 LD BC,$17FF   ;
