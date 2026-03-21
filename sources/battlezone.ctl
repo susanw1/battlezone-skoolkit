@@ -5042,9 +5042,11 @@ D $A934 Functional phases on this page:
 c $A934
 . Explosion Setup
 C $A934,h3
+. #REGa = #R$FE6A.
 C $A937,h2
 . Clear the active saucer and player-bullet bits.
 C $A939,h3
+. #R$FE6A = #REGa.
 C $A93C,h2
 C $A93E,h3
 . Call #R$94AC.
@@ -5117,15 +5119,11 @@ C $A99E,h3
 . #R$FECA = #REGhl.
 C $A9A1,h2
 . #REGa = $18.
-. #REGa = $18.
 C $A9A3,h3
-. #R$FED6 = #REGa.
 . #R$FED6 = #REGa.
 C $A9A7,h2
 . border / sound latch write.
-. border / sound latch write.
 C $A9A9,h3
-. #R$A36F.
 . #R$A36F.
 N $A9AC
 . Probable tank / supertank explosion setup:
@@ -5229,11 +5227,11 @@ C $AA2D,h3
 C $AA30,h3
 . Install #R$FED8, #R$FEDA, #R$FEDC, and #R$FEDE/#R$FEE0/#R$FEE2 companions.
 C $AA33,h3
-. #REGhl = $0404.
+. #R$FED8 = #REGhl.
 C $AA36,h3
 . #R$FED8 = #REGhl.
 C $AA39,h3
-. #REGhl = $0604.
+. #R$FEDA = #REGhl.
 C $AA3C,h3
 . #R$FEDA = #REGhl.
 C $AA3F,h3
@@ -5301,6 +5299,7 @@ C $AA66,h3
 . #REGa = #R$FE6C.
 @ $AA6B label=DeferredEffectAdvanceState
 C $AA6B,h3
+. #REGde = $0050.
 C $AA6E,h3
 . #REGhl = #R$FEC6.
 . Advance the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
@@ -5312,6 +5311,7 @@ C $AA75,h3
 C $AA79,h3
 . #R$FEC8 = #REGhl.
 C $AA7C,h3
+. #REGde = $001E.
 C $AA7F,h3
 . #REGhl = #R$FECA.
 C $AA83,h3
@@ -5321,6 +5321,7 @@ C $AA86,h3
 C $AA8A,h3
 . #R$FEBC = #REGhl.
 C $AA8D,h3
+. #REGde = $FFB0.
 C $AA90,h3
 . #REGhl = #R$FEBE.
 C $AA94,h3
@@ -5330,6 +5331,8 @@ C $AA97,h3
 C $AA9B,h3
 . #R$FEC0 = #REGhl.
 C $AA9E,h3
+. #REGde = #R$FFE2.
+. #REGde = $FFE2.
 C $AAA1,h3
 . #REGhl = #R$FEC2.
 C $AAA5,h3
@@ -5359,7 +5362,7 @@ C $AAC7,h3
 C $AACB,h3
 . #R$FED6 = #REGa.
 C $AACE,h3
-. When the phase countdown reaches zero, finish the animation immediately.
+. When the phase countdown reaches zero, finish the animation immediately. #R$AC01.
 @ $AAD1 label=DeferredEffectPhaseSetup
 C $AAD1,h3
 . Seed the current effect phase: advance #R$FED4, install #R$FECC /
@@ -5367,6 +5370,7 @@ C $AAD1,h3
 C $AAD4,h3
 . #REGde = $0034.
 C $AAD8,h3
+. #R$FED4 = #REGhl.
 C $AADB,h4
 . #REGde = #R$FED8.
 . Load the current #R$FED8 / #R$FEDA pair for the rewrite pass.
@@ -5385,12 +5389,18 @@ C $AAF3,h3
 . Feed the current #R$FED4 into the shared rotation helper at #R$88EA.
 C $AAFA,h2
 C $AAFC,h3
+. #R$88EA.
 C $AAFF,h3
+. #REGa = #R$FE6A.
 C $AB02,h2
 C $AB04,h3
+. #R$AB13.
 C $AB07,h3
+. #REGhl = $0000.
 C $AB0A,h3
+. #REGde = $0400.
 C $AB0D,h3
+. #R$90BA.
 C $AB11,h2
 @ $AB13 label=DeferredEffectRewriteGeometry
 C $AB13,h3
@@ -5398,6 +5408,7 @@ C $AB13,h3
 C $AB16,h3
 . #R$FE38 = #REGhl.
 C $AB19,h3
+. #REGhl = $DF00.
 C $AB1C,h3
 . #R$FE3A = #REGhl.
 C $AB1F,h4
@@ -5410,20 +5421,24 @@ C $AB2A,h4
 . #REGbc = #R$FED8.
 @ $AB30 label=DeferredEffectRewriteXSectionA
 C $AB35,h2
+. #R$AB30.
 C $AB37,h4
 . #REGde = #R$FEC0.
 @ $AB3C label=DeferredEffectRewriteXSectionB
 C $AB41,h2
+. #R$AB3C.
 C $AB43,h4
 . #REGde = #R$FEC4.
 C $AB47,h4
 . #REGbc = #R$FEDA.
 @ $AB4D label=DeferredEffectRewriteXSectionC
 C $AB52,h2
+. #R$AB4D.
 C $AB55,h4
 . #REGde = #R$FEC8.
 @ $AB59 label=DeferredEffectRewriteXSectionD
 C $AB5E,h2
+. #R$AB59.
 C $AB60,h3
 . Reuse #REGsp as the mutable deferred-effect Z companion list (#R$DE1E) and rewrite its four staged sections from #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA.
 C $AB63,h4
@@ -5432,23 +5447,28 @@ C $AB67,h4
 . #REGbc = #R$FED8.
 @ $AB6D label=DeferredEffectRewriteZSectionA
 C $AB72,h2
+. #R$AB6D.
 C $AB74,h4
 . #REGde = #R$FEC2.
 @ $AB79 label=DeferredEffectRewriteZSectionB
 C $AB7E,h2
+. #R$AB79.
 C $AB80,h4
 . #REGde = #R$FEC6.
 C $AB84,h4
 . #REGbc = #R$FEDA.
 @ $AB8A label=DeferredEffectRewriteZSectionC
 C $AB8F,h2
+. #R$AB8A.
 C $AB92,h4
 . #REGde = #R$FECA.
 @ $AB96 label=DeferredEffectRewriteZSectionD
 C $AB9B,h2
+. #R$AB96.
 C $AB9D,h3
 . Advance the descending Y-base in #R$FED2, combine it with #R$FECE, and start rebuilding the temporary Y list.
 C $ABA0,h3
+. #REGde = $0013.
 C $ABA5,h3
 . #R$FED2 = #REGhl.
 C $ABA8,h4
@@ -5459,6 +5479,7 @@ C $ABB0,h4
 . #REGde = #R$FECE.
 . Reuse #REGsp as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and #R$FEE2.
 C $ABB4,h3
+. #REGsp = $DE90.
 C $ABB7,h4
 . #REGbc = #R$FED8.
 C $ABBD,h4
@@ -5467,10 +5488,12 @@ C $ABC3,h4
 . #REGbc = #R$FEE2.
 @ $ABC9 label=DeferredEffectBuildProjectedY
 C $ABD3,h2
+. #R$ABC9.
 C $ABD6,h4
 . #R$FE34 = #REGsp.
 . Store the rebuilt temporary Y list pointer in #R$FE34.
 C $ABDA,h4
+. #REGsp = #R$FE00.
 @ $ABDE label=DeferredEffectDraw
 C $ABDE,h3
 . Install #R$FEDC in #R$FE02.
@@ -5487,7 +5510,9 @@ C $ABED,h3
 . #REGhl = #R$FEDA.
 C $ABF2,h2
 C $ABF4,h3
+. #R$8660.
 C $ABFA,h3
+. #R$805C.
 C $ABFE,h2
 @ $AC01 label=DeferredEffectComplete
 C $AC01,1
@@ -5500,6 +5525,7 @@ C $AC08,h2
 C $AC0A,h3
 . #R$AC12.
 C $AC0E,h3
+. #R$FE6C = #REGa.
 @ $AC12 label=DeferredEffectRespawn
 C $AC13,h3
 . #REGa = #R$FE6A.
@@ -5511,6 +5537,7 @@ C $AC17,h3
 C $AC1B,h3
 . #R$FE6C = #REGa.
 C $AC1F,h3
+. #R$9644.
 @ $AC22 label=BulletImpactEffectSetup
 c $AC22
 . BulletImpactEffectSetup

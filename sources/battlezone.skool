@@ -7804,9 +7804,9 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
 ; This page seeds the shared staged explosion path for saucer, tank, missile,
 ; and bullet-impact cases, then hands each family into the common animator.
 @label=SaucerExplosionSetup
-c$A934 LD A,($FE6A)  ;
+c$A934 LD A,($FE6A)  ; #REGa = #R$FE6A.
  $A937 AND $D7       ; Clear the active saucer and player-bullet bits.
- $A939 LD ($FE6A),A  ;
+ $A939 LD ($FE6A),A  ; #R$FE6A = #REGa.
  $A93C LD B,$05      ;
  $A93E CALL $94AC    ; Call #R$94AC.
  $A941 LD A,$18      ;
@@ -7846,14 +7846,10 @@ c$A934 LD A,($FE6A)  ;
  $A99B LD ($FEC6),HL ; #R$FEC6 = #REGhl.
  $A99E LD ($FECA),HL ; #R$FECA = #REGhl.
  $A9A1 LD A,$18      ; #REGa = $18.
-                     ; #REGa = $18.
  $A9A3 LD ($FED6),A  ; #R$FED6 = #REGa.
-                     ; #R$FED6 = #REGa.
  $A9A6 SUB A         ;
  $A9A7 OUT ($FE),A   ; border / sound latch write.
-                     ; border / sound latch write.
  $A9A9 JP $A36F      ; #R$A36F.
-                     ; #R$A36F.
 ; Probable tank / supertank explosion setup:
 ; - awards score increment `1` or `3`
 ; - seeds the later animated explosion path with #R$D6B8, #R$D9E6,
@@ -7912,9 +7908,9 @@ c$A934 LD A,($FE6A)  ;
  $AA2A LD HL,($FE80) ; #REGhl = #R$FE80.
  $AA2D LD ($FED0),HL ; #R$FED0 = #REGhl.
  $AA30 LD HL,$0404   ; Install #R$FED8, #R$FEDA, #R$FEDC, and #R$FEDE/#R$FEE0/#R$FEE2 companions.
- $AA33 LD ($FED8),HL ; #REGhl = $0404.
+ $AA33 LD ($FED8),HL ; #R$FED8 = #REGhl.
  $AA36 LD HL,$0604   ; #R$FED8 = #REGhl.
- $AA39 LD ($FEDA),HL ; #REGhl = $0604.
+ $AA39 LD ($FEDA),HL ; #R$FEDA = #REGhl.
  $AA3C LD HL,$D8B0   ; #R$FEDA = #REGhl.
  $AA3F LD ($FEDC),HL ; #REGhl = #R$D8B0.
  $AA42 LD HL,$DA46   ; #R$FEDC = #REGhl.
@@ -7944,7 +7940,7 @@ c$A934 LD A,($FE6A)  ;
  $AA69 AND A         ;
  $AA6A RET Z         ;
 @label=DeferredEffectAdvanceState
- $AA6B LD DE,$0050   ;
+ $AA6B LD DE,$0050   ; #REGde = $0050.
  $AA6E LD HL,($FEC6) ; #REGhl = #R$FEC6.
                      ; Advance the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
                      ; #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms and related per-phase counters.
@@ -7953,21 +7949,22 @@ c$A934 LD A,($FE6A)  ;
  $AA75 LD HL,($FEC8) ; #REGhl = #R$FEC8.
  $AA78 ADD HL,DE     ;
  $AA79 LD ($FEC8),HL ; #R$FEC8 = #REGhl.
- $AA7C LD DE,$001E   ;
+ $AA7C LD DE,$001E   ; #REGde = $001E.
  $AA7F LD HL,($FECA) ; #REGhl = #R$FECA.
  $AA82 ADD HL,DE     ;
  $AA83 LD ($FECA),HL ; #R$FECA = #REGhl.
  $AA86 LD HL,($FEBC) ; #REGhl = #R$FEBC.
  $AA89 ADD HL,DE     ;
  $AA8A LD ($FEBC),HL ; #R$FEBC = #REGhl.
- $AA8D LD DE,$FFB0   ;
+ $AA8D LD DE,$FFB0   ; #REGde = $FFB0.
  $AA90 LD HL,($FEBE) ; #REGhl = #R$FEBE.
  $AA93 ADD HL,DE     ;
  $AA94 LD ($FEBE),HL ; #R$FEBE = #REGhl.
  $AA97 LD HL,($FEC0) ; #REGhl = #R$FEC0.
  $AA9A ADD HL,DE     ;
  $AA9B LD ($FEC0),HL ; #R$FEC0 = #REGhl.
- $AA9E LD DE,$FFE2   ;
+ $AA9E LD DE,$FFE2   ; #REGde = #R$FFE2.
+                     ; #REGde = $FFE2.
  $AAA1 LD HL,($FEC2) ; #REGhl = #R$FEC2.
  $AAA4 ADD HL,DE     ;
  $AAA5 LD ($FEC2),HL ; #R$FEC2 = #REGhl.
@@ -7985,13 +7982,13 @@ c$A934 LD A,($FE6A)  ;
  $AAC7 LD A,($FED6)  ; #REGa = #R$FED6.
  $AACA DEC A         ;
  $AACB LD ($FED6),A  ; #R$FED6 = #REGa.
- $AACE JP Z,$AC01    ; When the phase countdown reaches zero, finish the animation immediately.
+ $AACE JP Z,$AC01    ; When the phase countdown reaches zero, finish the animation immediately. #R$AC01.
 @label=DeferredEffectPhaseSetup
  $AAD1 LD HL,($FED4) ; Seed the current effect phase: advance #R$FED4, install #R$FECC /
                      ; #R$FED0, and run the shared transform helper.
  $AAD4 LD DE,$0034   ; #REGde = $0034.
  $AAD7 ADD HL,DE     ;
- $AAD8 LD ($FED4),HL ;
+ $AAD8 LD ($FED4),HL ; #R$FED4 = #REGhl.
  $AADB LD DE,($FED8) ; #REGde = #R$FED8.
                      ; Load the current #R$FED8 / #R$FEDA pair for the rewrite pass.
  $AADF LD A,D        ;
@@ -8008,19 +8005,19 @@ c$A934 LD A,($FE6A)  ;
  $AAF6 SRL H         ;
  $AAF8 RR L          ;
  $AAFA LD H,$00      ;
- $AAFC CALL $88EA    ;
- $AAFF LD A,($FE6A)  ;
+ $AAFC CALL $88EA    ; #R$88EA.
+ $AAFF LD A,($FE6A)  ; #REGa = #R$FE6A.
  $AB02 AND $D0       ;
- $AB04 JP NZ,$AB13   ;
- $AB07 LD HL,$0000   ;
- $AB0A LD DE,$0400   ;
- $AB0D CALL $90BA    ;
+ $AB04 JP NZ,$AB13   ; #R$AB13.
+ $AB07 LD HL,$0000   ; #REGhl = $0000.
+ $AB0A LD DE,$0400   ; #REGde = $0400.
+ $AB0D CALL $90BA    ; #R$90BA.
  $AB10 SUB A         ;
  $AB11 OUT ($FE),A   ;
 @label=DeferredEffectRewriteGeometry
 *$AB13 LD HL,$DEC8   ; Install the temporary projected X/Y buffers in #R$FE38 / #R$FE3A for the rewritten deferred-effect geometry.
  $AB16 LD ($FE38),HL ; #R$FE38 = #REGhl.
- $AB19 LD HL,$DF00   ;
+ $AB19 LD HL,$DF00   ; #REGhl = $DF00.
  $AB1C LD ($FE3A),HL ; #R$FE3A = #REGhl.
  $AB1F LD ($FE00),SP ; #R$FE00 = #REGsp.
  $AB23 LD SP,$DD6E   ; Reuse #REGsp as the mutable deferred-effect X companion list (#R$DD6E) and rewrite its four staged sections from #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8.
@@ -8034,7 +8031,7 @@ c$A934 LD A,($FE6A)  ;
  $AB32 POP HL        ;
  $AB33 ADD HL,DE     ;
  $AB34 PUSH HL       ;
- $AB35 DJNZ $AB30    ;
+ $AB35 DJNZ $AB30    ; #R$AB30.
  $AB37 LD DE,($FEC0) ; #REGde = #R$FEC0.
  $AB3B LD B,A        ;
 @label=DeferredEffectRewriteXSectionB
@@ -8043,7 +8040,7 @@ c$A934 LD A,($FE6A)  ;
  $AB3E POP HL        ;
  $AB3F ADD HL,DE     ;
  $AB40 PUSH HL       ;
- $AB41 DJNZ $AB3C    ;
+ $AB41 DJNZ $AB3C    ; #R$AB3C.
  $AB43 LD DE,($FEC4) ; #REGde = #R$FEC4.
  $AB47 LD BC,($FEDA) ; #REGbc = #R$FEDA.
  $AB4B LD A,B        ;
@@ -8054,7 +8051,7 @@ c$A934 LD A,($FE6A)  ;
  $AB4F POP HL        ;
  $AB50 ADD HL,DE     ;
  $AB51 PUSH HL       ;
- $AB52 DJNZ $AB4D    ;
+ $AB52 DJNZ $AB4D    ; #R$AB4D.
  $AB54 LD B,A        ;
  $AB55 LD DE,($FEC8) ; #REGde = #R$FEC8.
 @label=DeferredEffectRewriteXSectionD
@@ -8063,7 +8060,7 @@ c$A934 LD A,($FE6A)  ;
  $AB5B POP HL        ;
  $AB5C ADD HL,DE     ;
  $AB5D PUSH HL       ;
- $AB5E DJNZ $AB59    ;
+ $AB5E DJNZ $AB59    ; #R$AB59.
  $AB60 LD SP,$DE1E   ; Reuse #REGsp as the mutable deferred-effect Z companion list (#R$DE1E) and rewrite its four staged sections from #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA.
  $AB63 LD DE,($FEBE) ; #REGde = #R$FEBE.
  $AB67 LD BC,($FED8) ; #REGbc = #R$FED8.
@@ -8075,7 +8072,7 @@ c$A934 LD A,($FE6A)  ;
  $AB6F POP HL        ;
  $AB70 ADD HL,DE     ;
  $AB71 PUSH HL       ;
- $AB72 DJNZ $AB6D    ;
+ $AB72 DJNZ $AB6D    ; #R$AB6D.
  $AB74 LD DE,($FEC2) ; #REGde = #R$FEC2.
  $AB78 LD B,A        ;
 @label=DeferredEffectRewriteZSectionB
@@ -8084,7 +8081,7 @@ c$A934 LD A,($FE6A)  ;
  $AB7B POP HL        ;
  $AB7C ADD HL,DE     ;
  $AB7D PUSH HL       ;
- $AB7E DJNZ $AB79    ;
+ $AB7E DJNZ $AB79    ; #R$AB79.
  $AB80 LD DE,($FEC6) ; #REGde = #R$FEC6.
  $AB84 LD BC,($FEDA) ; #REGbc = #R$FEDA.
  $AB88 LD A,B        ;
@@ -8095,7 +8092,7 @@ c$A934 LD A,($FE6A)  ;
  $AB8C POP HL        ;
  $AB8D ADD HL,DE     ;
  $AB8E PUSH HL       ;
- $AB8F DJNZ $AB8A    ;
+ $AB8F DJNZ $AB8A    ; #R$AB8A.
  $AB91 LD B,A        ;
  $AB92 LD DE,($FECA) ; #REGde = #R$FECA.
 @label=DeferredEffectRewriteZSectionD
@@ -8104,9 +8101,9 @@ c$A934 LD A,($FE6A)  ;
  $AB98 POP HL        ;
  $AB99 ADD HL,DE     ;
  $AB9A PUSH HL       ;
- $AB9B DJNZ $AB96    ;
+ $AB9B DJNZ $AB96    ; #R$AB96.
  $AB9D LD HL,($FED2) ; Advance the descending Y-base in #R$FED2, combine it with #R$FECE, and start rebuilding the temporary Y list.
- $ABA0 LD DE,$0013   ;
+ $ABA0 LD DE,$0013   ; #REGde = $0013.
  $ABA3 SBC HL,DE     ;
  $ABA5 LD ($FED2),HL ; #R$FED2 = #REGhl.
  $ABA8 LD DE,($FECE) ; #REGde = #R$FECE.
@@ -8114,7 +8111,7 @@ c$A934 LD A,($FE6A)  ;
  $ABAD LD ($FECE),HL ; #R$FECE = #REGhl.
  $ABB0 LD DE,($FECE) ; #REGde = #R$FECE.
                      ; Reuse #REGsp as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and #R$FEE2.
- $ABB4 LD SP,$DE90   ;
+ $ABB4 LD SP,$DE90   ; #REGsp = $DE90.
  $ABB7 LD BC,($FED8) ; #REGbc = #R$FED8.
  $ABBB LD A,B        ;
  $ABBC ADD A,C       ;
@@ -8135,11 +8132,11 @@ c$A934 LD A,($FE6A)  ;
  $ABD0 ADD HL,DE     ;
  $ABD1 PUSH HL       ;
  $ABD2 EXX           ;
- $ABD3 DJNZ $ABC9    ;
+ $ABD3 DJNZ $ABC9    ; #R$ABC9.
  $ABD5 EXX           ;
  $ABD6 LD ($FE34),SP ; #R$FE34 = #REGsp.
                      ; Store the rebuilt temporary Y list pointer in #R$FE34.
- $ABDA LD SP,($FE00) ;
+ $ABDA LD SP,($FE00) ; #REGsp = #R$FE00.
 @label=DeferredEffectDraw
  $ABDE LD HL,($FEDC) ; Install #R$FEDC in #R$FE02.
                      ; Install the line-data pointer in #R$FE02, run perspective/line draw, and present the
@@ -8155,11 +8152,11 @@ c$A934 LD A,($FE6A)  ;
  $ABF0 ADD A,H       ;
  $ABF1 ADD A,L       ;
  $ABF2 SUB $04       ;
- $ABF4 CALL $8660    ;
+ $ABF4 CALL $8660    ; #R$8660.
  $ABF7 LD A,C        ;
  $ABF8 AND A         ;
  $ABF9 RET NZ        ;
- $ABFA CALL $805C    ;
+ $ABFA CALL $805C    ; #R$805C.
  $ABFD SUB A         ;
  $ABFE OUT ($FE),A   ;
  $AC00 RET           ;
@@ -8170,7 +8167,7 @@ c$A934 LD A,($FE6A)  ;
  $AC08 AND $D0       ;
  $AC0A JP NZ,$AC12   ; #R$AC12.
  $AC0D SUB A         ;
- $AC0E LD ($FE6C),A  ;
+ $AC0E LD ($FE6C),A  ; #R$FE6C = #REGa.
  $AC11 RET           ;
 @label=DeferredEffectRespawn
 *$AC12 LD C,A        ;
@@ -8181,7 +8178,7 @@ c$A934 LD A,($FE6A)  ;
  $AC1A SUB A         ;
  $AC1B LD ($FE6C),A  ; #R$FE6C = #REGa.
  $AC1E POP HL        ;
- $AC1F JP $9644      ;
+ $AC1F JP $9644      ; #R$9644.
 
 ; BulletImpactEffectSetup
 ;
