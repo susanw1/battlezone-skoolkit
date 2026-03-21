@@ -5028,14 +5028,12 @@ C $A92E,h3
 . Stay paused until `S` is pressed.
 C $A931,h3
 N $A934
-. Probable saucer explosion setup:
-. - awards score increment `5`
-. - seeds the later animated explosion path with `SAEXV`, `SAEX_XTAB`,
-.   `SAEX_ZTAB`, and `SAEX_YLOC`
-. - current best notebook match: `SAEXV`
+. Explosion setup and deferred-effect family.
+. This page seeds the shared staged explosion path for saucer, tank, missile,
+. and bullet-impact cases, then hands each family into the common animator.
 D $A934 Functional phases on this page:
 . #LIST
-. { #R$A934: saucer explosion setup and deferred-effect seed install. }
+. { #R$A934: entity explosion seed install. }
 . { #R$A9AC: tank / supertank explosion setup and deferred-effect seed install. }
 . { #R$AA0B: missile explosion / impact setup and deferred-effect seed install. }
 . { #R$AA5D: shared deferred explosion / impact animator. }
@@ -5057,14 +5055,13 @@ C $A948,h2
 C $A94A,h3
 C $A94D,h3
 C $A950,h3
-. Store the deferred effect source X/Z pair in `DeferredEffectSourceX` /
-. `DeferredEffectSourceZ`.
+. Store the deferred effect source X/Z pair in #R$FECC / #R$FED0.
 C $A953,h3
 C $A956,h3
 C $A959,h3
 C $A95C,h3
-. Install `DeferredEffectPrimaryCounts`, `DeferredEffectSecondaryCounts`,
-. `DeferredEffectLineData`, and the `DeferredEffectXTAB/ZTAB/YLOC` companions.
+. Install #R$FED8, #R$FEDA, #R$FEDC, and the #R$FEDE/#R$FEE0/#R$FEE2
+. companions.
 C $A95F,h3
 C $A962,h3
 C $A965,h3
@@ -5077,11 +5074,12 @@ C $A977,h3
 C $A97A,h3
 C $A97D,h3
 C $A980,h3
-. Seed `DeferredEffectYBias` and `DeferredEffectYBase`.
+. Seed #R$FECE and #R$FED2.
 C $A983,h3
 C $A986,h3
 C $A989,h3
-. Clear the staged `DeferredEffectXOffset*` / `DeferredEffectZOffset*` terms.
+. Clear the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
+. #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms.
 C $A98C,h3
 C $A98F,h3
 C $A992,h3
@@ -5096,9 +5094,9 @@ C $A9A9,h3
 N $A9AC
 . Probable tank / supertank explosion setup:
 . - awards score increment `1` or `3`
-. - seeds the later animated explosion path with `TKEXV`, `TKEX_XTAB`,
-.   `TKEX_ZTAB`, and `TKEX_YLOC`
-. - current best notebook match: `TKEXV`
+. - seeds the later animated explosion path with #R$D6B8, #R$D9E6,
+.   #R$DADA, and #R$DBCE
+. - current best notebook match: #R$D6B8
 @ $A9AC label=TankExplosionSetup
 C $A9AC,h3
 C $A9AF,h2
@@ -5175,9 +5173,9 @@ C $AA5A,h3
 N $AA5D
 . Probable missile explosion / impact setup:
 . - awards score increment `2`
-. - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
-.   `MSEX_ZTAB`, and `MSEX_YLOC`
-. - current best notebook match: `MSEXV`
+. - seeds the later animated explosion path with #R$D8B0, #R$DA46,
+.   #R$DB3A, and #R$DC2E
+. - current best notebook match: #R$D8B0
 . Shared deferred explosion / impact animator. It advances the staged X/Z offset terms, refreshes the current phase angle and source position, rebuilds the mutable companion X/Z/Y lists, projects and draws the current frame, and either loops into the next phase or restores the deferred major-entity bit.
 . Used by the tank, saucer, missile, and bullet-impact effect setup entries after they have installed the appropriate effect families and source coordinates.
 R $AA5D DeferredEffectXOffsetA Current staged X offset pair A (#R$FEBC($FEBC))
@@ -5204,7 +5202,7 @@ R $AA5D O:DeferredEffectAngle Advanced effect phase angle (#R$FED4($FED4))
 R $AA5D O:DeferredEffectPhaseCountdown Updated phase countdown / completion flag (#R$FED6($FED6))
 R $AA5D O:DeferredEffectYBase Advanced descending Y-base pair (#R$FED2($FED2))
 R $AA5D O:DeferredEffectYLOC Rebuilt temporary deferred-effect Y list pointer (#R$FEE2($FEE2))
-R $AA5D O:LINCD Installed deferred-effect line-data pointer for `LNLPT` (#R$FE02($FE02))
+R $AA5D O:LINCD Installed deferred-effect line-data pointer for #R$805C (#R$FE02($FE02))
 @ $AA5D label=DeferredEffectAnimator
 N $AA5D
 . DeferredEffectAnimator
@@ -5217,8 +5215,8 @@ C $AA66,h3
 @ $AA6B label=DeferredEffectAdvanceState
 C $AA6B,h3
 C $AA6E,h3
-. Advance the staged `DeferredEffectXOffset*` / `DeferredEffectZOffset*` terms and
-. related per-phase counters.
+. Advance the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
+. #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms and related per-phase counters.
 C $AA6E,h3
 C $AA72,h3
 C $AA75,h3
@@ -5239,15 +5237,15 @@ C $AAA5,h3
 C $AAA8,h3
 C $AAAC,h3
 C $AAAF,h3
-. Install the current `DeferredEffectXTAB` / `DeferredEffectZTAB` pair.
+. Install the current #R$FEDE / #R$FEE0 pair.
 C $AAB2,h3
 C $AAB5,h3
 C $AAB8,h3
 C $AABB,h3
-. Install the fixed deferred-effect companion X list in `XLOC`.
+. Install the fixed deferred-effect companion X list in #R$FE32.
 C $AABE,h3
 C $AAC1,h3
-. Install the fixed deferred-effect companion Z list in `ZLOC`.
+. Install the fixed deferred-effect companion Z list in #R$FE36.
 C $AAC4,h3
 C $AAC7,h3
 C $AACB,h3
@@ -5256,20 +5254,20 @@ C $AACE,h3
 @ $AAD1 label=DeferredEffectPhaseSetup
 C $AAD1,h3
 C $AAD4,h3
-. Seed the current effect phase: advance `DeferredEffectAngle`, install
-. `DeferredEffectSourceX` / `DeferredEffectSourceZ`, and run the shared transform helper.
+. Seed the current effect phase: advance #R$FED4, install #R$FECC /
+. #R$FED0, and run the shared transform helper.
 C $AAD4,h3
 C $AAD8,h3
 C $AADB,h4
-. Load the current `DeferredEffectPrimaryCounts` / `DeferredEffectSecondaryCounts` pair for the rewrite pass.
+. Load the current #R$FED8 / #R$FEDA pair for the rewrite pass.
 C $AAE1,h4
-. Reuse the current deferred-effect source pair as the shared X/Z displacement in `XDIS` / `ZDIS`.
+. Reuse the current deferred-effect source pair as the shared X/Z displacement in #R$FE4A / #R$FE4C.
 C $AAE7,h3
 C $AAEA,h3
 C $AAED,h3
 C $AAF0,h3
 C $AAF3,h3
-. Feed the current `DeferredEffectAngle` into the shared rotation helper at `RotateXZLists`.
+. Feed the current #R$FED4 into the shared rotation helper at #R$88EA.
 C $AAFA,h2
 C $AAFC,h3
 C $AAFF,h3
@@ -5287,7 +5285,7 @@ C $AB19,h3
 C $AB1C,h3
 C $AB1F,h4
 C $AB23,h3
-. Reuse `SP` as the mutable deferred-effect X companion list (`EXBXL`) and rewrite its four staged sections from `DeferredEffectXOffsetA..D`.
+. Reuse #REGsp as the mutable deferred-effect X companion list (#R$DD6E) and rewrite its four staged sections from #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8.
 C $AB26,h4
 C $AB2A,h4
 C $AB35,h2
@@ -5299,7 +5297,7 @@ C $AB52,h2
 C $AB55,h4
 C $AB5E,h2
 C $AB60,h3
-. Reuse `SP` as the mutable deferred-effect Z companion list (`EXBZL`) and rewrite its four staged sections from `DeferredEffectZOffsetA..D`.
+. Reuse #REGsp as the mutable deferred-effect Z companion list (#R$DE1E) and rewrite its four staged sections from #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA.
 C $AB63,h4
 C $AB67,h4
 C $AB72,h2
@@ -5311,25 +5309,25 @@ C $AB8F,h2
 C $AB92,h4
 C $AB9B,h2
 C $AB9D,h3
-. Advance the descending Y-base in `DeferredEffectYBase`, combine it with `DeferredEffectYBias`, and start rebuilding the temporary Y list.
+. Advance the descending Y-base in #R$FED2, combine it with #R$FECE, and start rebuilding the temporary Y list.
 C $ABA0,h3
 C $ABA5,h3
 C $ABA8,h4
 C $ABAD,h3
 C $ABB0,h4
-. Reuse `SP` as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and `DeferredEffectYLOC`.
+. Reuse #REGsp as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and #R$FEE2.
 C $ABB4,h3
 C $ABB7,h4
 C $ABBD,h4
 C $ABC3,h4
 C $ABD3,h2
 C $ABD6,h4
-. Store the rebuilt temporary Y list pointer in `YLOC`.
+. Store the rebuilt temporary Y list pointer in #R$FE34.
 C $ABDA,h4
 @ $ABDE label=DeferredEffectDraw
 C $ABDE,h3
 C $ABE1,h3
-. Install `DeferredEffectLineData` in `LINCD`.
+. Install #R$FEDC in #R$FE02.
 . Install the line-data pointer, run perspective/line draw, and present the
 . current explosion frame.
 C $ABE1,h3
@@ -5344,7 +5342,7 @@ C $ABFA,h3
 C $ABFE,h2
 @ $AC01 label=DeferredEffectComplete
 C $AC01,1
-. Latch the new `DeferredEffectPhaseCountdown` value and decide whether any deferred major-entity bit must be restored.
+. Latch the new #R$FED6 value and decide whether any deferred major-entity bit must be restored.
 C $AC02,h3
 C $AC05,h3
 C $AC08,h2
@@ -5353,7 +5351,7 @@ C $AC0E,h3
 @ $AC12 label=DeferredEffectRespawn
 C $AC13,h3
 C $AC16,1
-. Restore the deferred major-entity bit to `EXST1`
+. Restore the deferred major-entity bit to #R$FE6A
 C $AC17,h3
 . before jumping into the reinitialisation path at #R$9644.
 C $AC1B,h3
@@ -7917,6 +7915,7 @@ B $D554,8,h8
 > $F700  $D69C DEFB $DE,$9A,$DE,$CE,$DE,$D4,$DE,$96
 > $F700  $D6A4 DEFB $DE,$9C,$DE,$D0,$DE,$D2,$DE,$98
 > $F700  $D6AC DEFB $DE,$9A,$DE,$D2,$DE,$D4,$DE,$9A
+b $D6B8 TKEXV
 > $F700 ; Probable `TKEXV` line-data family for the tank / supertank explosion path.
 @ $D6B8 label=TKEXV
 > $F700  $D6B4 DEFB $DE,$9C,$DE,$D2,$22,$FE,$DE,$FC

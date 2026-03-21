@@ -7792,7 +7792,7 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
 ;
 ; Functional phases on this page:
 ; #LIST
-; { #R$A934: saucer explosion setup and deferred-effect seed install. }
+; { #R$A934: entity explosion seed install. }
 ; { #R$A9AC: tank / supertank explosion setup and deferred-effect seed install. }
 ; { #R$AA0B: missile explosion / impact setup and deferred-effect seed install. }
 ; { #R$AA5D: shared deferred explosion / impact animator. }
@@ -7800,11 +7800,9 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
 ;
 ; .
 ;
-; Probable saucer explosion setup:
-; - awards score increment `5`
-; - seeds the later animated explosion path with `SAEXV`, `SAEX_XTAB`,
-;   `SAEX_ZTAB`, and `SAEX_YLOC`
-; - current best notebook match: `SAEXV`
+; Explosion setup and deferred-effect family.
+; This page seeds the shared staged explosion path for saucer, tank, missile,
+; and bullet-impact cases, then hands each family into the common animator.
 @label=ExplosionSetup
 c$A934 LD A,($FE6A)  ;
  $A937 AND $D7       ; Clear the active saucer and player-bullet bits.
@@ -7817,13 +7815,12 @@ c$A934 LD A,($FE6A)  ;
  $A948 OR $20        ; Queue the matching deferred saucer/effect bit.
  $A94A LD ($FE6C),A  ;
  $A94D LD HL,($FE8E) ;
- $A950 LD ($FECC),HL ; Store the deferred effect source X/Z pair in `DeferredEffectSourceX` /
-                     ; `DeferredEffectSourceZ`.
+ $A950 LD ($FECC),HL ; Store the deferred effect source X/Z pair in #R$FECC / #R$FED0.
  $A953 LD HL,($FE90) ;
  $A956 LD ($FED0),HL ;
  $A959 LD HL,$0505   ;
- $A95C LD ($FED8),HL ; Install `DeferredEffectPrimaryCounts`, `DeferredEffectSecondaryCounts`,
-                     ; `DeferredEffectLineData`, and the `DeferredEffectXTAB/ZTAB/YLOC` companions.
+ $A95C LD ($FED8),HL ; Install #R$FED8, #R$FEDA, #R$FEDC, and the #R$FEDE/#R$FEE0/#R$FEE2
+                     ; companions.
  $A95F LD ($FEDA),HL ;
  $A962 LD HL,$D7CC   ;
  $A965 LD ($FEDC),HL ;
@@ -7835,10 +7832,11 @@ c$A934 LD A,($FE6A)  ;
  $A977 LD ($FEE2),HL ;
 *$A97A LD HL,$0000   ;
  $A97D LD ($FECE),HL ;
- $A980 LD HL,$00E0   ; Seed `DeferredEffectYBias` and `DeferredEffectYBase`.
+ $A980 LD HL,$00E0   ; Seed #R$FECE and #R$FED2.
  $A983 LD ($FED2),HL ;
  $A986 LD HL,$0000   ;
- $A989 LD ($FEBC),HL ; Clear the staged `DeferredEffectXOffset*` / `DeferredEffectZOffset*` terms.
+ $A989 LD ($FEBC),HL ; Clear the staged #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8 and
+                     ; #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA terms.
  $A98C LD ($FEC0),HL ;
  $A98F LD ($FEC4),HL ;
  $A992 LD ($FEC8),HL ;
@@ -7853,9 +7851,9 @@ c$A934 LD A,($FE6A)  ;
  $A9A9 JP $A36F      ;
 ; Probable tank / supertank explosion setup:
 ; - awards score increment `1` or `3`
-; - seeds the later animated explosion path with `TKEXV`, `TKEX_XTAB`,
-;   `TKEX_ZTAB`, and `TKEX_YLOC`
-; - current best notebook match: `TKEXV`
+; - seeds the later animated explosion path with #R$D6B8, #R$D9E6,
+;   #R$DADA, and #R$DBCE
+; - current best notebook match: #R$D6B8
 @label=TankExplosionSetup
 *$A9AC LD A,($FE6A)  ;
  $A9AF AND $C0       ;
@@ -7924,9 +7922,9 @@ c$A934 LD A,($FE6A)  ;
  $AA5A JP $A97A      ;
 ; Probable missile explosion / impact setup:
 ; - awards score increment `2`
-; - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
-;   `MSEX_ZTAB`, and `MSEX_YLOC`
-; - current best notebook match: `MSEXV`
+; - seeds the later animated explosion path with #R$D8B0, #R$DA46,
+;   #R$DB3A, and #R$DC2E
+; - current best notebook match: #R$D8B0
 ; Shared deferred explosion / impact animator. It advances the staged X/Z offset terms, refreshes the current phase angle and source position, rebuilds the mutable companion X/Z/Y lists, projects and draws the current frame, and either loops into the next phase or restores the deferred major-entity bit.
 ; Used by the tank, saucer, missile, and bullet-impact effect setup entries after they have installed the appropriate effect families and source coordinates.
 ; .
@@ -7968,13 +7966,13 @@ c$A934 LD A,($FE6A)  ;
  $AAA8 LD HL,($FEC4) ;
  $AAAB ADD HL,DE     ;
  $AAAC LD ($FEC4),HL ;
- $AAAF LD HL,($FEDE) ; Install the current `DeferredEffectXTAB` / `DeferredEffectZTAB` pair.
+ $AAAF LD HL,($FEDE) ; Install the current #R$FEDE / #R$FEE0 pair.
  $AAB2 LD ($FE42),HL ;
  $AAB5 LD HL,($FEE0) ;
  $AAB8 LD ($FE46),HL ;
- $AABB LD HL,$DD6E   ; Install the fixed deferred-effect companion X list in `XLOC`.
+ $AABB LD HL,$DD6E   ; Install the fixed deferred-effect companion X list in #R$FE32.
  $AABE LD ($FE32),HL ;
- $AAC1 LD HL,$DE1E   ; Install the fixed deferred-effect companion Z list in `ZLOC`.
+ $AAC1 LD HL,$DE1E   ; Install the fixed deferred-effect companion Z list in #R$FE36.
  $AAC4 LD ($FE36),HL ;
  $AAC7 LD A,($FED6)  ;
  $AACA DEC A         ;
@@ -7985,17 +7983,17 @@ c$A934 LD A,($FE6A)  ;
  $AAD4 LD DE,$0034   ;
  $AAD7 ADD HL,DE     ;
  $AAD8 LD ($FED4),HL ;
- $AADB LD DE,($FED8) ; Load the current `DeferredEffectPrimaryCounts` / `DeferredEffectSecondaryCounts` pair for the rewrite pass.
+ $AADB LD DE,($FED8) ; Load the current #R$FED8 / #R$FEDA pair for the rewrite pass.
  $AADF LD A,D        ;
  $AAE0 ADD A,E       ;
- $AAE1 LD DE,($FEDA) ; Reuse the current deferred-effect source pair as the shared X/Z displacement in `XDIS` / `ZDIS`.
+ $AAE1 LD DE,($FEDA) ; Reuse the current deferred-effect source pair as the shared X/Z displacement in #R$FE4A / #R$FE4C.
  $AAE5 ADD A,D       ;
  $AAE6 ADD A,E       ;
  $AAE7 LD HL,($FECC) ;
  $AAEA LD ($FE4A),HL ;
  $AAED LD HL,($FED0) ;
  $AAF0 LD ($FE4C),HL ;
- $AAF3 LD HL,($FED4) ; Feed the current `DeferredEffectAngle` into the shared rotation helper at `RotateXZLists`.
+ $AAF3 LD HL,($FED4) ; Feed the current #R$FED4 into the shared rotation helper at #R$88EA.
  $AAF6 SRL H         ;
  $AAF8 RR L          ;
  $AAFA LD H,$00      ;
@@ -8014,7 +8012,7 @@ c$A934 LD A,($FE6A)  ;
  $AB19 LD HL,$DF00   ;
  $AB1C LD ($FE3A),HL ;
  $AB1F LD ($FE00),SP ;
- $AB23 LD SP,$DD6E   ; Reuse `SP` as the mutable deferred-effect X companion list (`EXBXL`) and rewrite its four staged sections from `DeferredEffectXOffsetA..D`.
+ $AB23 LD SP,$DD6E   ; Reuse #REGsp as the mutable deferred-effect X companion list (#R$DD6E) and rewrite its four staged sections from #R$FEBC/#R$FEC0/#R$FEC4/#R$FEC8.
  $AB26 LD DE,($FEBC) ;
  $AB2A LD BC,($FED8) ;
  $AB2E LD A,B        ;
@@ -8051,7 +8049,7 @@ c$A934 LD A,($FE6A)  ;
  $AB5C ADD HL,DE     ;
  $AB5D PUSH HL       ;
  $AB5E DJNZ $AB59    ;
- $AB60 LD SP,$DE1E   ; Reuse `SP` as the mutable deferred-effect Z companion list (`EXBZL`) and rewrite its four staged sections from `DeferredEffectZOffsetA..D`.
+ $AB60 LD SP,$DE1E   ; Reuse #REGsp as the mutable deferred-effect Z companion list (#R$DE1E) and rewrite its four staged sections from #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA.
  $AB63 LD DE,($FEBE) ;
  $AB67 LD BC,($FED8) ;
  $AB6B LD A,B        ;
@@ -8088,14 +8086,14 @@ c$A934 LD A,($FE6A)  ;
  $AB99 ADD HL,DE     ;
  $AB9A PUSH HL       ;
  $AB9B DJNZ $AB96    ;
- $AB9D LD HL,($FED2) ; Advance the descending Y-base in `DeferredEffectYBase`, combine it with `DeferredEffectYBias`, and start rebuilding the temporary Y list.
+ $AB9D LD HL,($FED2) ; Advance the descending Y-base in #R$FED2, combine it with #R$FECE, and start rebuilding the temporary Y list.
  $ABA0 LD DE,$0013   ;
  $ABA3 SBC HL,DE     ;
  $ABA5 LD ($FED2),HL ;
  $ABA8 LD DE,($FECE) ;
  $ABAC ADD HL,DE     ;
  $ABAD LD ($FECE),HL ;
- $ABB0 LD DE,($FECE) ; Reuse `SP` as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and `DeferredEffectYLOC`.
+ $ABB0 LD DE,($FECE) ; Reuse #REGsp as the temporary projected-list rewrite buffer at `$DE90`, driven by the current count pair and #R$FEE2.
  $ABB4 LD SP,$DE90   ;
  $ABB7 LD BC,($FED8) ;
  $ABBB LD A,B        ;
@@ -8118,7 +8116,7 @@ c$A934 LD A,($FE6A)  ;
  $ABD2 EXX           ;
  $ABD3 DJNZ $ABC9    ;
  $ABD5 EXX           ;
- $ABD6 LD ($FE34),SP ; Store the rebuilt temporary Y list pointer in `YLOC`.
+ $ABD6 LD ($FE34),SP ; Store the rebuilt temporary Y list pointer in #R$FE34.
  $ABDA LD SP,($FE00) ;
 @label=DeferredEffectDraw
  $ABDE LD HL,($FEDC) ;
@@ -8141,7 +8139,7 @@ c$A934 LD A,($FE6A)  ;
  $ABFE OUT ($FE),A   ;
  $AC00 RET           ;
 @label=DeferredEffectComplete
-*$AC01 SUB A         ; Latch the new `DeferredEffectPhaseCountdown` value and decide whether any deferred major-entity bit must be restored.
+*$AC01 SUB A         ; Latch the new #R$FED6 value and decide whether any deferred major-entity bit must be restored.
  $AC02 LD ($FED6),A  ;
  $AC05 LD A,($FE6C)  ;
  $AC08 AND $D0       ;
@@ -8152,7 +8150,7 @@ c$A934 LD A,($FE6A)  ;
 @label=DeferredEffectRespawn
 *$AC12 LD C,A        ;
  $AC13 LD A,($FE6A)  ;
- $AC16 OR C          ; Restore the deferred major-entity bit to `EXST1`
+ $AC16 OR C          ; Restore the deferred major-entity bit to #R$FE6A
  $AC17 LD ($FE6A),A  ; before jumping into the reinitialisation path at #R$9644.
  $AC1A SUB A         ;
  $AC1B LD ($FE6C),A  ;
@@ -10829,41 +10827,45 @@ b$C9B4 DEFB $DE,$F0,$DE,$B6,$DE,$B8,$DE,$F0 ; #UDG(#PC)
  $D69E DEFB $DE,$CE,$DE,$D4,$DE,$96,$DE,$9C
  $D6A6 DEFB $DE,$D0,$DE,$D2,$DE,$98,$DE,$9A
  $D6AE DEFB $DE,$D2,$DE,$D4,$DE,$9A,$DE,$9C
- $D6B6 DEFB $DE,$D2,$22,$FE,$DE,$FC,$DE,$C6
- $D6BE DEFB $DE,$C4,$DE,$FC,$DE,$FA,$DE,$C4
- $D6C6 DEFB $DE,$C2,$DE,$FA,$DE,$F8,$DE,$C2
- $D6CE DEFB $DE,$C0,$DE,$F8,$DE,$FE,$DE,$C0
- $D6D6 DEFB $DE,$C6,$DE,$FE,$DE,$F6,$DE,$C6
- $D6DE DEFB $DE,$BE,$DE,$FC,$DE,$F4,$DE,$C4
- $D6E6 DEFB $DE,$BC,$DE,$FA,$DE,$F2,$DE,$C2
- $D6EE DEFB $DE,$BA,$DE,$F8,$DE,$F0,$DE,$C0
- $D6F6 DEFB $DE,$B8,$DE,$F0,$DE,$F2,$DE,$B8
- $D6FE DEFB $DE,$BA,$DE,$F2,$DE,$F4,$DE,$BA
- $D706 DEFB $DE,$BC,$DE,$F4,$DE,$F6,$DE,$BC
- $D70E DEFB $DE,$BE,$DE,$F6,$DE,$F0,$DE,$BE
- $D716 DEFB $DE,$B8,$DE,$EE,$DE,$EC,$DE,$B6
- $D71E DEFB $DE,$B4,$DE,$EA,$DE,$EC,$DE,$B2
- $D726 DEFB $DE,$B4,$DE,$EE,$DE,$E8,$DE,$B6
- $D72E DEFB $DE,$B0,$DE,$EC,$DE,$E6,$DE,$B4
- $D736 DEFB $DE,$AE,$DE,$EA,$DE,$E4,$DE,$B2
- $D73E DEFB $DE,$AC,$DE,$E8,$DE,$E6,$DE,$B0
- $D746 DEFB $DE,$AE,$DE,$E6,$DE,$E4,$DE,$AE
- $D74E DEFB $DE,$AC,$DE,$E2,$DE,$E0,$DE,$AA
- $D756 DEFB $DE,$A8,$DE,$E0,$DE,$DE,$DE,$A8
- $D75E DEFB $DE,$A6,$DE,$DC,$DE,$DA,$DE,$A4
- $D766 DEFB $DE,$A2,$DE,$DA,$DE,$D8,$DE,$A2
- $D76E DEFB $DE,$A0,$DE,$E2,$DE,$DC,$DE,$AA
- $D776 DEFB $DE,$A4,$DE,$E0,$DE,$DA,$DE,$A8
- $D77E DEFB $DE,$A2,$DE,$DE,$DE,$D8,$DE,$A6
- $D786 DEFB $DE,$A0,$DE,$D6,$DE,$D4,$DE,$9E
- $D78E DEFB $DE,$9C,$DE,$CA,$DE,$D0,$DE,$92
- $D796 DEFB $DE,$98,$DE,$D0,$DE,$CE,$DE,$98
- $D79E DEFB $DE,$96,$DE,$CE,$DE,$C8,$DE,$96
- $D7A6 DEFB $DE,$90,$DE,$CC,$DE,$D2,$DE,$94
- $D7AE DEFB $DE,$9A,$DE,$CA,$DE,$C8,$DE,$92
- $D7B6 DEFB $DE,$90,$DE,$C8,$DE,$CC,$DE,$90
- $D7BE DEFB $DE,$94,$DE,$CA,$DE,$D2,$DE,$92
- $D7C6 DEFB $DE,$9A,$DE,$00,$00,$00
+ $D6B6 DEFB $DE,$D2
+
+; TKEXV
+@label=TKEXV
+b$D6B8 DEFB $22,$FE,$DE,$FC,$DE,$C6,$DE,$C4
+ $D6C0 DEFB $DE,$FC,$DE,$FA,$DE,$C4,$DE,$C2
+ $D6C8 DEFB $DE,$FA,$DE,$F8,$DE,$C2,$DE,$C0
+ $D6D0 DEFB $DE,$F8,$DE,$FE,$DE,$C0,$DE,$C6
+ $D6D8 DEFB $DE,$FE,$DE,$F6,$DE,$C6,$DE,$BE
+ $D6E0 DEFB $DE,$FC,$DE,$F4,$DE,$C4,$DE,$BC
+ $D6E8 DEFB $DE,$FA,$DE,$F2,$DE,$C2,$DE,$BA
+ $D6F0 DEFB $DE,$F8,$DE,$F0,$DE,$C0,$DE,$B8
+ $D6F8 DEFB $DE,$F0,$DE,$F2,$DE,$B8,$DE,$BA
+ $D700 DEFB $DE,$F2,$DE,$F4,$DE,$BA,$DE,$BC
+ $D708 DEFB $DE,$F4,$DE,$F6,$DE,$BC,$DE,$BE
+ $D710 DEFB $DE,$F6,$DE,$F0,$DE,$BE,$DE,$B8
+ $D718 DEFB $DE,$EE,$DE,$EC,$DE,$B6,$DE,$B4
+ $D720 DEFB $DE,$EA,$DE,$EC,$DE,$B2,$DE,$B4
+ $D728 DEFB $DE,$EE,$DE,$E8,$DE,$B6,$DE,$B0
+ $D730 DEFB $DE,$EC,$DE,$E6,$DE,$B4,$DE,$AE
+ $D738 DEFB $DE,$EA,$DE,$E4,$DE,$B2,$DE,$AC
+ $D740 DEFB $DE,$E8,$DE,$E6,$DE,$B0,$DE,$AE
+ $D748 DEFB $DE,$E6,$DE,$E4,$DE,$AE,$DE,$AC
+ $D750 DEFB $DE,$E2,$DE,$E0,$DE,$AA,$DE,$A8
+ $D758 DEFB $DE,$E0,$DE,$DE,$DE,$A8,$DE,$A6
+ $D760 DEFB $DE,$DC,$DE,$DA,$DE,$A4,$DE,$A2
+ $D768 DEFB $DE,$DA,$DE,$D8,$DE,$A2,$DE,$A0
+ $D770 DEFB $DE,$E2,$DE,$DC,$DE,$AA,$DE,$A4
+ $D778 DEFB $DE,$E0,$DE,$DA,$DE,$A8,$DE,$A2
+ $D780 DEFB $DE,$DE,$DE,$D8,$DE,$A6,$DE,$A0
+ $D788 DEFB $DE,$D6,$DE,$D4,$DE,$9E,$DE,$9C
+ $D790 DEFB $DE,$CA,$DE,$D0,$DE,$92,$DE,$98
+ $D798 DEFB $DE,$D0,$DE,$CE,$DE,$98,$DE,$96
+ $D7A0 DEFB $DE,$CE,$DE,$C8,$DE,$96,$DE,$90
+ $D7A8 DEFB $DE,$CC,$DE,$D2,$DE,$94,$DE,$9A
+ $D7B0 DEFB $DE,$CA,$DE,$C8,$DE,$92,$DE,$90
+ $D7B8 DEFB $DE,$C8,$DE,$CC,$DE,$90,$DE,$94
+ $D7C0 DEFB $DE,$CA,$DE,$D2,$DE,$92,$DE,$9A
+ $D7C8 DEFB $DE,$00,$00,$00
 @label=SAEXV
  $D7CC DEFB $1C,$FE,$DE,$FC,$DE,$C6,$DE,$C4
  $D7D4 DEFB $DE,$FC,$DE,$FA,$DE,$C4,$DE,$C2
