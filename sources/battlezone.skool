@@ -7830,6 +7830,7 @@ c$A934 LD A,($FE6A)  ;
  $A971 LD ($FEE0),HL ; #R$FEE0 = #REGhl.
  $A974 LD HL,$DC06   ; #REGhl = #R$DC06.
  $A977 LD ($FEE2),HL ; #R$FEE2 = #REGhl.
+@label=SaucerExplosionSeedInstall
 *$A97A LD HL,$0000   ; #REGhl = $0000.
  $A97D LD ($FECE),HL ; #R$FECE = #REGhl.
  $A980 LD HL,$00E0   ; Seed #R$FECE and #R$FED2.
@@ -7865,6 +7866,7 @@ c$A934 LD A,($FE6A)  ;
  $A9B4 LD B,$01      ;
  $A9B6 JP M,$A9BB    ; #R$A9BB.
  $A9B9 LD B,$03      ;
+@label=TankExplosionScoreAward
 *$A9BB CALL $94AC    ; #R$94AC.
  $A9BE LD A,$18      ;
  $A9C0 OUT ($FE),A   ;
@@ -8026,6 +8028,7 @@ c$A934 LD A,($FE6A)  ;
  $AB2A LD BC,($FED8) ; #REGbc = #R$FED8.
  $AB2E LD A,B        ;
  $AB2F LD B,C        ;
+@label=DeferredEffectRewriteXSectionA
 *$AB30 DEC SP        ;
  $AB31 DEC SP        ;
  $AB32 POP HL        ;
@@ -8034,6 +8037,7 @@ c$A934 LD A,($FE6A)  ;
  $AB35 DJNZ $AB30    ;
  $AB37 LD DE,($FEC0) ; #REGde = #R$FEC0.
  $AB3B LD B,A        ;
+@label=DeferredEffectRewriteXSectionB
 *$AB3C DEC SP        ;
  $AB3D DEC SP        ;
  $AB3E POP HL        ;
@@ -8044,6 +8048,7 @@ c$A934 LD A,($FE6A)  ;
  $AB47 LD BC,($FEDA) ; #REGbc = #R$FEDA.
  $AB4B LD A,B        ;
  $AB4C LD B,C        ;
+@label=DeferredEffectRewriteXSectionC
 *$AB4D DEC SP        ;
  $AB4E DEC SP        ;
  $AB4F POP HL        ;
@@ -8052,6 +8057,7 @@ c$A934 LD A,($FE6A)  ;
  $AB52 DJNZ $AB4D    ;
  $AB54 LD B,A        ;
  $AB55 LD DE,($FEC8) ; #REGde = #R$FEC8.
+@label=DeferredEffectRewriteXSectionD
 *$AB59 DEC SP        ;
  $AB5A DEC SP        ;
  $AB5B POP HL        ;
@@ -8063,6 +8069,7 @@ c$A934 LD A,($FE6A)  ;
  $AB67 LD BC,($FED8) ; #REGbc = #R$FED8.
  $AB6B LD A,B        ;
  $AB6C LD B,C        ;
+@label=DeferredEffectRewriteZSectionA
 *$AB6D DEC SP        ;
  $AB6E DEC SP        ;
  $AB6F POP HL        ;
@@ -8071,6 +8078,7 @@ c$A934 LD A,($FE6A)  ;
  $AB72 DJNZ $AB6D    ;
  $AB74 LD DE,($FEC2) ; #REGde = #R$FEC2.
  $AB78 LD B,A        ;
+@label=DeferredEffectRewriteZSectionB
 *$AB79 DEC SP        ;
  $AB7A DEC SP        ;
  $AB7B POP HL        ;
@@ -8081,6 +8089,7 @@ c$A934 LD A,($FE6A)  ;
  $AB84 LD BC,($FEDA) ; #REGbc = #R$FEDA.
  $AB88 LD A,B        ;
  $AB89 LD B,C        ;
+@label=DeferredEffectRewriteZSectionC
 *$AB8A DEC SP        ;
  $AB8B DEC SP        ;
  $AB8C POP HL        ;
@@ -8089,6 +8098,7 @@ c$A934 LD A,($FE6A)  ;
  $AB8F DJNZ $AB8A    ;
  $AB91 LD B,A        ;
  $AB92 LD DE,($FECA) ; #REGde = #R$FECA.
+@label=DeferredEffectRewriteZSectionD
 *$AB96 DEC SP        ;
  $AB97 DEC SP        ;
  $AB98 POP HL        ;
@@ -8114,6 +8124,7 @@ c$A934 LD A,($FE6A)  ;
  $ABC3 LD BC,($FEE2) ; #REGbc = #R$FEE2.
  $ABC7 EXX           ;
  $ABC8 LD B,A        ;
+@label=DeferredEffectBuildProjectedY
 *$ABC9 EXX           ;
  $ABCA LD A,(BC)     ;
  $ABCB INC BC        ;

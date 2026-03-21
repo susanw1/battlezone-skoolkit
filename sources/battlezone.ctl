@@ -5087,6 +5087,7 @@ C $A974,h3
 . #REGhl = #R$DC06.
 C $A977,h3
 . #R$FEE2 = #REGhl.
+@ $A97A label=SaucerExplosionSeedInstall
 C $A97A,h3
 . #REGhl = $0000.
 C $A97D,h3
@@ -5142,6 +5143,7 @@ C $A9B4,h2
 C $A9B6,h3
 . #R$A9BB.
 C $A9B9,h2
+@ $A9BB label=TankExplosionScoreAward
 C $A9BB,h3
 . #R$94AC.
 C $A9BE,h2
@@ -5406,17 +5408,21 @@ C $AB26,h4
 . #REGde = #R$FEBC.
 C $AB2A,h4
 . #REGbc = #R$FED8.
+@ $AB30 label=DeferredEffectRewriteXSectionA
 C $AB35,h2
 C $AB37,h4
 . #REGde = #R$FEC0.
+@ $AB3C label=DeferredEffectRewriteXSectionB
 C $AB41,h2
 C $AB43,h4
 . #REGde = #R$FEC4.
 C $AB47,h4
 . #REGbc = #R$FEDA.
+@ $AB4D label=DeferredEffectRewriteXSectionC
 C $AB52,h2
 C $AB55,h4
 . #REGde = #R$FEC8.
+@ $AB59 label=DeferredEffectRewriteXSectionD
 C $AB5E,h2
 C $AB60,h3
 . Reuse #REGsp as the mutable deferred-effect Z companion list (#R$DE1E) and rewrite its four staged sections from #R$FEBE/#R$FEC2/#R$FEC6/#R$FECA.
@@ -5424,17 +5430,21 @@ C $AB63,h4
 . #REGde = #R$FEBE.
 C $AB67,h4
 . #REGbc = #R$FED8.
+@ $AB6D label=DeferredEffectRewriteZSectionA
 C $AB72,h2
 C $AB74,h4
 . #REGde = #R$FEC2.
+@ $AB79 label=DeferredEffectRewriteZSectionB
 C $AB7E,h2
 C $AB80,h4
 . #REGde = #R$FEC6.
 C $AB84,h4
 . #REGbc = #R$FEDA.
+@ $AB8A label=DeferredEffectRewriteZSectionC
 C $AB8F,h2
 C $AB92,h4
 . #REGde = #R$FECA.
+@ $AB96 label=DeferredEffectRewriteZSectionD
 C $AB9B,h2
 C $AB9D,h3
 . Advance the descending Y-base in #R$FED2, combine it with #R$FECE, and start rebuilding the temporary Y list.
@@ -5455,6 +5465,7 @@ C $ABBD,h4
 . #REGbc = #R$FEDA.
 C $ABC3,h4
 . #REGbc = #R$FEE2.
+@ $ABC9 label=DeferredEffectBuildProjectedY
 C $ABD3,h2
 C $ABD6,h4
 . #R$FE34 = #REGsp.
