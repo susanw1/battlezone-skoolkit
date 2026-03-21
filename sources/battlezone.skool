@@ -5306,7 +5306,7 @@ u$9533 DEFB $00,$00,$00,$00,$00
 
 ; This entry point is used by the routine at #R$977E.
 ;
-; Used by the routines at #R$977E, #R$A122 and #R$A37B.
+; Used by the routines at #R$956A, #R$A122 and #R$A37B.
 c$9538 LD A,$00      ;
  $953A ADD A,$04     ;
 *$953C LD HL,$0000   ;
@@ -5328,9 +5328,23 @@ u$954C DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $955C DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $9564 DEFB $00,$00,$00,$00,$00,$00
 
-; Entered from the common start-game transition and the attract/showcase setup patch path.
+; GameInitAndMainLoop
 ;
-; Used by the routines at #R$B0BC and #R$B1F4.
+; Entered from the common start-game transition and the attract/showcase setup patch path.
+; Gameplay initialisation and live-gameplay spine.
+; This page clears the shared gameplay workspace, seeds the major-entity
+; dispatchers, and then runs the main loop / entity update spine.
+; Functional phases on this page:
+; #LIST
+; { #R$956A: clear and seed the shared gameplay workspace. }
+; { #R$9644: choose and seed the active tank-family or missile setup. }
+; { #R$972E: seed the live missile branch. }
+; { #R$977E: run the main game loop and frame-wide entity dispatch. }
+; { #R$98F4: tank strategy state machine. }
+; { #R$9D0D: saucer update/render path. }
+; { #R$9E49: missile strategy state machine. }
+; LIST#
+@label=GameInitAndMainLoop
 c$956A LD HL,$0000   ;
  $956D LD ($FE6A),HL ; Clear `EXST1` / `EXST2`.
  $9570 LD ($FE6C),HL ;
@@ -5615,15 +5629,14 @@ c$956A LD HL,$0000   ;
  $9776 LD ($FE88),A  ;
  $9779 LD A,$10      ;
  $977B LD ($FE6A),A  ; Enable the missile/existence bit in `EXST1`.
-
-; Main Game Loop
-;
+; Main Game Loop.
+; .
 ; Used by the routines at #R$94EC and #R$B55D.
 ; This matches Susan Witts' recollection of a long shallow-call loop: entity
 ; updates and drawing, then hills/status/radar/screen work, then input
 ; handling, ending with a jump back to the top at #R$A931.
 @label=MainGameLoop
-c$977E LD HL,($FE70) ;
+*$977E LD HL,($FE70) ;
  $9781 LD A,$18      ;
  $9783 OUT ($FE),A   ;
  $9785 INC HL        ;
@@ -6782,10 +6795,15 @@ u$A0D6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; BulletUpdateAndRender
 ;
-; Shared player-bullet / hostile-bullet update, project, draw, and hit-test
-; block. It advances the active bullet state, installs the shared
-; transform/perspective inputs, and either draws the visible bullet or queues
-; the appropriate deferred hit/effect path.
+; Shared player-bullet / hostile-bullet update, project, draw, and hit-test block. It advances the active bullet state, installs the shared transform/perspective inputs, and either draws the visible bullet or queues the appropriate deferred hit/effect path.
+; Functional phases on this page:
+; #LIST
+; { #R$A133: player-bullet active path: retire/requeue, advance, rotate, project, and test hits. }
+; { #R$A1D3: player-bullet visible path: centre, overlap-test, then draw or trigger the hit path. }
+; { #R$A201/#R$A20F/#R$A21D: player-bullet hit tests for saucer, missile, and tank/supertank targets. }
+; { #R$A234: hostile-bullet active path: retire/requeue, advance, rotate, project, and draw. }
+; { #R$A25A: hostile-bullet visible path: install the obstacle-family geometry, then project and test for crash/visibility. }
+; LIST#
 @label=BulletUpdateAndRender
 c$A122 LD A,$18      ;
  $A124 OUT ($FE),A   ;
@@ -7050,7 +7068,7 @@ c$A122 LD A,$18      ;
  $A367 OR $04        ; Queue the hostile-bullet deferred/restart bit after a player hit.
  $A369 LD ($FE6C),A  ;
  $A36C JP $A37B      ;
-; This entry point is used by the routines at #R$A934 and #R$A9AC.
+; This entry point is used by the routine at #R$A934.
 *$A36F LD HL,$D488   ; Same probable shared bullet visible-line family.
  $A372 SUB A         ;
  $A373 OUT ($FE),A   ;
@@ -7059,9 +7077,15 @@ c$A122 LD A,$18      ;
 
 ; ObstacleSelectAndRender
 ;
-; Select the current obstacle/object family, seed its raw world `(X,Z)` pair
-; plus line-data base, and either project/draw it or fall straight into the
-; shared SCREEN phase.
+; Select the current obstacle/object family, seed its raw world `(X,Z)` pair plus line-data base, and either project/draw it or fall straight into the shared SCREEN phase.
+; Functional phases on this page:
+; #LIST
+; { #R$A383: seed the selected obstacle/object `(X,Z)` pair and choose the line-data base. }
+; { #R$A423: rotate/project the selected obstacle/object and split into hidden vs visible paths. }
+; { #R$A4CA: hidden-path obstacle/object handling. }
+; { #R$A4E1: visible-path obstacle/object handling, including the shared SCREEN work. }
+; { #R$A576: select the visible line-data family for the current low-bit obstacle/object selector. }
+; LIST#
 @label=ObstacleSelectAndRender
 c$A37B LD A,$18      ;
  $A37D OUT ($FE),A   ;
@@ -7764,9 +7788,15 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
  $A92E JP $A927      ; Stay paused until `S` is pressed.
 *$A931 JP $977E      ;
 
-; SaucerExplosionSetup
+; ExplosionSetup
 ;
-; Used by the routine at #R$A122.
+; Functional phases on this page:
+; #LIST
+; { #R$A934: saucer explosion setup and deferred-effect seed install. }
+; { #R$A9AC: tank / supertank explosion setup and deferred-effect seed install. }
+; { #R$AA0B: missile explosion / impact setup and deferred-effect seed install. }
+; { #R$AA5D: shared deferred explosion / impact animator. }
+; LIST#
 ;
 ; .
 ;
@@ -7775,7 +7805,7 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
 ; - seeds the later animated explosion path with `SAEXV`, `SAEX_XTAB`,
 ;   `SAEX_ZTAB`, and `SAEX_YLOC`
 ; - current best notebook match: `SAEXV`
-@label=SaucerExplosionSetup
+@label=ExplosionSetup
 c$A934 LD A,($FE6A)  ;
  $A937 AND $D7       ; Clear the active saucer and player-bullet bits.
  $A939 LD ($FE6A),A  ;
@@ -7803,7 +7833,6 @@ c$A934 LD A,($FE6A)  ;
  $A971 LD ($FEE0),HL ;
  $A974 LD HL,$DC06   ;
  $A977 LD ($FEE2),HL ;
-; This entry point is used by the routines at #R$A9AC and #R$AA0B.
 *$A97A LD HL,$0000   ;
  $A97D LD ($FECE),HL ;
  $A980 LD HL,$00E0   ; Seed `DeferredEffectYBias` and `DeferredEffectYBase`.
@@ -7822,20 +7851,13 @@ c$A934 LD A,($FE6A)  ;
  $A9A6 SUB A         ;
  $A9A7 OUT ($FE),A   ;
  $A9A9 JP $A36F      ;
-
-; TankExplosionSetup
-;
-; Used by the routine at #R$A122.
-;
-; .
-;
 ; Probable tank / supertank explosion setup:
 ; - awards score increment `1` or `3`
 ; - seeds the later animated explosion path with `TKEXV`, `TKEX_XTAB`,
 ;   `TKEX_ZTAB`, and `TKEX_YLOC`
 ; - current best notebook match: `TKEXV`
 @label=TankExplosionSetup
-c$A9AC LD A,($FE6A)  ;
+*$A9AC LD A,($FE6A)  ;
  $A9AF AND $C0       ;
  $A9B1 JP Z,$A36F    ;
  $A9B4 LD B,$01      ;
@@ -7869,12 +7891,9 @@ c$A9AC LD A,($FE6A)  ;
  $AA02 LD HL,($FE62) ;
  $AA05 LD ($FED4),HL ;
  $AA08 JP $A97A      ;
-
 ; MissileExplosionSetup
-;
-; Used by the routine at #R$A122.
 @label=MissileExplosionSetup
-c$AA0B LD A,($FE6A)  ;
+*$AA0B LD A,($FE6A)  ;
  $AA0E AND $E7       ; Clear the active missile and player-bullet bits.
  $AA10 LD ($FE6A),A  ;
  $AA13 LD A,$18      ;
@@ -7903,62 +7922,17 @@ c$AA0B LD A,($FE6A)  ;
  $AA54 LD HL,($FE86) ;
  $AA57 LD ($FED4),HL ;
  $AA5A JP $A97A      ;
-
-; DeferredEffectAnimator
-;
-; Shared deferred explosion / impact animator. It advances the staged X/Z
-; offset terms, refreshes the current phase angle and source position, rebuilds
-; the mutable companion X/Z/Y lists, projects and draws the current frame, and
-; either loops into the next phase or restores the deferred major-entity bit.
-; .
-; Used by the tank, saucer, missile, and bullet-impact effect setup entries
-; after they have installed the appropriate effect families and source
-; coordinates.
-;
-;   DeferredEffectXOffsetA Current staged X offset pair A (#R$FEBC($FEBC))
-;   DeferredEffectXOffsetB Current staged X offset pair B (#R$FEC0($FEC0))
-;   DeferredEffectXOffsetC Current staged X offset pair C (#R$FEC4($FEC4))
-;   DeferredEffectXOffsetD Current staged X offset pair D (#R$FEC8($FEC8))
-;   DeferredEffectZOffsetA Current staged Z offset pair A (#R$FEBE($FEBE))
-;   DeferredEffectZOffsetB Current staged Z offset pair B (#R$FEC2($FEC2))
-;   DeferredEffectZOffsetC Current staged Z offset pair C (#R$FEC6($FEC6))
-;   DeferredEffectZOffsetD Current staged Z offset pair D (#R$FECA($FECA))
-;   DeferredEffectSourceX Current effect source X pair (#R$FECC($FECC))
-;   DeferredEffectSourceZ Current effect source Z pair (#R$FED0($FED0))
-;   DeferredEffectYBias Current Y-bias pair for the rebuilt temporary Y list
-; .                     (#R$FECE($FECE))
-;   DeferredEffectYBase Current descending Y-base pair for the rebuilt
-; .                     temporary Y list (#R$FED2($FED2))
-;   DeferredEffectAngle Current effect phase angle (#R$FED4($FED4))
-;   DeferredEffectPhaseCountdown Current phase countdown (#R$FED6($FED6))
-;   DeferredEffectPrimaryCounts Current primary rewrite / projection count pair
-; .                             (#R$FED8($FED8))
-;   DeferredEffectSecondaryCounts Current secondary rewrite / projection count
-; .                               pair (#R$FEDA($FEDA))
-;   DeferredEffectLineData Current deferred-effect line-data pointer
-; .                        (#R$FEDC($FEDC))
-;   DeferredEffectXTAB Current deferred-effect X rotation-table pointer
-; .                    (#R$FEDE($FEDE))
-;   DeferredEffectZTAB Current deferred-effect Z rotation-table pointer
-; .                    (#R$FEE0($FEE0))
-;   DeferredEffectYLOC Current deferred-effect Y companion-list pointer
-; .                    (#R$FEE2($FEE2))
-; O:DeferredEffectAngle Advanced effect phase angle (#R$FED4($FED4))
-; O:DeferredEffectPhaseCountdown Updated phase countdown / completion flag
-; .                              (#R$FED6($FED6))
-; O:DeferredEffectYBase Advanced descending Y-base pair (#R$FED2($FED2))
-; O:DeferredEffectYLOC Rebuilt temporary deferred-effect Y list pointer
-; .                    (#R$FEE2($FEE2))
-; O:LINCD Installed deferred-effect line-data pointer for `LNLPT`
-; .       (#R$FE02($FE02))
-;
 ; Probable missile explosion / impact setup:
 ; - awards score increment `2`
 ; - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
 ;   `MSEX_ZTAB`, and `MSEX_YLOC`
 ; - current best notebook match: `MSEXV`
+; Shared deferred explosion / impact animator. It advances the staged X/Z offset terms, refreshes the current phase angle and source position, rebuilds the mutable companion X/Z/Y lists, projects and draws the current frame, and either loops into the next phase or restores the deferred major-entity bit.
+; Used by the tank, saucer, missile, and bullet-impact effect setup entries after they have installed the appropriate effect families and source coordinates.
+; .
+; DeferredEffectAnimator
 @label=DeferredEffectAnimator
-c$AA5D AND $0C       ;
+*$AA5D AND $0C       ;
  $AA5F CALL NZ,$AC22 ; If the active source was a bullet, refresh the shared impact-effect seed first.
  $AA62 LD A,$18      ;
  $AA64 OUT ($FE),A   ;
@@ -8187,7 +8161,7 @@ c$AA5D AND $0C       ;
 
 ; BulletImpactEffectSetup
 ;
-; Used by the routine at #R$AA5D.
+; Used by the routine at #R$A934.
 @label=BulletImpactEffectSetup
 c$AC22 AND $08       ;
 ; Probable bullet-impact / bullet-explosion setup.
@@ -8274,6 +8248,11 @@ u$ACC0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; Primary reset/title entrypoint.
 ; Disables interrupts, copies the startup seed data into working RAM, and then
 ; jumps into `AttractModeTitleSequence`.
+; Functional phases on this page:
+; #LIST
+; { #R$AD0D: disable interrupts and copy the startup seed data into working RAM. }
+; { #R$AD18: jump into `AttractModeTitleSequence`. }
+; LIST#
 @label=GameEntryPoint
 c$AD0C DI            ; Disable interrupts.
  $AD0D LD HL,$8CA0   ; {Copy 36 bytes of startup seed data from #R$8CA0 to #R$F700.
@@ -8776,6 +8755,13 @@ c$ADD4 LD A,$C9      ;
 ; Multiple raw `S`-key checks in the intro code jump here; this path runs a
 ; short visual/audio transition, restores the score display, and then jumps
 ; into the main game initialisation at #R$956A.
+; Functional phases on this page:
+; #LIST
+; { #R$B0CA: clear the full visible bitmap during the common start-game transition. }
+; { #R$B0D2: run the calibrated full-length self-copy delay. }
+; { #R$B0D7: patch `NUMBA`, print the temporary heading/score slot, and restore the normal score-strip position. }
+; { #R$B0EF: play the `1812` start theme. }
+; LIST#
 @label=StartGameTransition
 c$B0BC CALL $B0EF    ;
  $B0BF LD HL,$4000   ;
@@ -8993,6 +8979,17 @@ c$B0EF LD ($FE00),SP ;
 ; It clears the screen, prepares title/demo resources, runs the tumbling
 ; title/logo animation blocks, and checks `S` at multiple points so the player
 ; can break straight into the common start-game transition at #R$B0BC.
+; Functional phases on this page:
+; #LIST
+; { #R$B24D: QS logo tumble loop and early title-stage input gate. }
+; { #R$B2D5: forward title flash/fade pass. }
+; { #R$B2F5: reverse title flash/fade pass. }
+; { #R$B31E: title pre-separation wipe/delay prelude. }
+; { #R$B346: draw the split BATTLE / ZONE title words. }
+; { #R$B3FB: title separation and flyoff. }
+; { #R$B48C: attract-mode credits/footer text stage. }
+; { #R$B4D1: long flyoff pass with the footer redrawn each frame. }
+; LIST#
 @label=AttractModeTitleSequence
 c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B1F6 RST $10       ;

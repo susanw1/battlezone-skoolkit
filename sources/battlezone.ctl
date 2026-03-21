@@ -2937,8 +2937,23 @@ u $954C
 . main reset/initialisation block at `0x956A`.
 . This 30-byte `NOP` run follows a hard `RET` and ends at a round-number
 . module boundary.
-c $956A
+c $956A GameInitAndMainLoop
+D $956A
 . Entered from the common start-game transition and the attract/showcase setup patch path.
+. Gameplay initialisation and live-gameplay spine.
+. This page clears the shared gameplay workspace, seeds the major-entity
+. dispatchers, and then runs the main loop / entity update spine.
+. Functional phases on this page:
+. #LIST
+. { #R$956A: clear and seed the shared gameplay workspace. }
+. { #R$9644: choose and seed the active tank-family or missile setup. }
+. { #R$972E: seed the live missile branch. }
+. { #R$977E: run the main game loop and frame-wide entity dispatch. }
+. { #R$98F4: tank strategy state machine. }
+. { #R$9D0D: saucer update/render path. }
+. { #R$9E49: missile strategy state machine. }
+. LIST#
+@ $956A label=GameInitAndMainLoop
 C $956A,h3
 C $956D,h3
 . Clear `EXST1` / `EXST2`.
@@ -3182,9 +3197,9 @@ C $9776,h3
 C $9779,h2
 C $977B,h3
 . Enable the missile/existence bit in `EXST1`.
-c $977E
-. Main Game Loop
-D $977E
+N $977E
+. Main Game Loop.
+. 
 . Used by the routines at #R$94EC and #R$B55D.
 . This matches Susan Witts' recollection of a long shallow-call loop: entity
 . updates and drawing, then hills/status/radar/screen work, then input
@@ -4133,6 +4148,14 @@ u $A0D6
 . This `NOP` run follows a hard `RET` and ends on the next routine boundary at
 . `#R$A122`.
 D $A122 Shared player-bullet / hostile-bullet update, project, draw, and hit-test block. It advances the active bullet state, installs the shared transform/perspective inputs, and either draws the visible bullet or queues the appropriate deferred hit/effect path.
+. Functional phases on this page:
+. #LIST
+. { #R$A133: player-bullet active path: retire/requeue, advance, rotate, project, and test hits. }
+. { #R$A1D3: player-bullet visible path: centre, overlap-test, then draw or trigger the hit path. }
+. { #R$A201/#R$A20F/#R$A21D: player-bullet hit tests for saucer, missile, and tank/supertank targets. }
+. { #R$A234: hostile-bullet active path: retire/requeue, advance, rotate, project, and draw. }
+. { #R$A25A: hostile-bullet visible path: install the obstacle-family geometry, then project and test for crash/visibility. }
+. LIST#
 @ $A122 label=BulletUpdateAndRender
 c $A122
 . BulletUpdateAndRender
@@ -4378,6 +4401,14 @@ C $A373,h2
 C $A375,h3
 C $A378,h3
 D $A37B Select the current obstacle/object family, seed its raw world `(X,Z)` pair plus line-data base, and either project/draw it or fall straight into the shared SCREEN phase.
+. Functional phases on this page:
+. #LIST
+. { #R$A383: seed the selected obstacle/object `(X,Z)` pair and choose the line-data base. }
+. { #R$A423: rotate/project the selected obstacle/object and split into hidden vs visible paths. }
+. { #R$A4CA: hidden-path obstacle/object handling. }
+. { #R$A4E1: visible-path obstacle/object handling, including the shared SCREEN work. }
+. { #R$A576: select the visible line-data family for the current low-bit obstacle/object selector. }
+. LIST#
 @ $A37B label=ObstacleSelectAndRender
 c $A37B
 . ObstacleSelectAndRender
@@ -5002,9 +5033,16 @@ N $A934
 . - seeds the later animated explosion path with `SAEXV`, `SAEX_XTAB`,
 .   `SAEX_ZTAB`, and `SAEX_YLOC`
 . - current best notebook match: `SAEXV`
-@ $A934 label=SaucerExplosionSetup
+D $A934 Functional phases on this page:
+. #LIST
+. { #R$A934: saucer explosion setup and deferred-effect seed install. }
+. { #R$A9AC: tank / supertank explosion setup and deferred-effect seed install. }
+. { #R$AA0B: missile explosion / impact setup and deferred-effect seed install. }
+. { #R$AA5D: shared deferred explosion / impact animator. }
+. LIST#
+@ $A934 label=ExplosionSetup
 c $A934
-. SaucerExplosionSetup
+. ExplosionSetup
 C $A934,h3
 C $A937,h2
 . Clear the active saucer and player-bullet bits.
@@ -5062,8 +5100,6 @@ N $A9AC
 .   `TKEX_ZTAB`, and `TKEX_YLOC`
 . - current best notebook match: `TKEXV`
 @ $A9AC label=TankExplosionSetup
-c $A9AC
-. TankExplosionSetup
 C $A9AC,h3
 C $A9AF,h2
 C $A9B1,h3
@@ -5102,7 +5138,7 @@ C $AA02,h3
 C $AA05,h3
 C $AA08,h3
 @ $AA0B label=MissileExplosionSetup
-c $AA0B
+N $AA0B
 . MissileExplosionSetup
 C $AA0B,h3
 C $AA0E,h2
@@ -5142,8 +5178,8 @@ N $AA5D
 . - seeds the later animated explosion path with `MSEXV`, `MSEX_XTAB`,
 .   `MSEX_ZTAB`, and `MSEX_YLOC`
 . - current best notebook match: `MSEXV`
-D $AA5D Shared deferred explosion / impact animator. It advances the staged X/Z offset terms, refreshes the current phase angle and source position, rebuilds the mutable companion X/Z/Y lists, projects and draws the current frame, and either loops into the next phase or restores the deferred major-entity bit.
-D $AA5D Used by the tank, saucer, missile, and bullet-impact effect setup entries after they have installed the appropriate effect families and source coordinates.
+. Shared deferred explosion / impact animator. It advances the staged X/Z offset terms, refreshes the current phase angle and source position, rebuilds the mutable companion X/Z/Y lists, projects and draws the current frame, and either loops into the next phase or restores the deferred major-entity bit.
+. Used by the tank, saucer, missile, and bullet-impact effect setup entries after they have installed the appropriate effect families and source coordinates.
 R $AA5D DeferredEffectXOffsetA Current staged X offset pair A (#R$FEBC($FEBC))
 R $AA5D DeferredEffectXOffsetB Current staged X offset pair B (#R$FEC0($FEC0))
 R $AA5D DeferredEffectXOffsetC Current staged X offset pair C (#R$FEC4($FEC4))
@@ -5170,7 +5206,7 @@ R $AA5D O:DeferredEffectYBase Advanced descending Y-base pair (#R$FED2($FED2))
 R $AA5D O:DeferredEffectYLOC Rebuilt temporary deferred-effect Y list pointer (#R$FEE2($FEE2))
 R $AA5D O:LINCD Installed deferred-effect line-data pointer for `LNLPT` (#R$FE02($FE02))
 @ $AA5D label=DeferredEffectAnimator
-c $AA5D
+N $AA5D
 . DeferredEffectAnimator
 C $AA5D,h2
 C $AA5F,h3
@@ -5394,6 +5430,11 @@ D $AD0C
 . Primary reset/title entrypoint.
 . Disables interrupts, copies the startup seed data into working RAM, and then
 . jumps into `AttractModeTitleSequence`.
+. Functional phases on this page:
+. #LIST
+. { #R$AD0D: disable interrupts and copy the startup seed data into working RAM. }
+. { #R$AD18: jump into `AttractModeTitleSequence`. }
+. LIST#
 C $AD0C,1
 . Disable interrupts.
 C $AD0D,11,h9,2
@@ -5748,6 +5789,13 @@ D $B0BC
 . Multiple raw `S`-key checks in the intro code jump here; this path runs a
 . short visual/audio transition, restores the score display, and then jumps
 . into the main game initialisation at #R$956A.
+. Functional phases on this page:
+. #LIST
+. { #R$B0CA: clear the full visible bitmap during the common start-game transition. }
+. { #R$B0D2: run the calibrated full-length self-copy delay. }
+. { #R$B0D7: patch `NUMBA`, print the temporary heading/score slot, and restore the normal score-strip position. }
+. { #R$B0EF: play the `1812` start theme. }
+. LIST#
 @ $B0BC label=StartGameTransition
 c $B0BC StartGameTransition
 C $B0BC,h3
@@ -5891,6 +5939,17 @@ D $B1F4
 . It clears the screen, prepares title/demo resources, runs the tumbling
 . title/logo animation blocks, and checks `S` at multiple points so the player
 . can break straight into the common start-game transition at #R$B0BC.
+. Functional phases on this page:
+. #LIST
+. { #R$B24D: QS logo tumble loop and early title-stage input gate. }
+. { #R$B2D5: forward title flash/fade pass. }
+. { #R$B2F5: reverse title flash/fade pass. }
+. { #R$B31E: title pre-separation wipe/delay prelude. }
+. { #R$B346: draw the split BATTLE / ZONE title words. }
+. { #R$B3FB: title separation and flyoff. }
+. { #R$B48C: attract-mode credits/footer text stage. }
+. { #R$B4D1: long flyoff pass with the footer redrawn each frame. }
+. LIST#
 @ $B1F4 label=AttractModeTitleSequence
 C $B1F4,5,h3,1,h1
 . FLASH: OFF.
