@@ -2958,36 +2958,61 @@ C $956A,h3
 C $956D,h3
 . Clear `EXST1` / `EXST2`.
 C $9570,h3
+. #R$FE6C = #REGhl
 C $9573,h3
+. #R$FE76 = #REGhl
 C $9576,h3
+. #R$FE78 = #REGhl
 C $9579,h3
+. #R$FE72 = #REGhl
 C $957C,h3
+. #R$FE7A = #REGhl
 C $957F,h3
+. #R$FE68 = #REGhl
 C $9582,h3
+. #R$FE54 = #REGhl
 C $9585,h3
+. #R$FE50 = #REGhl
 C $9588,h3
 . Clear `PRSTA` / render-state byte.
 C $958B,h3
 C $958E,h3
+. #R$FEE4 = #REGhl
 C $9591,h3
+. #REGhl = #R$4000
 C $9594,h3
+. #R$FE9A = #REGhl
 C $9597,h3
+. #R$FE9C = #REGhl
 C $959A,h3
 C $959D,h3
+. #R$FE9E = #REGhl
 C $95A0,h3
+. #R$FEA0 = #REGhl
 C $95A3,h3
 C $95A6,h3
+. #R$FEA2 = #REGhl
 C $95A9,h3
+. #R$FEA4 = #REGhl
 C $95AC,h3
+. #REGhl = #R$4000
 C $95AF,h3
+. #R$FEA6 = #REGhl
 C $95B2,h3
+. #R$FE98 = #REGhl
 C $95B5,h3
+. #R$8000
 C $95B8,h3
+. #REGhl = #R$6900
 C $95BB,h3
+. #R$FE2C = #REGhl
 C $95BE,h3
+. #REGhl = #R$6300
 C $95C1,h3
+. #R$FE52 = #REGhl
 C $95C4,h3
 C $95C7,h3
+. #R$FEA8 = #REGhl
 C $95CA,h2
 C $95CC,h2
 C $95CE,h2
@@ -3012,6 +3037,7 @@ C $95FC,h3
 C $9601,h2
 C $9603,h3
 C $9606,h3
+. #REGhl = #R$5800
 C $9609,h3
 C $960C,h2
 . Seed the top five attribute rows (`0x5800..0x589F`) with `0x43`
@@ -3021,25 +3047,32 @@ C $9611,h3
 . `0x44` = bright green ink on black paper, no flash.
 C $9616,h3
 C $9619,h3
+. #R$9452
 C $961C,h3
 C $961F,h3
+. #R$9452
 C $9622,h3
 . Seed the initial extra-life threshold (`25` in packed BCD).
 C $9625,h3
 . Store that threshold and prepare the zero-increment `SCOPR` redraw.
 C $9628,h2
 C $962A,h3
+. #R$94AC
 C $962D,h3
 . Start drawing the initial life-strip glyph pairs at `$4014` in the top
 . status strip.
 C $9630,h2
 C $9632,h3
+. #R$948C
 C $9635,h2
 C $9637,h3
+. #R$948C
 C $963A,h2
 C $963C,h3
+. #R$948C
 C $963F,h2
 C $9641,h3
+. #R$948C
 N $9644
 . TEXST
 . This entry point is used by the routines at #R$977E and #R$AD3E.
@@ -3056,24 +3089,33 @@ N $9644
 . - score 25+: choose among old tank, supertank, and missile
 @ $9644 label=TEXST
 C $9644,h3
+. #REGa = #R$FE72
 C $9648,h2
 C $964A,h3
+. #R$964E
 C $964E,h3
+. #R$FE72 = #REGa
 C $9651,h3
 C $9654,h3
+. #R$FE70 = #REGhl
 C $9657,h3
+. #R$FE68 = #REGhl
 C $965A,h3
+. #REGa = #R$FE6A
 C $965E,h2
 . Read `R` as a pseudo-random source for the tank-family vs missile spawn choice.
 C $9660,h2
 C $9663,h3
+. #REGhl = #R$FE76
 C $9666,h3
 C $966C,h3
+. #R$96AE
 C $966F,h2
 C $9672,h2
 N $9674
 . Set the active tank-family bit in `EXST1`.
 C $9674,h3
+. #R$FE6A = #REGa
 C $9678,h2
 C $967A,h2
 C $967C,h2
@@ -3084,41 +3126,54 @@ C $968B,h3
 N $9691
 . Store the freshly seeded tank-family X position in `TankX`.
 C $9691,h3
+. #R$FE5E = #REGhl
 C $9694,h3
+. #R$938A
 C $9698,h2
 N $969B
 . Store the initial desired heading in `TankDesiredHeading`.
 C $969B,h3
+. #R$FE64 = #REGhl
 C $969E,h3
 C $96A2,h2
 C $96A6,h2
 N $96A8
 . Store the live tank-family orientation in `TankOrientation`.
 C $96A8,h3
+. #R$FE62 = #REGhl
 C $96AB,h3
+. #R$977E
 C $96AE,h3
 C $96B4,h3
 C $96B8,h2
 C $96BA,h3
 C $96BE,h2
 C $96C0,h3
+. #R$972E
 C $96C3,h2
 C $96C5,h3
+. #R$96E5
 C $96C9,h2
 C $96CB,h3
+. #R$972E
 C $96CE,h2
 C $96D0,h3
+. #R$96E5
 C $96D4,h2
 C $96D6,h3
+. #R$96DE
 C $96D9,h2
 C $96DB,h3
+. #R$96E5
 C $96DE,h2
 C $96E0,h3
+. #R$972E
 C $96E3,h2
 C $96E5,h2
 N $96E9
 . Replace the active major-entity bits in `EXST1` with the selected tank/supertank family.
 C $96E9,h3
+. #R$FE6A = #REGa
 C $96EE,h2
 . Read `R` as a pseudo-random source for the signed tank X seed.
 C $96F1,h2
@@ -3127,6 +3182,7 @@ C $96F8,h3
 N $96FE
 . Store the pseudo-random signed tank X seed in `TankX`.
 C $96FE,h3
+. #R$FE5E = #REGhl
 C $9701,h2
 . Read `R` as a pseudo-random source for the signed tank Z seed.
 C $9703,h2
@@ -3137,16 +3193,21 @@ C $970F,h3
 N $9715
 . Store the pseudo-random signed tank Z seed in `TankZ`.
 C $9715,h4
+. #R$FE60 = #REGde
 C $9719,h3
+. #R$938A
 C $971D,h2
 N $9720
 . Store the initial desired heading derived from `TankX` / `TankZ` in `TankDesiredHeading`.
 C $9720,h3
+. #R$FE64 = #REGhl
 C $9723,h3
+. #REGhl = #R$FE62
 C $9726,h2
 . Odd current-best read: perturb `L` from `R` just before the jump into the main
 . loop. No immediate stored consumer is obvious, so this remains unresolved.
 C $972B,h3
+. #R$977E
 N $972E
 . MSET
 . This entry point is used by the routine at #R$977E.
@@ -3162,38 +3223,51 @@ N $973A
 . Seed the missile X pair in the shared companion slot at `$DD0A` and in `MissileX`.
 C $973A,h3
 C $973D,h3
+. #R$FE7C = #REGhl
 N $9740
 . Seed the live missile vertical/hop state in `MissileY`.
 C $9740,h3
 C $9743,h3
+. #R$FE7E = #REGhl
 N $9746
 . Seed the missile Z pair in the shared companion slot at `$DDBA` and in `MissileZ`.
 C $9746,h3
+. #REGhl = #R$6400
 C $9749,h3
 C $974C,h3
+. #R$FE80 = #REGhl
 C $974F,h3
+. #REGhl = #R$FE78
 N $9755
 . Derive the remaining-zig count in `MissileZigCount` from the running `MissileCount`.
 C $9755,h3
+. #R$FE82 = #REGa
 C $9758,h2
 N $975A
 . Seed the live missile strategy byte in `MissileStrategy`.
 C $975A,h3
+. #R$FE84 = #REGa
 N $975E
 . Clear `MissileManoeuvreCounter` for the freshly seeded missile.
 C $975E,h3
+. #R$FE7A = #REGa
 C $9761,h3
+. #REGhl = #R$FE7C
 C $9764,h4
+. #REGde = #R$FE80
 C $9768,h3
+. #R$938A
 C $976B,h2
 C $976E,h2
 N $9771
 . Store the initial live missile orientation in `MissileOrientation`.
 C $9771,h3
+. #R$FE86 = #REGhl
 C $9774,h2
 N $9776
 . Prime the missile phase/sign toggle in `MissilePhaseSign`.
 C $9776,h3
+. #R$FE88 = #REGa
 C $9779,h2
 C $977B,h3
 . Enable the missile/existence bit in `EXST1`.
@@ -3206,6 +3280,7 @@ N $977E
 . handling, ending with a jump back to the top at #R$A931.
 @ $977E label=MainGameLoop
 C $977E,h3
+. #REGhl = #R$FE70
 C $9781,h2
 C $9783,h2
 C $9786,h3
@@ -4170,73 +4245,105 @@ c $A122
 @ $A2ED label=HostileBulletVisible
 C $A124,h2
 C $A126,h3
+. #REGa = #R$FE6A
 C $A129,h2
 . Active player-bullet / hostile-bullet bits.
 C $A12B,h3
+. #R$A37B
 C $A12E,h2
 C $A130,h3
+. #R$A234
 C $A133,h3
 . Player-bullet active path: either retire/requeue `PlayerBulletLife` or advance,
 . rotate, project, and test hits.
 C $A137,h3
+. #R$A155
 C $A13A,h3
+. #REGa = #R$FE6A
 C $A13D,h2
 C $A13F,h3
+. #R$FE6A = #REGa
 C $A142,h3
+. #REGa = #R$FE6E
 C $A145,h2
 C $A147,h3
+. #R$FE6E = #REGa
 C $A14A,h3
+. #REGa = #R$FE6C
 C $A14D,h2
 . Queue the player-bullet deferred/restart bit in `EXST2`.
 C $A14F,h3
+. #R$FE6C = #REGa
 C $A152,h3
+. #R$A234
 C $A155,h3
 . Advance the live player-bullet `PlayerBulletX` / `PlayerBulletZ`, install the
 . shared bullet geometry tables, then rotate/project it using `PlayerBulletOrientation`.
 C $A159,h3
+. #R$FEB2 = #REGa
 C $A15C,h4
 C $A165,h3
+. #R$FEAC = #REGhl
 C $A168,h3
+. #R$FE4A = #REGhl
 C $A16B,h3
+. #REGhl = #R$FEAE
 C $A16E,h4
 C $A177,h3
+. #R$FEAE = #REGhl
 C $A17A,h3
+. #R$FE4C = #REGhl
 C $A17D,h3
 . Install the shared bullet X-rotation coefficient table in `XTAB`.
 C $A180,h3
+. #R$FE42 = #REGhl
 C $A183,h3
 . Install the shared bullet Z-rotation coefficient table in `ZTAB`.
 C $A186,h3
+. #R$FE46 = #REGhl
 C $A189,h3
 . Install the fixed player-bullet model-space X list in `XLOC`.
 C $A18C,h3
+. #R$FE32 = #REGhl
 C $A18F,h3
 . Install the fixed player-bullet model-space Z list in `ZLOC`.
 C $A192,h3
+. #R$FE36 = #REGhl
 C $A195,h3
+. #REGhl = #R$FEB0
 C $A19D,h2
 C $A19F,h2
 C $A1A1,h3
+. #R$88EA
 C $A1A4,h2
 C $A1A6,h2
 C $A1A8,h3
 . Install the player-bullet projected X output buffer end-pointer in `XPERS`.
 C $A1AB,h3
+. #R$FE38 = #REGhl
 C $A1AE,h3
 . Install the player-bullet projected Y output buffer end-pointer in `YPERS`.
 C $A1B1,h3
+. #R$FE3A = #REGhl
 C $A1B4,h3
 . Install the shared player-bullet Y list in `YLOC`.
 C $A1B7,h3
+. #R$FE34 = #REGhl
 C $A1BB,h3
+. #R$8660
 C $A1C0,h3
+. #REGa = #R$FE6E
 C $A1C3,h3
+. #R$A1D3
 C $A1C6,h2
 . Clear the player-bullet visible bit.
 C $A1C8,h3
+. #R$FE6E = #REGa
 C $A1CB,h2
 C $A1CD,h3
+. #R$9538
 C $A1D0,h3
+. #R$A234
 C $A1D3,h2
 . Set the player-bullet visible bit.
 C $A1D5,h3
@@ -4244,53 +4351,78 @@ C $A1D5,h3
 . current target limits, then either draw or trigger a hit path.
 C $A1D9,h2
 C $A1DB,h3
+. #REGhl = #R$FE3C
 C $A1DE,h4
+. #REGde = #R$FE3E
 C $A1EA,h3
+. #REGhl = #R$FE1C
 C $A1EF,h3
+. #R$A22B
 C $A1F2,h3
+. #REGhl = #R$FE1E
 C $A1F7,h3
+. #R$A22B
 C $A1FA,h3
+. #REGhl = #R$FEAE
 C $A1FD,h3
+. #REGa = #R$FE6A
 C $A201,2
 . Test active saucer bit for player-bullet hit.
 C $A203,h3
+. #R$A20F
 C $A206,h3
 C $A20A,h2
 C $A20C,h3
+. #R$A934
 C $A20F,2
 . Test active missile bit for player-bullet hit.
 C $A211,h3
+. #R$A21D
 C $A214,h3
 C $A218,h2
 C $A21A,h3
+. #R$AA0B
 C $A21D,h2
 . Test active tank / supertank bits for player-bullet hit.
 C $A21F,h3
+. #R$A22B
 C $A222,h3
 C $A226,h2
 C $A228,h3
+. #R$A9AC
 C $A22B,h3
 . Probable shared my-bullet / hostile-bullet visible-line
 . family (`MBLVU` / `HBLVU` current best read).
 C $A22E,h3
+. #R$FE02 = #REGhl
 C $A231,h3
+. #R$805C
 C $A234,h2
 . Hostile-bullet active path: either retire/requeue `HostileBulletLife` or advance,
 . rotate, project, and draw.
 C $A236,h2
 C $A238,h3
+. #REGa = #R$FE6A
 C $A23B,h2
 C $A23D,h3
+. #R$A37B
 C $A240,h3
+. #REGa = #R$FEBA
 C $A244,h3
+. #R$A25A
 C $A247,h3
+. #REGa = #R$FE6A
 C $A24A,h2
 C $A24C,h3
+. #R$FE6A = #REGa
 C $A24F,h3
+. #REGa = #R$FE6C
 C $A252,h2
 . Queue the hostile-bullet deferred/restart bit in `EXST2`.
 C $A254,h3
+. #R$FE6C = #REGa
 C $A257,h3
+. #R$A37B
 C $A25A,h3
 . Advance the live hostile-bullet `HostileBulletX` / `HostileBulletZ`, install the
 . obstacle-family geometry tables, then rotate/project it using `HostileBulletOrientation`
@@ -4299,42 +4431,56 @@ N $A25D
 . Refresh `HostileBulletX` and mirror it into `XDIS`.
 C $A25D,h4
 C $A262,h3
+. #R$FEBA = #REGa
 C $A26B,h3
+. #R$FEB4 = #REGhl
 C $A26E,h3
+. #R$FE4A = #REGhl
 N $A271
 . Refresh `HostileBulletZ` and mirror it into `ZDIS`.
 C $A271,h3
+. #REGhl = #R$FEB6
 C $A274,h4
 C $A27D,h3
+. #R$FEB6 = #REGhl
 C $A280,h3
+. #R$FE4C = #REGhl
 C $A283,h3
 . Install the shared obstacle/bullet X-rotation coefficient table in `XTAB`.
 C $A286,h3
+. #R$FE42 = #REGhl
 C $A289,h3
 . Install the shared obstacle/bullet Z-rotation coefficient table in `ZTAB`.
 C $A28C,h3
+. #R$FE46 = #REGhl
 C $A28F,h3
 . Install the fixed hostile-bullet model-space X list in `XLOC`.
 C $A292,h3
+. #R$FE32 = #REGhl
 C $A295,h3
 . Install the fixed hostile-bullet model-space Z list in `ZLOC`.
 C $A298,h3
+. #R$FE36 = #REGhl
 N $A29B
 . Install the hostile-bullet model-space X/Z lists in `XLOC` and `ZLOC`.
 C $A29B,h3
+. #REGhl = #R$FEB8
 C $A2A3,h2
 C $A2A5,h2
 C $A2A7,h3
+. #R$88EA
 C $A2AA,h2
 C $A2AC,h2
 C $A2AE,h3
 C $A2B1,h2
 C $A2B3,h2
 C $A2B5,h3
+. #R$A2C2
 C $A2B8,h3
 C $A2BB,h2
 C $A2BD,h2
 C $A2BF,h3
+. #R$ADD4
 C $A2C2,h3
 N $A2C5
 . Install the hostile-bullet projected-output buffers in `XPERS` and `YPERS`, then the shared Y list in `YLOC`.
@@ -4343,18 +4489,26 @@ C $A2C5,h3
 C $A2C8,h3
 . Install the hostile-bullet projected Y output buffer end-pointer in `YPERS`.
 C $A2CB,h3
+. #R$FE3A = #REGhl
 C $A2CE,h3
 . Install the shared hostile-bullet Y list in `YLOC`.
 C $A2D1,h3
+. #R$FE34 = #REGhl
 C $A2D5,h3
+. #R$8660
 C $A2DA,h3
+. #REGa = #R$FE6E
 C $A2DD,h3
+. #R$A2ED
 C $A2E0,h2
 . Clear the hostile-bullet visible bit.
 C $A2E2,h3
+. #R$FE6E = #REGa
 C $A2E5,h2
 C $A2E7,h3
+. #R$9538
 C $A2EA,h3
+. #R$A37B
 C $A2ED,h2
 . Set the hostile-bullet visible bit.
 C $A2EF,h3
@@ -4422,19 +4576,26 @@ C $A381,h2
 N $A383
 . Seed the selected obstacle/object X/Z pair into `SelectedObstacleX` / `SelectedObstacleZ`.
 C $A383,h3
+. #R$FEEA = #REGhl
 C $A386,h3
 . Probable OB3VU / pyramid line-data family.
 C $A389,h2
 C $A38B,h3
 C $A38F,h3
+. #R$A3AF
 C $A392,h3
 C $A395,h2
 C $A397,h2
 C $A399,h3
+. #R$A3AF
 C $A39C,h3
+. #REGhl = #R$FE98
 C $A39F,h3
+. #R$FEE8 = #REGhl
 C $A3A2,h4
+. #REGde = #R$FE9A
 C $A3A6,h3
+. #R$FEEA = #REGhl
 C $A3AA,h2
 . Cube-family low-bit selector.
 C $A3AC,h3
@@ -4443,26 +4604,36 @@ C $A3AC,h3
 . `OB1VU_View2` / `OB2VU_View2`).
 C $A3AF,h3
 C $A3B3,h3
+. #R$A3D0
 C $A3B6,h3
 C $A3B9,h2
 C $A3BB,h2
 C $A3BD,h3
+. #R$A3D0
 C $A3C0,h3
+. #REGhl = #R$FE9C
 C $A3C3,h3
+. #R$FEE8 = #REGhl
 C $A3C6,h4
+. #REGde = #R$FE9E
 C $A3CB,h2
 . Cube-family low-bit selector.
 C $A3CD,h3
 . Same cube-family line-data base and view-slot scheme.
 C $A3D0,h3
 C $A3D4,h3
+. #R$A3F1
 C $A3D7,h3
 C $A3DA,h2
 C $A3DC,h2
 C $A3DE,h3
+. #R$A3F1
 C $A3E1,h3
+. #REGhl = #R$FEA0
 C $A3E4,h3
+. #R$FEE8 = #REGhl
 C $A3E7,h4
+. #REGde = #R$FEA2
 C $A3EB,h2
 . Pyramid-family low-bit selector.
 C $A3EE,h3
@@ -4470,106 +4641,159 @@ C $A3EE,h3
 . (`OB3VU_View0`, `OB3VU_View1`, `OB3VU_View2`).
 C $A3F1,h3
 C $A3F5,h3
+. #R$A411
 C $A3F8,h3
 C $A3FB,h2
 C $A3FD,h2
 C $A3FF,h3
+. #R$A411
 C $A402,h3
+. #REGhl = #R$FEA4
 C $A405,h3
+. #R$FEE8 = #REGhl
 C $A408,h4
+. #REGde = #R$FEA6
 C $A40C,h2
 . Low-block-family low-bit selector.
 C $A40E,h3
 . `OB4VU` / low-block line-data family base
 . (`OB4VU_View0`, `OB4VU_View1`, `OB4VU_View2`).
 C $A411,h3
+. #R$FE02 = #REGhl
 C $A414,h3
+. #REGhl = #R$84D0
 C $A417,h3
+. #R$FE20 = #REGhl
 C $A41B,h3
+. #R$FE22 = #REGhl
 C $A420,h3
+. #R$A5AE
 C $A423,h3
 . Rotate/project the selected obstacle/object, update the low-bit selector in `PRSTA`,
 . and split into hidden vs visible paths.
 C $A426,h4
+. #R$FEEA = #REGde
 C $A42A,h3
+. #R$FE4A = #REGhl
 C $A42D,h4
+. #R$FE4C = #REGde
 C $A431,h3
+. #REGa = #R$FE6A
 C $A434,h2
 . Replace the current obstacle/object low-bit selector in `PRSTA`.
 C $A437,h3
+. #R$FE6A = #REGa
 C $A43A,h3
 C $A43F,h3
+. #R$A463
 C $A442,h3
+. #REGhl = #R$FEA8
 C $A44A,h3
+. #R$A458
 C $A44D,h2
 C $A44F,h3
+. #R$A47C
 C $A452,h3
 C $A455,h3
+. #R$A47C
 C $A458,h2
 C $A45A,h3
+. #R$A47C
 C $A45D,h3
 C $A460,h3
+. #R$A47C
 C $A463,h3
+. #REGhl = #R$FEA8
 C $A46B,h3
+. #R$A474
 C $A46E,h3
 C $A471,h3
+. #R$A47C
 C $A474,h2
 C $A476,h3
+. #R$A47C
 C $A479,h3
 C $A47C,h3
+. #REGhl = #R$FEA8
 C $A481,h2
 C $A484,h3
+. #R$FEA8 = #REGhl
 C $A487,h3
 . Install the obstacle/object X-rotation coefficient table in `XTAB`.
 C $A48A,h3
+. #R$FE42 = #REGhl
 C $A48D,h3
 . Install the obstacle/object Z-rotation coefficient table in `ZTAB`.
 C $A490,h3
+. #R$FE46 = #REGhl
 C $A493,h3
 . Install the fixed obstacle/object model-space X list in `XLOC`.
 C $A496,h3
+. #R$FE32 = #REGhl
 C $A499,h3
 . Install the fixed obstacle/object model-space Z list in `ZLOC`.
 C $A49C,h3
+. #R$FE36 = #REGhl
 C $A49F,h3
+. #REGhl = #R$FEA8
 C $A4A6,h2
 C $A4A8,h3
+. #R$88EA
 C $A4AB,h3
 . Install the shared obstacle/object Y list in `YLOC`.
 C $A4AE,h3
+. #R$FE34 = #REGhl
 C $A4B1,h3
 . Install the obstacle/object projected X output buffer end-pointer in `XPERS`.
 C $A4B4,h3
+. #R$FE38 = #REGhl
 C $A4B7,h3
 . Install the obstacle/object projected Y output buffer end-pointer in `YPERS`.
 C $A4BA,h3
+. #R$FE3A = #REGhl
 C $A4BD,h2
 C $A4BF,h3
+. #R$8660
 C $A4C4,h3
+. #REGa = #R$FE6E
 C $A4C7,h3
+. #R$A4E1
 C $A4CA,h2
 . Clear the obstacle/object low-bit selector in PRSTA.
 C $A4CC,h3
 . Hidden path: clear the visible low bits, restore neutral limits, and return to the SCREEN phase.
 C $A4CF,h3
+. #REGhl = #R$84D0
 C $A4D2,h3
+. #R$FE20 = #REGhl
 C $A4D6,h3
+. #R$FE22 = #REGhl
 C $A4D9,h2
 C $A4DB,h3
+. #R$9538
 C $A4DE,h3
+. #R$A5AE
 C $A4E1,h2
 . Visible path: copy the active obstacle/object selector into `PRSTA`, seed the visible
 . limits from `PERSP`, apply the hill-edge stop hack if needed, then choose the current view.
 C $A4E4,h3
+. #REGa = #R$FE6A
 C $A4E7,h2
 . Copy the active obstacle/object low-bit selector into PRSTA.
 C $A4EA,h3
+. #R$FE6E = #REGa
 C $A4ED,h3
+. #REGhl = #R$FE3C
 C $A4F0,h3
+. #R$FE20 = #REGhl
 C $A4F3,h3
+. #REGhl = #R$FE3E
 C $A4F6,h3
+. #R$FE22 = #REGhl
 C $A4FB,h3
+. #R$A576
 C $A500,h3
+. #R$A526
 C $A503,h3
 C $A506,h4
 C $A50F,h3
@@ -4578,6 +4802,7 @@ C $A516,h3
 . Reload the projected X buffer from `XPERS` while choosing the visible obstacle/object view.
 C $A520,h3
 C $A523,h3
+. #R$A576
 C $A526,h3
 C $A529,h4
 C $A532,h3
@@ -4589,34 +4814,46 @@ C $A547,h4
 C $A550,h3
 C $A553,h3
 C $A556,h3
+. #REGhl = #R$FE20
 C $A55B,h2
 C $A55D,h3
+. #R$A571
 C $A560,h3
+. #REGhl = #R$FE22
 C $A566,h3
+. #R$A576
 C $A569,h3
 . Probable left-edge hill-stop hack in the off-screen
 C $A56C,2
 . playfield buffer.
 C $A56E,h3
+. #R$A576
 C $A571,h3
 . Probable matching right-edge hill-stop hack.
 C $A576,h3
 . Choose the current obstacle/object visible-line view by projected X ordering, then draw.
 C $A579,h4
 C $A57F,h3
+. #R$A596
 C $A582,h3
 . XPERS+$06
 C $A587,h3
+. #R$A590
 C $A58A,h3
 C $A58D,h3
+. #R$A59C
 C $A590,h3
 C $A593,h3
+. #R$A59C
 C $A596,h3
 C $A599,h3
 C $A59C,h4
+. #REGbc = #R$FE02
 C $A5A1,h3
+. #R$FE02 = #REGhl
 C $A5A5,h2
 C $A5A7,h3
+. #R$805C
 C $A5AA,h2
 C $A5AC,h2
 N $A5AE
@@ -4630,23 +4867,36 @@ N $A5AE
 . - #R$8F53: probable SHLPT
 . - #R$8C3C: SDRAW / present-and-clear
 C $A5AE,h3
+. #R$8D68
 C $A5B1,h3
+. #R$8E08
 C $A5B4,h3
+. #R$8E38
 C $A5B7,h3
+. #R$8F53
 C $A5BB,h2
 C $A5BD,h3
+. #REGa = #R$FE6C
 C $A5C1,h3
+. #R$AA5D
 C $A5C4,h3
 . Clear the temporary edge-stop hack bit.
 C $A5C9,h3
 . Clear the matching right-edge stop bit.
 C $A5CE,h3
+. #R$8C3C
 C $A5D1,h3
+. #REGhl = #R$84D0
 C $A5D4,h3
+. #R$FE1C = #REGhl
 C $A5D8,h3
+. #R$FE1E = #REGhl
 C $A5DB,h3
+. #REGa = #R$FE58
 C $A5DF,h3
+. #R$A625
 C $A5E3,h3
+. #R$FE58 = #REGa
 C $A5E6,h3
 C $A5E9,h2
 C $A5EB,h2
@@ -4664,6 +4914,7 @@ C $A616,h2
 C $A618,h2
 C $A620,h2
 C $A622,h3
+. #R$A64D
 C $A625,h3
 C $A628,h2
 C $A62D,h2
@@ -4692,8 +4943,11 @@ C $A673,h2
 C $A675,h2
 C $A677,h2
 C $A679,h3
+. #REGa = #R$FEEC
 C $A67D,h3
+. #R$A685
 C $A681,h3
+. #R$A692
 N $A685
 . KEYIN / KBORD INTERPRETATION
 .
@@ -6020,7 +6274,9 @@ D $B0BC
 @ $B0BC label=StartGameTransition
 c $B0BC StartGameTransition
 C $B0BC,h3
+. #R$B0EF
 C $B0BF,h3
+. #REGhl = #R$4000
 C $B0C2,h3
 C $B0C5,h3
 C $B0CA,h2
@@ -6032,18 +6288,23 @@ C $B0D2,h2
 . Full-length `BC=0` self-copy delay inside the same transition.
 . About 393.21 ms at 3.5 MHz.
 C $B0D4,h3
+. #R$FEEC = #REGa
 C $B0D7,h3
 . Patch `NUMBA` to the temporary start-transition heading slot at `$4099` in
 . the top status strip.
 C $B0DA,h3
 C $B0DD,h3
+. #REGhl = #R$F700
 C $B0E0,h3
+. #R$FE76 = #REGhl
 C $B0E3,h3
+. #R$94EC
 . Print the stored heading/score value in that temporary top-status slot.
 C $B0E6,h3
 . Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
 C $B0E9,h3
 C $B0EC,h3
+. #R$956A
 D $B0EF
 . Current best read: start-game `1812` theme player.
 . Evidence:
@@ -6064,10 +6325,13 @@ D $B0EF
 @ $B0EF label=PlayStartTheme
 c $B0EF PlayStartTheme
 C $B0EF,h4
+. #R$FE00 = #REGsp
 C $B0F3,h3
+. #REGsp = #R$CA94
 . Current best read: `StartThemeData`.
 C $B0F6,h2
 C $B0F8,h3
+. #R$FE4E = #REGa
 C $B103,h2
 C $B106,h2
 C $B108,h4
@@ -6082,7 +6346,9 @@ C $B11E,h2
 C $B120,h2
 C $B126,h2
 C $B12A,h2
+. #R$B135
 C $B135,h3
+. #REGa = #R$FE4E
 C $B138,h3
 C $B13B,h3
 C $B13E,h3
@@ -6090,8 +6356,11 @@ C $B141,h2
 . Calibrated inter-phrase delay (`HL=DE=0`, `BC=0x09C4`) inside the `1812` start-theme player.
 . About 15.00 ms at 3.5 MHz.
 C $B144,h3
+. #R$B0F8
 C $B147,h4
+. #REGsp = #R$FE00
 C $B14C,h3
+. #REGhl = #R$4000
 C $B14F,h3
 C $B152,h3
 C $B155,h2
@@ -6125,6 +6394,7 @@ C $B19E,h1
 C $B1A3,h2
 C $B1A5,h3
 C $B1A8,h3
+. #REGhl = #R$F700
 C $B1B5,h2
 C $B1B7,h2
 C $B1BB,h2
@@ -6133,7 +6403,9 @@ C $B1BD,h2
 . later `TODAYS GREATEST` display body.
 C $B1C0,h3
 C $B1C3,h4
+. #R$FE76 = #REGde
 C $B1C8,h3
+. #R$94EC
 C $B1CF,h2
 C $B1D1,h3
 . Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
@@ -6151,8 +6423,10 @@ C $B1E7,h2
 C $B1EB,2
 . `S` pressed?
 C $B1ED,h3
+. #R$B0BC
 . Start game.
 C $B1F1,h3
+. #R$B1D9
 c $B1F4 AttractModeTitleSequence
 D $B1F4
 . Used by the primary entrypoint, gameplay abort/back-to-title paths, and the instructions loop.
@@ -6183,8 +6457,10 @@ C $B204,5,h3,1,h1
 C $B209,h3
 . Call #R$8000.
 C $B20C,13,h11,2
+. #REGhl = #R$4000
 . Write `0x00` to the full 6144-byte visible bitmap (`0x4000..0x57FF`).
 C $B219,13,h11,2
+. #REGhl = #R$5800
 . Write `0x44` to the full 768-byte attribute buffer
 . (`0x5800..0x5AFF`) = bright green ink on black paper, no flash.
 C $B226,13,h11,2
@@ -6215,19 +6491,30 @@ C $B253,h6
 . Point #R$FE46 at `$CA5E`, the common zero-axis companion table used by the
 . attract-mode X-axis rotation hack.
 C $B259,h3
+. #REGa = #R$FE62
 C $B25C,h2
 C $B25E,h3
+. #R$FE62 = #REGa
 C $B261,h3
+. #REGhl = #R$FE60
 C $B264,h3
+. #REGde = #R$FE0C
 C $B268,h3
+. #R$FE60 = #REGhl
 C $B26B,h3
+. #REGhl = #R$FE5E
 C $B26E,h3
+. #R$FE4A = #REGhl
 C $B271,h3
+. #REGhl = #R$FE60
 C $B274,h3
+. #R$FE4C = #REGhl
 C $B277,h3
 C $B27A,h3
+. #R$FE32 = #REGhl
 C $B27D,h3
 C $B280,h3
+. #R$FE36 = #REGhl
 C $B284,h2
 . Probable attract-mode X-axis rotation hack for the QS
 . logo: rotate a Y/Z-like pair via #R$88EA, then feed the
@@ -6235,14 +6522,20 @@ C $B284,h2
 C $B286,h3
 . Call #R$88EA.
 C $B289,h3
+. #REGhl = #R$FE32
 C $B28C,h3
+. #R$FE34 = #REGhl
 C $B28F,h3
+. #REGhl = #R$C9F2
 . Current best read: `QS_FixedXTable`.
 C $B292,h3
+. #R$FE32 = #REGhl
 C $B295,h3
 C $B298,h3
+. #R$FE38 = #REGhl
 C $B29B,h3
 C $B29E,h3
+. #R$FE3A = #REGhl
 C $B2A1,h2
 . Project 22 points through `PERSP`.
 C $B2A3,h3
@@ -6253,15 +6546,23 @@ C $B2A8,h2
 C $B2AA,h2
 . `S` pressed?
 C $B2AC,h3
+. #R$B0BC
 . Start game from the intro/title animation loop.
 C $B2AF,h3
+. #REGhl = #R$C91A
 . Current best read: `QS_LineData`.
 C $B2B2,h3
+. #R$FE02 = #REGhl
 C $B2B5,h3
+. #R$805C
 C $B2B8,h3
+. #R$8C3C
 C $B2BB,h3
+. #REGa = #R$FE68
 C $B2BF,h3
+. #R$FE68 = #REGa
 C $B2C2,h3
+. #R$B24D
 C $B2C5,h2
 C $B2C7,h3
 C $B2CD,h1
@@ -6274,7 +6575,9 @@ N $B2D5
 . paired with the reverse pass at `0xB2F5`.
 @ $B2D5 label=AttractModeTitleFlashForward
 C $B2D5,h3
+. #REGhl = #R$5800
 C $B2DB,h3
+. #R$B2F5
 C $B2DE,h3
 C $B2E1,h3
 C $B2E4,h2
@@ -6287,6 +6590,7 @@ C $B2E9,h2
 C $B2ED,2
 . `S` pressed?
 C $B2EF,h3
+. #R$B0BC
 . Start game.
 C $B2F2,h3
 . Jump to #R$B2D5.
@@ -6297,6 +6601,7 @@ N $B2F5
 . restore, and pre-separation prelude.
 @ $B2F5 label=AttractModeTitleFlashReverse
 C $B2F6,h3
+. #REGhl = #R$5800
 C $B2FC,h3
 C $B2FF,h3
 C $B302,h3
@@ -6304,8 +6609,11 @@ C $B305,h2
 . Repeat the same full-buffer attribute flood while stepping the `0x5800` seed
 . value back down through the reverse half of the colour cycle.
 C $B307,h3
+. #R$B2F6
 C $B30C,h3
+. #R$B2D5
 C $B30F,h3
+. #REGhl = #R$5800
 C $B312,h3
 C $B315,h2
 C $B31A,h2
@@ -6328,7 +6636,9 @@ C $B33D,h2
 . Calibrated delay (`HL=DE=0`, `BC=0x4E20`) in the title-separation prelude.
 . About 120.00 ms at 3.5 MHz.
 C $B340,h3
+. #R$B31E
 C $B343,h3
+. #R$B3FB
 N $B346
 . Current best read: attract-mode stage B helper, drawing the split
 . `BATTLE` / `ZONE` title words with the same X-axis tumble hack used for `QS`.
@@ -6340,89 +6650,132 @@ N $B346
 . LIST#
 @ $B346 label=AttractModeDrawBattleAndZone
 C $B346,h3
+. #REGhl = #R$C7B0
 . Current best read: `BATTLE_RotatingYZTable`.
 C $B349,h3
+. #R$FE42 = #REGhl
 C $B34C,h3
+. #REGhl = #R$CA5E
 . Current best read: `Attract_ZeroAxisCompanionTable`.
 C $B34F,h3
+. #R$FE46 = #REGhl
 C $B352,h3
+. #REGhl = #R$FE5E
 . First title word X offset.
 C $B355,h3
+. #R$FE4A = #REGhl
 C $B358,h3
+. #REGhl = #R$FE60
 . First title word Z offset.
 C $B35B,h3
+. #R$FE4C = #REGhl
 C $B35E,h3
 C $B361,h3
+. #R$FE32 = #REGhl
 C $B364,h3
 C $B367,h3
+. #R$FE36 = #REGhl
 C $B36A,h3
+. #REGa = #R$FE62
 . First title word angle.
 C $B36E,h2
 . Probable attract-mode X-axis rotation hack, part 1:
 . feed a non-standard coordinate pair through the normal
 . X/Z rotator at #R$88EA to obtain a rotated Y/Z pair.
 C $B370,h3
+. #R$88EA
 C $B373,h3
+. #REGhl = #R$FE32
 . Take the freshly rotated first output table
 C $B376,h3
 . and reuse it as the Y-input table for #R$8660.
 C $B379,h3
+. #REGhl = #R$C814
 . Swap in `BATTLE_FixedXTable` before
 . perspective projection.
 C $B37C,h3
+. #R$FE32 = #REGhl
 C $B37F,h3
 C $B382,h3
+. #R$FE38 = #REGhl
 C $B385,h3
 C $B388,h3
+. #R$FE3A = #REGhl
 C $B38B,h2
 C $B38D,h3
+. #R$8660
 C $B393,h3
+. #REGhl = #R$C602
 . First line-data block in the paired title-word family;
 . current best read: the wider `BATTLE` piece.
 C $B396,h3
+. #R$FE02 = #REGhl
 C $B399,h3
+. #R$805C
 C $B39C,h3
+. #REGhl = #R$C7E4
 . Current best read: `ZONE_RotatingYZTable`.
 C $B39F,h3
+. #R$FE42 = #REGhl
 C $B3A2,h3
+. #REGhl = #R$CA5E
 . Current best read: `Attract_ZeroAxisCompanionTable`.
 C $B3A5,h3
+. #R$FE46 = #REGhl
 C $B3A8,h3
+. #REGhl = #R$FE8E
 . Second title word X offset.
 C $B3AB,h3
+. #R$FE4A = #REGhl
 C $B3AE,h3
+. #REGhl = #R$FE90
 . Second title word Z offset.
 C $B3B1,h3
+. #R$FE4C = #REGhl
 C $B3B4,h3
 C $B3B7,h3
+. #R$FE32 = #REGhl
 C $B3BA,h3
 C $B3BD,h3
+. #R$FE36 = #REGhl
 C $B3C0,h3
+. #REGa = #R$FE92
 . Second title word angle.
 C $B3C4,h2
 . Same probable attract-mode Y/Z-rotation hack for the
 . second title/logo piece.
 C $B3C6,h3
+. #R$88EA
 C $B3C9,h3
+. #REGhl = #R$FE32
 C $B3CC,h3
+. #R$FE34 = #REGhl
 C $B3CF,h3
+. #REGhl = #R$C848
 . Swap in `ZONE_FixedXTable`.
 C $B3D2,h3
+. #R$FE32 = #REGhl
 C $B3D5,h3
 C $B3D8,h3
+. #R$FE38 = #REGhl
 C $B3DB,h3
 C $B3DE,h3
+. #R$FE3A = #REGhl
 C $B3E1,h2
 C $B3E3,h3
+. #R$8660
 C $B3E9,h3
+. #R$805C
 . `LNLPT` advances FE02, so this second draw likely uses
 . `ZONE_LineData`; current best read: the
 . narrower `ZONE` piece.
 C $B3EC,h3
+. #R$8C3C
 C $B3EF,h2
 C $B3F1,h2
 C $B3F3,h2
 C $B3F8,h3
+. #R$B0BC
 N $B3FB
 . Current best read: post-title separation / zoom-away phase.
 .
@@ -6431,13 +6784,19 @@ N $B3FB
 @ $B3FB label=AttractModeTitleSeparationAndFlyoff
 C $B3FB,h3
 C $B3FE,h3
+. #R$FE8E = #REGhl
 C $B401,h3
+. #R$FE5E = #REGhl
 C $B405,h3
+. #R$FE62 = #REGa
 C $B408,h2
 C $B40A,h3
+. #R$FE92 = #REGa
 C $B40D,h3
 C $B410,h3
+. #R$FE60 = #REGhl
 C $B413,h3
+. #R$FE90 = #REGhl
 C $B416,h2
 N $B418
 . Current best read: first post-title motion pass.
@@ -6447,16 +6806,24 @@ N $B418
 . `AttractModeDrawBattleAndZone`.
 @ $B418 label=AttractModeTitleJointMotionPass
 C $B418,h3
+. #REGa = #R$FE62
 C $B41B,h2
 C $B41D,h3
+. #R$FE62 = #REGa
 C $B420,h2
 C $B422,h3
+. #R$FE92 = #REGa
 C $B425,h3
+. #REGhl = #R$FE60
 C $B428,h3
 C $B42C,h3
+. #R$FE60 = #REGhl
 C $B42F,h3
+. #R$FE90 = #REGhl
 C $B433,h3
+. #R$B346
 C $B437,h2
+. #R$B418
 C $B439,h2
 N $B43B
 . Current best read: short hold/settle pass.
@@ -6464,12 +6831,17 @@ N $B43B
 . offset is held steady.
 @ $B43B label=AttractModeTitleHoldPass
 C $B43B,h3
+. #REGa = #R$FE62
 C $B43E,h2
 C $B440,h3
+. #R$FE62 = #REGa
 C $B443,h2
 C $B445,h3
+. #R$FE92 = #REGa
 C $B449,h3
+. #R$B346
 C $B44D,h2
+. #R$B43B
 C $B44F,h2
 N $B451
 . Current best read: title separation pass.
@@ -6477,17 +6849,27 @@ N $B451
 . `FE8E -= 4`, while both tumble angles continue to advance.
 @ $B451 label=AttractModeTitleSeparationPass
 C $B451,h3
+. #REGa = #R$FE62
 C $B454,h2
 C $B456,h3
+. #R$FE62 = #REGa
 C $B459,h3
+. #REGa = #R$FE92
 C $B45C,h2
 C $B45E,h3
+. #R$FE92 = #REGa
 C $B461,h3
+. #REGhl = #R$FE5E
 C $B466,h3
+. #R$FE5E = #REGhl
 C $B469,h3
+. #REGhl = #R$FE8E
 C $B470,h3
+. #R$FE8E = #REGhl
 C $B474,h3
+. #R$B346
 C $B478,h2
+. #R$B451
 C $B47A,h3
 C $B483,h2
 . First full-length `BC=0` delay before the footer/credits stage.
@@ -6501,6 +6883,7 @@ C $B487,h2
 . Third full-length `BC=0` delay in the same pause block.
 . About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
 C $B489,h3
+. #R$B4B2
 N $B48C
 . Current best read: attract-mode credits/footer text stage.
 .
@@ -6509,6 +6892,7 @@ N $B48C
 @ $B48C label=AttractModeCreditsFooter
 C $B48C,h2
 C $B48E,h3
+. #REGhl = #R$C5DA
 . Current best read: `AttractModeCreditsFooterText`, i.e. the lower-screen
 . `BY BILL WITTS / QUICKSILVA` footer.
 C $B495,h1
@@ -6520,13 +6904,18 @@ C $B49A,h3
 . credits text.
 C $B49D,h2
 C $B49F,h3
+. #R$948C
 C $B4A2,h2
 C $B4A4,h3
+. #R$948C
 C $B4A7,h2
 C $B4A9,h3
+. #R$948C
 C $B4AC,h2
 C $B4AE,h3
+. #R$948C
 C $B4B2,h3
+. #R$B48C
 C $B4B5,h3
 C $B4B8,h3
 C $B4BB,h3
@@ -6540,6 +6929,7 @@ C $B4C2,h2
 . Third full-length `BC=0` delay in the same block.
 . About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
 C $B4C4,h3
+. #REGhl = #R$4000
 C $B4C7,h3
 C $B4CA,h3
 C $B4CD,h2
@@ -6555,20 +6945,32 @@ N $B4D1
 . setup and entity-demo pages.
 @ $B4D1 label=AttractModeTitleFlyoffWithFooter
 C $B4D1,h3
+. #REGhl = #R$FE60
 C $B4D4,h3
 C $B4D8,h3
+. #R$FE60 = #REGhl
 C $B4DB,h3
+. #REGhl = #R$FE90
 C $B4DF,h3
+. #R$FE90 = #REGhl
 C $B4E2,h3
+. #REGa = #R$FE62
 C $B4E5,h2
 C $B4E7,h3
+. #R$FE62 = #REGa
 C $B4EA,h3
+. #REGa = #R$FE92
 C $B4ED,h2
 C $B4EF,h3
+. #R$FE92 = #REGa
 C $B4F3,h3
+. #R$B346
 C $B4F6,h3
+. #R$B48C
 C $B4FA,h2
+. #R$B4D1
 C $B4FC,h3
+. #REGhl = #R$4000
 C $B4FF,h3
 C $B502,h3
 C $B505,h2
@@ -6577,24 +6979,30 @@ C $B507,h2
 . flyoff completes.
 C $B509,h2
 C $B50B,h3
+. #R$FEEC = #REGa
 C $B50E,h2
 . Probable self-modifying attract-mode hack:
 C $B510,h3
+. #R$8C3C = #REGa
 . patch SDRAW temporarily,
 C $B514,h3
 . and patch the `LD (HL),$43` immediate at `0x960C` down to `0x00`,
 . so the showcase reinitialiser makes the top five attribute rows black on
 . black instead of bright magenta on black.
 C $B517,h3
+. #R$956A
 C $B51A,h2
 . Restore the patched bytes after the forced demo setup.
 C $B51C,h3
+. #R$8C3C = #REGa
 C $B51F,h3
+. #R$8C5E
 C $B522,h2
 C $B524,h3
 . Restore the `0x960C` immediate to `0x43`
 . = bright magenta ink on black paper for the normal top status strip.
 C $B527,h3
+. #REGhl = #R$4000
 C $B52A,h3
 C $B52D,h3
 C $B530,h2
@@ -6615,15 +7023,21 @@ C $B53E,h2
 . Fill the remaining nineteen attribute rows (`0x58A0..0x5AFF`) with `0x44`
 . = bright green ink on black paper, no flash.
 C $B540,h3
+. #R$8C3C
 C $B543,h3
 C $B546,h3
+. #R$FE5E = #REGhl
 C $B549,h3
 C $B54C,h3
+. #R$FE60 = #REGhl
 C $B54F,h3
 C $B552,h3
+. #R$FE62 = #REGhl
 C $B555,h2
 C $B557,h3
+. #R$FE66 = #REGa
 C $B55A,h3
+. #R$B587
 c $B55D AttractModeShowcaseFrame
 D $B55D
 . Used by the routine at #R$B587.
@@ -6667,6 +7081,7 @@ D $B587
 @ $B587 label=AttractModeEntityShowcase
 C $B587,h3
 C $B58A,h3
+. #R$FE62 = #REGhl
 N $B58D
 . Current best read: tank showcase loop.
 . Evidence:
@@ -6678,26 +7093,36 @@ N $B58D
 @ $B58D label=AttractModeShowcaseTank
 C $B58D,h3
 C $B590,h3
+. #R$FE76 = #REGhl
 C $B593,h3
+. #R$B55D
 C $B596,h2
 . Read the `A S D F G` keyboard row.
 C $B598,h2
 C $B59A,h2
 . `S` pressed?
 C $B59C,h3
+. #R$B0BC
 . Start game from the attract loop.
 C $B59F,h3
+. #REGa = #R$FE6E
 C $B5A2,h2
 C $B5A4,h3
+. #R$B587
 C $B5A7,h3
 C $B5AB,h3
+. #R$B587
 C $B5AE,h3
 C $B5B1,h3
+. #R$FE5E = #REGhl
 C $B5B4,h3
 C $B5B7,h3
+. #R$FE60 = #REGhl
 C $B5BA,h2
 C $B5BC,h3
+. #R$FE66 = #REGa
 C $B5BF,h3
+. #R$FE6A = #REGa
 N $B5C2
 . Current best read: supertank showcase loop.
 . Evidence:
@@ -6708,31 +7133,43 @@ N $B5C2
 @ $B5C2 label=AttractModeShowcaseSupertank
 C $B5C2,h3
 C $B5C5,h3
+. #R$FE62 = #REGhl
 C $B5C8,h3
 C $B5CB,h3
+. #R$FE76 = #REGhl
 C $B5CE,h3
+. #R$B55D
 C $B5D1,h2
 . Read the `A S D F G` keyboard row.
 C $B5D3,h2
 C $B5D5,h2
 . `S` pressed?
 C $B5D7,h3
+. #R$B0BC
 . Start game from the attract loop.
 C $B5DA,h3
+. #REGa = #R$FE6E
 C $B5DD,h2
 C $B5DF,h3
+. #R$B5C2
 C $B5E2,h3
 C $B5E6,h3
+. #R$B5C2
 C $B5E9,h2
 C $B5EB,h3
+. #R$FE94 = #REGa
 C $B5EE,h3
 C $B5F1,h3
+. #R$FE96 = #REGhl
 C $B5F4,h2
 C $B5F6,h3
+. #R$FE6A = #REGa
 C $B5F9,h3
 C $B5FC,h3
+. #R$FE60 = #REGhl
 C $B5FF,h3
 C $B602,h3
+. #R$FE8E = #REGhl
 N $B605
 . Current best read: saucer showcase loop.
 . Evidence:
@@ -6744,25 +7181,35 @@ N $B605
 @ $B605 label=AttractModeShowcaseSaucer
 C $B605,h3
 C $B608,h3
+. #R$FE62 = #REGhl
 C $B60B,h3
 C $B60E,h3
+. #R$FE76 = #REGhl
 C $B611,h3
+. #R$B55D
 C $B614,h2
 . Read the `A S D F G` keyboard row.
 C $B616,h2
 C $B618,h2
 . `S` pressed?
 C $B61A,h3
+. #R$B0BC
 . Start game from the attract loop.
 C $B61D,h3
+. #REGa = #R$FE6E
 C $B620,h2
 C $B622,h3
+. #R$B605
 C $B625,h3
 C $B629,h3
+. #R$B605
 C $B62C,h2
 C $B62E,h3
+. #R$FE78 = #REGa
 C $B631,h3
+. #REGhl = #R$7530
 C $B634,h3
+. #R$FE70 = #REGhl
 N $B637
 . Current best read: missile showcase loop.
 . Evidence:
@@ -6774,18 +7221,23 @@ N $B637
 @ $B637 label=AttractModeShowcaseMissile
 C $B637,h3
 C $B63A,h3
+. #R$FE76 = #REGhl
 C $B63D,h3
+. #R$B55D
 C $B640,h2
 . Read the `A S D F G` keyboard row.
 C $B642,h2
 C $B644,h2
 . `S` pressed?
 C $B646,h3
+. #R$B0BC
 . Start game from the attract loop.
 C $B649,h3
 C $B64C,h2
 C $B64E,h3
+. #R$B637
 C $B651,h3
+. #REGhl = #R$4000
 C $B654,h3
 C $B657,h3
 C $B65A,h2
@@ -6824,6 +7276,7 @@ C $B672,1
 . Increment the string pointer by one to point to the next
 . character.
 C $B673,h2
+. #R$B66C
 . Decrease the character counter by one and loop back to
 . #R$B66C until all characters have been printed.
 C $B675,1
@@ -6852,6 +7305,7 @@ C $B687,h2
 C $B689,b2
 . Keep only bit 1.
 C $B68B,h3
+. #R$B0BC
 C $B68F,h3
 C $B692,h3
 C $B695,h3
@@ -6859,7 +7313,9 @@ C $B698,h2
 . Full-length `BC=0` dwell delay after the first instructions page.
 . About 393.21 ms at 3.5 MHz.
 C $B69B,h2
+. #R$B685
 C $B69D,h3
+. #REGhl = #R$4000
 C $B6A0,h3
 C $B6A3,h3
 C $B6A6,h2
@@ -6882,6 +7338,7 @@ C $B6B9,h2
 C $B6BB,h2
 C $B6BD,h2
 C $B6BF,h3
+. #R$B0BC
 C $B6C3,h3
 C $B6C6,h3
 C $B6C9,h3
@@ -6889,6 +7346,7 @@ C $B6CC,h2
 . Full-length `BC=0` dwell delay after the second instructions page.
 . About 393.21 ms at 3.5 MHz.
 C $B6CF,h2
+. #R$B6B9
 C $B6D1,h3
 . #HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
 . back to *<a rel="noopener nofollow"
@@ -6896,16 +7354,21 @@ C $B6D1,h3
 . before returning to the title flow.)
 C $B6D4,h3
 C $B6D7,h3
+. #R$B1F4
 C $B6DA,h3
+. #R$FE76 = #REGhl
 C $B6DD,h3
 C $B6E0,h2
 C $B6E2,h2
 C $B6E4,h2
 C $B6E6,h3
+. #R$B0BC
 C $B6E9,h3
 C $B6EC,h2
 C $B6EE,h3
+. #R$B6D7
 C $B6F1,h3
+. #REGhl = #R$4000
 C $B6F4,h3
 C $B6F7,h3
 C $B6FA,h2
@@ -6923,6 +7386,7 @@ C $B703,h3
 . instructions/text phase.)
 C $B706,h3
 C $B709,h3
+. #R$B716
 C $B70F,h1
 C $B713,h2
 C $B716,h3
@@ -6935,6 +7399,7 @@ C $B725,h2
 C $B727,h2
 C $B729,h2
 C $B72B,h3
+. #R$B0BC
 C $B72F,h3
 C $B732,h3
 C $B735,h3
@@ -6942,7 +7407,9 @@ C $B738,h2
 . Full-length `BC=0` dwell delay in the later instructions/text phase.
 . About 393.21 ms at 3.5 MHz.
 C $B73B,h2
+. #R$B725
 C $B73D,h3
+. #REGhl = #R$4000
 C $B740,h3
 C $B743,h3
 C $B746,h2
@@ -6958,6 +7425,7 @@ C $B759,h2
 C $B75B,h2
 C $B75D,h2
 C $B75F,h3
+. #R$B0BC
 C $B763,h3
 C $B766,h3
 C $B769,h3
@@ -6965,6 +7433,7 @@ C $B76C,h2
 . Full-length `BC=0` dwell delay after the final instructions text.
 . About 393.21 ms at 3.5 MHz.
 C $B76F,h2
+. #R$B759
 C $B771,h6
 . #HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
 . to *<a rel="noopener nofollow"

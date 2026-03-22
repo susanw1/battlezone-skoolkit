@@ -5347,36 +5347,36 @@ u$954C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 @label=GameInitAndMainLoop
 c$956A LD HL,$0000   ;
  $956D LD ($FE6A),HL ; Clear `EXST1` / `EXST2`.
- $9570 LD ($FE6C),HL ;
- $9573 LD ($FE76),HL ;
- $9576 LD ($FE78),HL ;
- $9579 LD ($FE72),HL ;
- $957C LD ($FE7A),HL ;
- $957F LD ($FE68),HL ;
- $9582 LD ($FE54),HL ;
- $9585 LD ($FE50),HL ;
+ $9570 LD ($FE6C),HL ; #R$FE6C = #REGhl
+ $9573 LD ($FE76),HL ; #R$FE76 = #REGhl
+ $9576 LD ($FE78),HL ; #R$FE78 = #REGhl
+ $9579 LD ($FE72),HL ; #R$FE72 = #REGhl
+ $957C LD ($FE7A),HL ; #R$FE7A = #REGhl
+ $957F LD ($FE68),HL ; #R$FE68 = #REGhl
+ $9582 LD ($FE54),HL ; #R$FE54 = #REGhl
+ $9585 LD ($FE50),HL ; #R$FE50 = #REGhl
  $9588 LD ($FE6E),HL ; Clear `PRSTA` / render-state byte.
  $958B LD HL,$0003   ;
- $958E LD ($FEE4),HL ;
- $9591 LD HL,$4000   ;
- $9594 LD ($FE9A),HL ;
- $9597 LD ($FE9C),HL ;
+ $958E LD ($FEE4),HL ; #R$FEE4 = #REGhl
+ $9591 LD HL,$4000   ; #REGhl = #R$4000
+ $9594 LD ($FE9A),HL ; #R$FE9A = #REGhl
+ $9597 LD ($FE9C),HL ; #R$FE9C = #REGhl
  $959A LD HL,$C000   ;
- $959D LD ($FE9E),HL ;
- $95A0 LD ($FEA0),HL ;
+ $959D LD ($FE9E),HL ; #R$FE9E = #REGhl
+ $95A0 LD ($FEA0),HL ; #R$FEA0 = #REGhl
  $95A3 LD HL,$C000   ;
- $95A6 LD ($FEA2),HL ;
- $95A9 LD ($FEA4),HL ;
- $95AC LD HL,$4000   ;
- $95AF LD ($FEA6),HL ;
- $95B2 LD ($FE98),HL ;
- $95B5 CALL $8000    ;
- $95B8 LD HL,$6900   ;
- $95BB LD ($FE2C),HL ;
- $95BE LD HL,$6300   ;
- $95C1 LD ($FE52),HL ;
+ $95A6 LD ($FEA2),HL ; #R$FEA2 = #REGhl
+ $95A9 LD ($FEA4),HL ; #R$FEA4 = #REGhl
+ $95AC LD HL,$4000   ; #REGhl = #R$4000
+ $95AF LD ($FEA6),HL ; #R$FEA6 = #REGhl
+ $95B2 LD ($FE98),HL ; #R$FE98 = #REGhl
+ $95B5 CALL $8000    ; #R$8000
+ $95B8 LD HL,$6900   ; #REGhl = #R$6900
+ $95BB LD ($FE2C),HL ; #R$FE2C = #REGhl
+ $95BE LD HL,$6300   ; #REGhl = #R$6300
+ $95C1 LD ($FE52),HL ; #R$FE52 = #REGhl
  $95C4 LD HL,$0040   ;
- $95C7 LD ($FEA8),HL ;
+ $95C7 LD ($FEA8),HL ; #R$FEA8 = #REGhl
  $95CA LD A,$08      ;
  $95CC OUT ($FE),A   ;
  $95CE LD B,$27      ;
@@ -5416,7 +5416,7 @@ c$956A LD HL,$0000   ;
  $9600 LD (HL),A     ;
  $9601 DJNZ $95FF    ;
  $9603 LD BC,$00A0   ;
- $9606 LD HL,$5800   ;
+ $9606 LD HL,$5800   ; #REGhl = #R$5800
  $9609 LD DE,$5801   ;
  $960C LD (HL),$43   ; Seed the top five attribute rows (`0x5800..0x589F`) with `0x43`
                      ; = bright magenta ink on black paper, no flash.
@@ -5426,23 +5426,23 @@ c$956A LD HL,$0000   ;
                      ; `0x44` = bright green ink on black paper, no flash.
  $9614 LDIR          ;
  $9616 LD HL,$CE40   ;
- $9619 CALL $9452    ;
+ $9619 CALL $9452    ; #R$9452
  $961C LD HL,$CE5E   ;
- $961F CALL $9452    ;
+ $961F CALL $9452    ; #R$9452
  $9622 LD HL,$0025   ; Seed the initial extra-life threshold (`25` in packed BCD).
  $9625 LD ($FEE6),HL ; Store that threshold and prepare the zero-increment `SCOPR` redraw.
  $9628 LD B,$00      ;
- $962A CALL $94AC    ;
+ $962A CALL $94AC    ; #R$94AC
  $962D LD BC,$4014   ; Start drawing the initial life-strip glyph pairs at `$4014` in the top
                      ; status strip.
  $9630 LD A,$0A      ;
- $9632 CALL $948C    ;
+ $9632 CALL $948C    ; #R$948C
  $9635 LD A,$0B      ;
- $9637 CALL $948C    ;
+ $9637 CALL $948C    ; #R$948C
  $963A LD A,$0A      ;
- $963C CALL $948C    ;
+ $963C CALL $948C    ; #R$948C
  $963F LD A,$0B      ;
- $9641 CALL $948C    ;
+ $9641 CALL $948C    ; #R$948C
 ; TEXST
 ; This entry point is used by the routines at #R$977E and #R$AD3E.
 ; Shipped `TEXST` / tank-family existence-spawn dispatcher.
@@ -5457,30 +5457,30 @@ c$956A LD HL,$0000   ;
 ;   already present in `EXST1`
 ; - score 25+: choose among old tank, supertank, and missile
 @label=TEXST
-*$9644 LD A,($FE72)  ;
+*$9644 LD A,($FE72)  ; #REGa = #R$FE72
  $9647 INC A         ;
  $9648 CP $1A        ;
- $964A JP C,$964E    ;
+ $964A JP C,$964E    ; #R$964E
  $964D SUB A         ;
-*$964E LD ($FE72),A  ;
+*$964E LD ($FE72),A  ; #R$FE72 = #REGa
  $9651 LD HL,$0000   ;
- $9654 LD ($FE70),HL ;
- $9657 LD ($FE68),HL ;
- $965A LD A,($FE6A)  ;
+ $9654 LD ($FE70),HL ; #R$FE70 = #REGhl
+ $9657 LD ($FE68),HL ; #R$FE68 = #REGhl
+ $965A LD A,($FE6A)  ; #REGa = #R$FE6A
  $965D LD C,A        ;
  $965E LD A,R        ; Read `R` as a pseudo-random source for the tank-family vs missile spawn choice.
  $9660 AND $7F       ;
  $9662 LD B,A        ;
- $9663 LD HL,($FE76) ;
+ $9663 LD HL,($FE76) ; #REGhl = #R$FE76
  $9666 LD DE,$0005   ;
  $9669 AND A         ;
  $966A SBC HL,DE     ;
- $966C JP P,$96AE    ;
+ $966C JP P,$96AE    ; #R$96AE
  $966F LD A,$24      ;
  $9671 AND C         ;
  $9672 OR $80        ;
 ; Set the active tank-family bit in `EXST1`.
- $9674 LD ($FE6A),A  ;
+ $9674 LD ($FE6A),A  ; #R$FE6A = #REGa
  $9677 LD A,B        ;
  $9678 AND $3F       ;
  $967A OR $10        ;
@@ -5497,13 +5497,13 @@ c$956A LD HL,$0000   ;
  $968E NEG           ;
 *$9690 LD H,A        ;
 ; Store the freshly seeded tank-family X position in `TankX`.
- $9691 LD ($FE5E),HL ;
- $9694 CALL $938A    ;
+ $9691 LD ($FE5E),HL ; #R$FE5E = #REGhl
+ $9694 CALL $938A    ; #R$938A
  $9697 LD L,A        ;
  $9698 LD H,$00      ;
  $969A ADD HL,HL     ;
 ; Store the initial desired heading in `TankDesiredHeading`.
- $969B LD ($FE64),HL ;
+ $969B LD ($FE64),HL ; #R$FE64 = #REGhl
  $969E LD A,($FE5F)  ;
  $96A1 CPL           ;
  $96A2 AND $80       ;
@@ -5511,8 +5511,8 @@ c$956A LD HL,$0000   ;
  $96A5 LD H,A        ;
  $96A6 LD L,$00      ;
 ; Store the live tank-family orientation in `TankOrientation`.
- $96A8 LD ($FE62),HL ;
- $96AB JP $977E      ;
+ $96A8 LD ($FE62),HL ; #R$FE62 = #REGhl
+ $96AB JP $977E      ; #R$977E
 *$96AE LD DE,$0020   ;
  $96B1 AND A         ;
  $96B2 SBC HL,DE     ;
@@ -5522,27 +5522,27 @@ c$956A LD HL,$0000   ;
  $96BA JP Z,$96C8    ;
  $96BD LD A,B        ;
  $96BE CP $20        ;
- $96C0 JP NC,$972E   ;
+ $96C0 JP NC,$972E   ; #R$972E
  $96C3 LD D,$80      ;
- $96C5 JP $96E5      ;
+ $96C5 JP $96E5      ; #R$96E5
 *$96C8 LD A,B        ;
  $96C9 CP $20        ;
- $96CB JP C,$972E    ;
+ $96CB JP C,$972E    ; #R$972E
  $96CE LD D,$80      ;
- $96D0 JP $96E5      ;
+ $96D0 JP $96E5      ; #R$96E5
 *$96D3 LD A,B        ;
  $96D4 CP $30        ;
- $96D6 JP NC,$96DE   ;
+ $96D6 JP NC,$96DE   ; #R$96DE
  $96D9 LD D,$40      ;
- $96DB JP $96E5      ;
+ $96DB JP $96E5      ; #R$96E5
 *$96DE CP $60        ;
- $96E0 JP C,$972E    ;
+ $96E0 JP C,$972E    ; #R$972E
  $96E3 LD D,$80      ;
 *$96E5 LD A,$24      ;
  $96E7 AND C         ;
  $96E8 OR D          ;
 ; Replace the active major-entity bits in `EXST1` with the selected tank/supertank family.
- $96E9 LD ($FE6A),A  ;
+ $96E9 LD ($FE6A),A  ; #R$FE6A = #REGa
  $96EC LD A,R        ;
  $96EE AND $7F       ; Read `R` as a pseudo-random source for the signed tank X seed.
  $96F0 LD B,A        ;
@@ -5554,7 +5554,7 @@ c$956A LD HL,$0000   ;
  $96FB NEG           ;
 *$96FD LD H,A        ;
 ; Store the pseudo-random signed tank X seed in `TankX`.
- $96FE LD ($FE5E),HL ;
+ $96FE LD ($FE5E),HL ; #R$FE5E = #REGhl
  $9701 LD A,R        ; Read `R` as a pseudo-random source for the signed tank Z seed.
  $9703 AND $7F       ;
  $9705 LD B,A        ;
@@ -5567,20 +5567,20 @@ c$956A LD HL,$0000   ;
  $9712 NEG           ;
 *$9714 LD D,A        ;
 ; Store the pseudo-random signed tank Z seed in `TankZ`.
- $9715 LD ($FE60),DE ;
- $9719 CALL $938A    ;
+ $9715 LD ($FE60),DE ; #R$FE60 = #REGde
+ $9719 CALL $938A    ; #R$938A
  $971C LD L,A        ;
  $971D LD H,$00      ;
  $971F ADD HL,HL     ;
 ; Store the initial desired heading derived from `TankX` / `TankZ` in `TankDesiredHeading`.
- $9720 LD ($FE64),HL ;
- $9723 LD HL,($FE62) ;
+ $9720 LD ($FE64),HL ; #R$FE64 = #REGhl
+ $9723 LD HL,($FE62) ; #REGhl = #R$FE62
  $9726 LD A,R        ; Odd current-best read: perturb `L` from `R` just before the jump into the main
                      ; loop. No immediate stored consumer is obvious, so this remains unresolved.
  $9728 RLCA          ;
  $9729 ADD A,L       ;
  $972A LD L,A        ;
- $972B JP $977E      ;
+ $972B JP $977E      ; #R$977E
 ; MSET
 ; This entry point is used by the routine at #R$977E.
 ; Shipped `MSET` missile-setup branch reached from #R$9644.
@@ -5595,38 +5595,38 @@ c$956A LD HL,$0000   ;
 *$9739 LD H,A        ;
 ; Seed the missile X pair in the shared companion slot at `$DD0A` and in `MissileX`.
  $973A LD ($DD0A),HL ;
- $973D LD ($FE7C),HL ;
+ $973D LD ($FE7C),HL ; #R$FE7C = #REGhl
 ; Seed the live missile vertical/hop state in `MissileY`.
  $9740 LD HL,$0E10   ;
- $9743 LD ($FE7E),HL ;
+ $9743 LD ($FE7E),HL ; #R$FE7E = #REGhl
 ; Seed the missile Z pair in the shared companion slot at `$DDBA` and in `MissileZ`.
- $9746 LD HL,$6400   ;
+ $9746 LD HL,$6400   ; #REGhl = #R$6400
  $9749 LD ($DDBA),HL ;
- $974C LD ($FE80),HL ;
- $974F LD HL,$FE78   ;
+ $974C LD ($FE80),HL ; #R$FE80 = #REGhl
+ $974F LD HL,$FE78   ; #REGhl = #R$FE78
  $9752 LD A,(HL)     ;
  $9753 INC (HL)      ;
  $9754 DEC A         ;
 ; Derive the remaining-zig count in `MissileZigCount` from the running `MissileCount`.
- $9755 LD ($FE82),A  ;
+ $9755 LD ($FE82),A  ; #R$FE82 = #REGa
  $9758 LD A,$80      ;
 ; Seed the live missile strategy byte in `MissileStrategy`.
- $975A LD ($FE84),A  ;
+ $975A LD ($FE84),A  ; #R$FE84 = #REGa
  $975D SUB A         ;
 ; Clear `MissileManoeuvreCounter` for the freshly seeded missile.
- $975E LD ($FE7A),A  ;
- $9761 LD HL,($FE7C) ;
- $9764 LD DE,($FE80) ;
- $9768 CALL $938A    ;
+ $975E LD ($FE7A),A  ; #R$FE7A = #REGa
+ $9761 LD HL,($FE7C) ; #REGhl = #R$FE7C
+ $9764 LD DE,($FE80) ; #REGde = #R$FE80
+ $9768 CALL $938A    ; #R$938A
  $976B ADD A,$40     ;
  $976D LD L,A        ;
  $976E LD H,$00      ;
  $9770 ADD HL,HL     ;
 ; Store the initial live missile orientation in `MissileOrientation`.
- $9771 LD ($FE86),HL ;
+ $9771 LD ($FE86),HL ; #R$FE86 = #REGhl
  $9774 LD A,$FF      ;
 ; Prime the missile phase/sign toggle in `MissilePhaseSign`.
- $9776 LD ($FE88),A  ;
+ $9776 LD ($FE88),A  ; #R$FE88 = #REGa
  $9779 LD A,$10      ;
  $977B LD ($FE6A),A  ; Enable the missile/existence bit in `EXST1`.
 ; Main Game Loop.
@@ -5636,7 +5636,7 @@ c$956A LD HL,$0000   ;
 ; updates and drawing, then hills/status/radar/screen work, then input
 ; handling, ending with a jump back to the top at #R$A931.
 @label=MainGameLoop
-*$977E LD HL,($FE70) ;
+*$977E LD HL,($FE70) ; #REGhl = #R$FE70
  $9781 LD A,$18      ;
  $9783 OUT ($FE),A   ;
  $9785 INC HL        ;
@@ -6807,144 +6807,144 @@ u$A0D6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 @label=BulletUpdateAndRender
 c$A122 LD A,$18      ;
  $A124 OUT ($FE),A   ;
- $A126 LD A,($FE6A)  ;
+ $A126 LD A,($FE6A)  ; #REGa = #R$FE6A
  $A129 AND $0C       ; Active player-bullet / hostile-bullet bits.
- $A12B JP Z,$A37B    ;
+ $A12B JP Z,$A37B    ; #R$A37B
  $A12E AND $08       ;
- $A130 JP Z,$A234    ;
+ $A130 JP Z,$A234    ; #R$A234
 @label=PlayerBulletCheckActive
  $A133 LD A,($FEB2)  ; Player-bullet active path: either retire/requeue `PlayerBulletLife` or advance,
                      ; rotate, project, and test hits.
  $A136 AND A         ;
- $A137 JP NZ,$A155   ;
- $A13A LD A,($FE6A)  ;
+ $A137 JP NZ,$A155   ; #R$A155
+ $A13A LD A,($FE6A)  ; #REGa = #R$FE6A
  $A13D AND $F7       ;
- $A13F LD ($FE6A),A  ;
- $A142 LD A,($FE6E)  ;
+ $A13F LD ($FE6A),A  ; #R$FE6A = #REGa
+ $A142 LD A,($FE6E)  ; #REGa = #R$FE6E
  $A145 AND $F7       ;
- $A147 LD ($FE6E),A  ;
- $A14A LD A,($FE6C)  ;
+ $A147 LD ($FE6E),A  ; #R$FE6E = #REGa
+ $A14A LD A,($FE6C)  ; #REGa = #R$FE6C
  $A14D OR $08        ; Queue the player-bullet deferred/restart bit in `EXST2`.
- $A14F LD ($FE6C),A  ;
- $A152 JP $A234      ;
+ $A14F LD ($FE6C),A  ; #R$FE6C = #REGa
+ $A152 JP $A234      ; #R$A234
 @label=PlayerBulletAdvanceAndRotate
 *$A155 LD HL,($FEAC) ; Advance the live player-bullet `PlayerBulletX` / `PlayerBulletZ`, install the
                      ; shared bullet geometry tables, then rotate/project it using `PlayerBulletOrientation`.
  $A158 DEC A         ;
- $A159 LD ($FEB2),A  ;
+ $A159 LD ($FEB2),A  ; #R$FEB2 = #REGa
  $A15C LD DE,($DD1A) ;
  $A160 SBC HL,DE     ;
  $A162 ADD HL,HL     ;
  $A163 ADD HL,HL     ;
  $A164 ADD HL,DE     ;
- $A165 LD ($FEAC),HL ;
- $A168 LD ($FE4A),HL ;
- $A16B LD HL,($FEAE) ;
+ $A165 LD ($FEAC),HL ; #R$FEAC = #REGhl
+ $A168 LD ($FE4A),HL ; #R$FE4A = #REGhl
+ $A16B LD HL,($FEAE) ; #REGhl = #R$FEAE
  $A16E LD DE,($DDCA) ;
  $A172 SBC HL,DE     ;
  $A174 ADD HL,HL     ;
  $A175 ADD HL,HL     ;
  $A176 ADD HL,DE     ;
- $A177 LD ($FEAE),HL ;
- $A17A LD ($FE4C),HL ;
+ $A177 LD ($FEAE),HL ; #R$FEAE = #REGhl
+ $A17A LD ($FE4C),HL ; #R$FE4C = #REGhl
  $A17D LD HL,$D9D0   ; Install the shared bullet X-rotation coefficient table in `XTAB`.
- $A180 LD ($FE42),HL ;
+ $A180 LD ($FE42),HL ; #R$FE42 = #REGhl
  $A183 LD HL,$DAC4   ; Install the shared bullet Z-rotation coefficient table in `ZTAB`.
- $A186 LD ($FE46),HL ;
+ $A186 LD ($FE46),HL ; #R$FE46 = #REGhl
  $A189 LD HL,$DD20   ; Install the fixed player-bullet model-space X list in `XLOC`.
- $A18C LD ($FE32),HL ;
+ $A18C LD ($FE32),HL ; #R$FE32 = #REGhl
  $A18F LD HL,$DDD0   ; Install the fixed player-bullet model-space Z list in `ZLOC`.
- $A192 LD ($FE36),HL ;
- $A195 LD HL,($FEB0) ;
+ $A192 LD ($FE36),HL ; #R$FE36 = #REGhl
+ $A195 LD HL,($FEB0) ; #REGhl = #R$FEB0
  $A198 SRL H         ;
  $A19A RR L          ;
  $A19C SUB A         ;
  $A19D OUT ($FE),A   ;
  $A19F LD A,$04      ;
- $A1A1 CALL $88EA    ;
+ $A1A1 CALL $88EA    ; #R$88EA
  $A1A4 LD A,$18      ;
  $A1A6 OUT ($FE),A   ;
  $A1A8 LD HL,$DE98   ; Install the player-bullet projected X output buffer end-pointer in `XPERS`.
- $A1AB LD ($FE38),HL ;
+ $A1AB LD ($FE38),HL ; #R$FE38 = #REGhl
  $A1AE LD HL,$DED0   ; Install the player-bullet projected Y output buffer end-pointer in `YPERS`.
- $A1B1 LD ($FE3A),HL ;
+ $A1B1 LD ($FE3A),HL ; #R$FE3A = #REGhl
  $A1B4 LD HL,$DBB8   ; Install the shared player-bullet Y list in `YLOC`.
- $A1B7 LD ($FE34),HL ;
+ $A1B7 LD ($FE34),HL ; #R$FE34 = #REGhl
  $A1BA SUB A         ;
- $A1BB CALL $8660    ;
+ $A1BB CALL $8660    ; #R$8660
  $A1BE LD A,C        ;
  $A1BF AND A         ;
- $A1C0 LD A,($FE6E)  ;
- $A1C3 JP Z,$A1D3    ;
+ $A1C0 LD A,($FE6E)  ; #REGa = #R$FE6E
+ $A1C3 JP Z,$A1D3    ; #R$A1D3
  $A1C6 AND $F7       ; Clear the player-bullet visible bit.
- $A1C8 LD ($FE6E),A  ;
+ $A1C8 LD ($FE6E),A  ; #R$FE6E = #REGa
  $A1CB LD A,$01      ;
- $A1CD CALL $9538    ;
- $A1D0 JP $A234      ;
+ $A1CD CALL $9538    ; #R$9538
+ $A1D0 JP $A234      ; #R$A234
 @label=PlayerBulletVisible
 *$A1D3 OR $08        ; Set the player-bullet visible bit.
  $A1D5 LD ($FE6E),A  ; Visible player-bullet path: center the projected X span, test overlap against the
                      ; current target limits, then either draw or trigger a hit path.
  $A1D8 SUB A         ;
  $A1D9 OUT ($FE),A   ;
- $A1DB LD HL,($FE3C) ;
- $A1DE LD DE,($FE3E) ;
+ $A1DB LD HL,($FE3C) ; #REGhl = #R$FE3C
+ $A1DE LD DE,($FE3E) ; #REGde = #R$FE3E
  $A1E2 SBC HL,DE     ;
  $A1E4 SRL H         ;
  $A1E6 RR L          ;
  $A1E8 ADD HL,DE     ;
  $A1E9 EX DE,HL      ;
- $A1EA LD HL,($FE1C) ;
+ $A1EA LD HL,($FE1C) ; #REGhl = #R$FE1C
  $A1ED SBC HL,DE     ;
- $A1EF JP M,$A22B    ;
- $A1F2 LD HL,($FE1E) ;
+ $A1EF JP M,$A22B    ; #R$A22B
+ $A1F2 LD HL,($FE1E) ; #REGhl = #R$FE1E
  $A1F5 SBC HL,DE     ;
- $A1F7 JP P,$A22B    ;
- $A1FA LD HL,($FEAE) ;
- $A1FD LD A,($FE6A)  ;
+ $A1F7 JP P,$A22B    ; #R$A22B
+ $A1FA LD HL,($FEAE) ; #REGhl = #R$FEAE
+ $A1FD LD A,($FE6A)  ; #REGa = #R$FE6A
  $A200 LD C,A        ;
 @label=PlayerBulletTestSaucerHit
  $A201 BIT 5,A       ; Test active saucer bit for player-bullet hit.
- $A203 JP Z,$A20F    ;
+ $A203 JP Z,$A20F    ; #R$A20F
  $A206 LD A,($FE91)  ;
  $A209 SUB H         ;
  $A20A SUB $07       ;
- $A20C JP C,$A934    ;
+ $A20C JP C,$A934    ; #R$A934
 @label=PlayerBulletTestMissileHit
 *$A20F BIT 4,C       ; Test active missile bit for player-bullet hit.
- $A211 JP Z,$A21D    ;
+ $A211 JP Z,$A21D    ; #R$A21D
  $A214 LD A,($FE81)  ;
  $A217 SUB H         ;
  $A218 SUB $07       ;
- $A21A JP C,$AA0B    ;
+ $A21A JP C,$AA0B    ; #R$AA0B
 @label=PlayerBulletTestTankHit
 *$A21D AND $C0       ; Test active tank / supertank bits for player-bullet hit.
- $A21F JP Z,$A22B    ;
+ $A21F JP Z,$A22B    ; #R$A22B
  $A222 LD A,($FE61)  ;
  $A225 SUB H         ;
  $A226 SUB $07       ;
- $A228 JP C,$A9AC    ;
+ $A228 JP C,$A9AC    ; #R$A9AC
 *$A22B LD HL,$D488   ; Probable shared my-bullet / hostile-bullet visible-line
                      ; family (`MBLVU` / `HBLVU` current best read).
- $A22E LD ($FE02),HL ;
- $A231 CALL $805C    ;
+ $A22E LD ($FE02),HL ; #R$FE02 = #REGhl
+ $A231 CALL $805C    ; #R$805C
 @label=HostileBulletCheckActive
 *$A234 LD A,$18      ; Hostile-bullet active path: either retire/requeue `HostileBulletLife` or advance,
                      ; rotate, project, and draw.
  $A236 OUT ($FE),A   ;
- $A238 LD A,($FE6A)  ;
+ $A238 LD A,($FE6A)  ; #REGa = #R$FE6A
  $A23B AND $04       ;
- $A23D JP Z,$A37B    ;
- $A240 LD A,($FEBA)  ;
+ $A23D JP Z,$A37B    ; #R$A37B
+ $A240 LD A,($FEBA)  ; #REGa = #R$FEBA
  $A243 AND A         ;
- $A244 JP NZ,$A25A   ;
- $A247 LD A,($FE6A)  ;
+ $A244 JP NZ,$A25A   ; #R$A25A
+ $A247 LD A,($FE6A)  ; #REGa = #R$FE6A
  $A24A AND $FB       ;
- $A24C LD ($FE6A),A  ;
- $A24F LD A,($FE6C)  ;
+ $A24C LD ($FE6A),A  ; #R$FE6A = #REGa
+ $A24F LD A,($FE6C)  ; #REGa = #R$FE6C
  $A252 OR $04        ; Queue the hostile-bullet deferred/restart bit in `EXST2`.
- $A254 LD ($FE6C),A  ;
- $A257 JP $A37B      ;
+ $A254 LD ($FE6C),A  ; #R$FE6C = #REGa
+ $A257 JP $A37B      ; #R$A37B
 @label=HostileBulletAdvanceAndRotate
 *$A25A LD HL,($FEB4) ; Advance the live hostile-bullet `HostileBulletX` / `HostileBulletZ`, install the
                      ; obstacle-family geometry tables, then rotate/project it using `HostileBulletOrientation`
@@ -6952,67 +6952,67 @@ c$A122 LD A,$18      ;
 ; Refresh `HostileBulletX` and mirror it into `XDIS`.
  $A25D LD DE,($DD22) ;
  $A261 DEC A         ;
- $A262 LD ($FEBA),A  ;
+ $A262 LD ($FEBA),A  ; #R$FEBA = #REGa
  $A265 AND A         ;
  $A266 SBC HL,DE     ;
  $A268 ADD HL,HL     ;
  $A269 ADD HL,HL     ;
  $A26A ADD HL,DE     ;
- $A26B LD ($FEB4),HL ;
- $A26E LD ($FE4A),HL ;
+ $A26B LD ($FEB4),HL ; #R$FEB4 = #REGhl
+ $A26E LD ($FE4A),HL ; #R$FE4A = #REGhl
 ; Refresh `HostileBulletZ` and mirror it into `ZDIS`.
- $A271 LD HL,($FEB6) ;
+ $A271 LD HL,($FEB6) ; #REGhl = #R$FEB6
  $A274 LD DE,($DDD2) ;
  $A278 SBC HL,DE     ;
  $A27A ADD HL,HL     ;
  $A27B ADD HL,HL     ;
  $A27C ADD HL,DE     ;
- $A27D LD ($FEB6),HL ;
- $A280 LD ($FE4C),HL ;
+ $A27D LD ($FEB6),HL ; #R$FEB6 = #REGhl
+ $A280 LD ($FE4C),HL ; #R$FE4C = #REGhl
  $A283 LD HL,$D9D0   ; Install the shared obstacle/bullet X-rotation coefficient table in `XTAB`.
- $A286 LD ($FE42),HL ;
+ $A286 LD ($FE42),HL ; #R$FE42 = #REGhl
  $A289 LD HL,$DAC4   ; Install the shared obstacle/bullet Z-rotation coefficient table in `ZTAB`.
- $A28C LD ($FE46),HL ;
+ $A28C LD ($FE46),HL ; #R$FE46 = #REGhl
  $A28F LD HL,$DD28   ; Install the fixed hostile-bullet model-space X list in `XLOC`.
- $A292 LD ($FE32),HL ;
+ $A292 LD ($FE32),HL ; #R$FE32 = #REGhl
  $A295 LD HL,$DDD8   ; Install the fixed hostile-bullet model-space Z list in `ZLOC`.
- $A298 LD ($FE36),HL ;
+ $A298 LD ($FE36),HL ; #R$FE36 = #REGhl
 ; Install the hostile-bullet model-space X/Z lists in `XLOC` and `ZLOC`.
- $A29B LD HL,($FEB8) ;
+ $A29B LD HL,($FEB8) ; #REGhl = #R$FEB8
  $A29E SRL H         ;
  $A2A0 RR L          ;
  $A2A2 SUB A         ;
  $A2A3 OUT ($FE),A   ;
  $A2A5 LD A,$04      ;
- $A2A7 CALL $88EA    ;
+ $A2A7 CALL $88EA    ; #R$88EA
  $A2AA LD A,$18      ;
  $A2AC OUT ($FE),A   ;
  $A2AE LD A,($FEB5)  ;
  $A2B1 ADD A,$02     ;
  $A2B3 SUB $04       ;
- $A2B5 JP NC,$A2C2   ;
+ $A2B5 JP NC,$A2C2   ; #R$A2C2
  $A2B8 LD A,($FEB7)  ;
  $A2BB ADD A,$03     ;
  $A2BD SUB $05       ;
- $A2BF JP C,$ADD4    ;
+ $A2BF JP C,$ADD4    ; #R$ADD4
 *$A2C2 LD HL,$DE98   ;
 ; Install the hostile-bullet projected-output buffers in `XPERS` and `YPERS`, then the shared Y list in `YLOC`.
  $A2C5 LD ($FE38),HL ; Install the hostile-bullet projected X output buffer end-pointer in `XPERS`.
  $A2C8 LD HL,$DED0   ; Install the hostile-bullet projected Y output buffer end-pointer in `YPERS`.
- $A2CB LD ($FE3A),HL ;
+ $A2CB LD ($FE3A),HL ; #R$FE3A = #REGhl
  $A2CE LD HL,$DBB8   ; Install the shared hostile-bullet Y list in `YLOC`.
- $A2D1 LD ($FE34),HL ;
+ $A2D1 LD ($FE34),HL ; #R$FE34 = #REGhl
  $A2D4 SUB A         ;
- $A2D5 CALL $8660    ;
+ $A2D5 CALL $8660    ; #R$8660
  $A2D8 LD A,C        ;
  $A2D9 AND A         ;
- $A2DA LD A,($FE6E)  ;
- $A2DD JP Z,$A2ED    ;
+ $A2DA LD A,($FE6E)  ; #REGa = #R$FE6E
+ $A2DD JP Z,$A2ED    ; #R$A2ED
  $A2E0 AND $FB       ; Clear the hostile-bullet visible bit.
- $A2E2 LD ($FE6E),A  ;
+ $A2E2 LD ($FE6E),A  ; #R$FE6E = #REGa
  $A2E5 LD A,$01      ;
- $A2E7 CALL $9538    ;
- $A2EA JP $A37B      ;
+ $A2E7 CALL $9538    ; #R$9538
+ $A2EA JP $A37B      ; #R$A37B
 @label=HostileBulletVisible
 *$A2ED OR $04        ; Set the hostile-bullet visible bit.
  $A2EF LD ($FE6E),A  ; Visible hostile-bullet path: install the shared bullet line family and continue to
@@ -7092,20 +7092,20 @@ c$A37B LD A,$18      ;
  $A37F LD B,$7C      ;
  $A381 LD H,$A0      ;
 ; Seed the selected obstacle/object X/Z pair into `SelectedObstacleX` / `SelectedObstacleZ`.
- $A383 LD ($FEEA),HL ;
+ $A383 LD ($FEEA),HL ; #R$FEEA = #REGhl
  $A386 LD HL,$D554   ; Probable OB3VU / pyramid line-data family.
  $A389 LD C,$00      ;
  $A38B LD A,($FE9B)  ;
  $A38E CP B          ;
- $A38F JP NC,$A3AF   ;
+ $A38F JP NC,$A3AF   ; #R$A3AF
  $A392 LD A,($FE99)  ;
  $A395 ADD A,$23     ;
  $A397 SUB $46       ;
- $A399 JP NC,$A3AF   ;
- $A39C LD HL,($FE98) ;
- $A39F LD ($FEE8),HL ;
- $A3A2 LD DE,($FE9A) ;
- $A3A6 LD ($FEEA),HL ;
+ $A399 JP NC,$A3AF   ; #R$A3AF
+ $A39C LD HL,($FE98) ; #REGhl = #R$FE98
+ $A39F LD ($FEE8),HL ; #R$FEE8 = #REGhl
+ $A3A2 LD DE,($FE9A) ; #REGde = #R$FE9A
+ $A3A6 LD ($FEEA),HL ; #R$FEEA = #REGhl
  $A3A9 LD B,D        ;
  $A3AA LD C,$02      ; Cube-family low-bit selector.
  $A3AC LD HL,$D4A2   ; Shared `OB1VU` / `OB2VU` cube line-data family base
@@ -7113,148 +7113,148 @@ c$A37B LD A,$18      ;
                      ; `OB1VU_View2` / `OB2VU_View2`).
 *$A3AF LD A,($FE9F)  ;
  $A3B2 CP B          ;
- $A3B3 JP NC,$A3D0   ;
+ $A3B3 JP NC,$A3D0   ; #R$A3D0
  $A3B6 LD A,($FE9D)  ;
  $A3B9 ADD A,$23     ;
  $A3BB SUB $46       ;
- $A3BD JP NC,$A3D0   ;
- $A3C0 LD HL,($FE9C) ;
- $A3C3 LD ($FEE8),HL ;
- $A3C6 LD DE,($FE9E) ;
+ $A3BD JP NC,$A3D0   ; #R$A3D0
+ $A3C0 LD HL,($FE9C) ; #REGhl = #R$FE9C
+ $A3C3 LD ($FEE8),HL ; #R$FEE8 = #REGhl
+ $A3C6 LD DE,($FE9E) ; #REGde = #R$FE9E
  $A3CA LD B,D        ;
  $A3CB LD C,$02      ; Cube-family low-bit selector.
  $A3CD LD HL,$D4A2   ; Same cube-family line-data base and view-slot scheme.
 *$A3D0 LD A,($FEA3)  ;
  $A3D3 CP B          ;
- $A3D4 JP NC,$A3F1   ;
+ $A3D4 JP NC,$A3F1   ; #R$A3F1
  $A3D7 LD A,($FEA1)  ;
  $A3DA ADD A,$23     ;
  $A3DC SUB $46       ;
- $A3DE JP NC,$A3F1   ;
- $A3E1 LD HL,($FEA0) ;
- $A3E4 LD ($FEE8),HL ;
- $A3E7 LD DE,($FEA2) ;
+ $A3DE JP NC,$A3F1   ; #R$A3F1
+ $A3E1 LD HL,($FEA0) ; #REGhl = #R$FEA0
+ $A3E4 LD ($FEE8),HL ; #R$FEE8 = #REGhl
+ $A3E7 LD DE,($FEA2) ; #REGde = #R$FEA2
  $A3EB LD C,$03      ; Pyramid-family low-bit selector.
  $A3ED LD B,D        ;
  $A3EE LD HL,$D554   ; `OB3VU` / pyramid line-data family base
                      ; (`OB3VU_View0`, `OB3VU_View1`, `OB3VU_View2`).
 *$A3F1 LD A,($FEA7)  ;
  $A3F4 CP B          ;
- $A3F5 JP NC,$A411   ;
+ $A3F5 JP NC,$A411   ; #R$A411
  $A3F8 LD A,($FEA5)  ;
  $A3FB ADD A,$23     ;
  $A3FD SUB $46       ;
- $A3FF JP NC,$A411   ;
- $A402 LD HL,($FEA4) ;
- $A405 LD ($FEE8),HL ;
- $A408 LD DE,($FEA6) ;
+ $A3FF JP NC,$A411   ; #R$A411
+ $A402 LD HL,($FEA4) ; #REGhl = #R$FEA4
+ $A405 LD ($FEE8),HL ; #R$FEE8 = #REGhl
+ $A408 LD DE,($FEA6) ; #REGde = #R$FEA6
  $A40C LD C,$01      ; Low-block-family low-bit selector.
  $A40E LD HL,$D5F6   ; `OB4VU` / low-block line-data family base
                      ; (`OB4VU_View0`, `OB4VU_View1`, `OB4VU_View2`).
-*$A411 LD ($FE02),HL ;
- $A414 LD HL,$84D0   ;
- $A417 LD ($FE20),HL ;
+*$A411 LD ($FE02),HL ; #R$FE02 = #REGhl
+ $A414 LD HL,$84D0   ; #REGhl = #R$84D0
+ $A417 LD ($FE20),HL ; #R$FE20 = #REGhl
  $A41A DEC L         ;
- $A41B LD ($FE22),HL ;
+ $A41B LD ($FE22),HL ; #R$FE22 = #REGhl
  $A41E LD A,C        ;
  $A41F AND A         ;
- $A420 JP Z,$A5AE    ;
+ $A420 JP Z,$A5AE    ; #R$A5AE
 @label=ObstacleRotateAndProject
  $A423 LD HL,($FEE8) ; Rotate/project the selected obstacle/object, update the low-bit selector in `PRSTA`,
                      ; and split into hidden vs visible paths.
- $A426 LD ($FEEA),DE ;
- $A42A LD ($FE4A),HL ;
- $A42D LD ($FE4C),DE ;
- $A431 LD A,($FE6A)  ;
+ $A426 LD ($FEEA),DE ; #R$FEEA = #REGde
+ $A42A LD ($FE4A),HL ; #R$FE4A = #REGhl
+ $A42D LD ($FE4C),DE ; #R$FE4C = #REGde
+ $A431 LD A,($FE6A)  ; #REGa = #R$FE6A
  $A434 AND $FC       ; Replace the current obstacle/object low-bit selector in `PRSTA`.
  $A436 OR C          ;
- $A437 LD ($FE6A),A  ;
+ $A437 LD ($FE6A),A  ; #R$FE6A = #REGa
  $A43A LD DE,$0000   ;
  $A43D LD A,H        ;
  $A43E AND A         ;
- $A43F JP P,$A463    ;
- $A442 LD HL,($FEA8) ;
+ $A43F JP P,$A463    ; #R$A463
+ $A442 LD HL,($FEA8) ; #REGhl = #R$FEA8
  $A445 SRL H         ;
  $A447 LD A,L        ;
  $A448 RRA           ;
  $A449 AND A         ;
- $A44A JP P,$A458    ;
+ $A44A JP P,$A458    ; #R$A458
  $A44D CP $FB        ;
- $A44F JP NC,$A47C   ;
+ $A44F JP NC,$A47C   ; #R$A47C
  $A452 LD DE,$0080   ;
- $A455 JP $A47C      ;
+ $A455 JP $A47C      ; #R$A47C
 *$A458 CP $40        ;
- $A45A JP C,$A47C    ;
+ $A45A JP C,$A47C    ; #R$A47C
  $A45D LD DE,$FF80   ;
- $A460 JP $A47C      ;
-*$A463 LD HL,($FEA8) ;
+ $A460 JP $A47C      ; #R$A47C
+*$A463 LD HL,($FEA8) ; #REGhl = #R$FEA8
  $A466 SRL H         ;
  $A468 LD A,L        ;
  $A469 RRA           ;
  $A46A AND A         ;
- $A46B JP P,$A474    ;
+ $A46B JP P,$A474    ; #R$A474
  $A46E LD DE,$0080   ;
- $A471 JP $A47C      ;
+ $A471 JP $A47C      ; #R$A47C
 *$A474 CP $44        ;
- $A476 JP C,$A47C    ;
+ $A476 JP C,$A47C    ; #R$A47C
  $A479 LD DE,$FF80   ;
-*$A47C LD HL,($FEA8) ;
+*$A47C LD HL,($FEA8) ; #REGhl = #R$FEA8
  $A47F ADD HL,DE     ;
  $A480 LD A,H        ;
  $A481 AND $01       ;
  $A483 LD H,A        ;
- $A484 LD ($FEA8),HL ;
+ $A484 LD ($FEA8),HL ; #R$FEA8 = #REGhl
  $A487 LD HL,$D9D8   ; Install the obstacle/object X-rotation coefficient table in `XTAB`.
- $A48A LD ($FE42),HL ;
+ $A48A LD ($FE42),HL ; #R$FE42 = #REGhl
  $A48D LD HL,$DACC   ; Install the obstacle/object Z-rotation coefficient table in `ZTAB`.
- $A490 LD ($FE46),HL ;
+ $A490 LD ($FE46),HL ; #R$FE46 = #REGhl
  $A493 LD HL,$DD36   ; Install the fixed obstacle/object model-space X list in `XLOC`.
- $A496 LD ($FE32),HL ;
+ $A496 LD ($FE32),HL ; #R$FE32 = #REGhl
  $A499 LD HL,$DDE6   ; Install the fixed obstacle/object model-space Z list in `ZLOC`.
- $A49C LD ($FE36),HL ;
- $A49F LD HL,($FEA8) ;
+ $A49C LD ($FE36),HL ; #R$FE36 = #REGhl
+ $A49F LD HL,($FEA8) ; #REGhl = #R$FEA8
  $A4A2 SRL H         ;
  $A4A4 RR L          ;
  $A4A6 LD A,$07      ;
- $A4A8 CALL $88EA    ;
+ $A4A8 CALL $88EA    ; #R$88EA
  $A4AB LD HL,$DBC0   ; Install the shared obstacle/object Y list in `YLOC`.
- $A4AE LD ($FE34),HL ;
+ $A4AE LD ($FE34),HL ; #R$FE34 = #REGhl
  $A4B1 LD HL,$DE9E   ; Install the obstacle/object projected X output buffer end-pointer in `XPERS`.
- $A4B4 LD ($FE38),HL ;
+ $A4B4 LD ($FE38),HL ; #R$FE38 = #REGhl
  $A4B7 LD HL,$DED6   ; Install the obstacle/object projected Y output buffer end-pointer in `YPERS`.
- $A4BA LD ($FE3A),HL ;
+ $A4BA LD ($FE3A),HL ; #R$FE3A = #REGhl
  $A4BD LD A,$03      ;
- $A4BF CALL $8660    ;
+ $A4BF CALL $8660    ; #R$8660
  $A4C2 LD A,C        ;
  $A4C3 AND A         ;
- $A4C4 LD A,($FE6E)  ;
- $A4C7 JP Z,$A4E1    ;
+ $A4C4 LD A,($FE6E)  ; #REGa = #R$FE6E
+ $A4C7 JP Z,$A4E1    ; #R$A4E1
 @label=ObstacleHidden
  $A4CA AND $FC       ; Clear the obstacle/object low-bit selector in PRSTA.
  $A4CC LD ($FE6E),A  ; Hidden path: clear the visible low bits, restore neutral limits, and return to the SCREEN phase.
- $A4CF LD HL,$84D0   ;
- $A4D2 LD ($FE20),HL ;
+ $A4CF LD HL,$84D0   ; #REGhl = #R$84D0
+ $A4D2 LD ($FE20),HL ; #R$FE20 = #REGhl
  $A4D5 DEC L         ;
- $A4D6 LD ($FE22),HL ;
+ $A4D6 LD ($FE22),HL ; #R$FE22 = #REGhl
  $A4D9 LD A,$03      ;
- $A4DB CALL $9538    ;
- $A4DE JP $A5AE      ;
+ $A4DB CALL $9538    ; #R$9538
+ $A4DE JP $A5AE      ; #R$A5AE
 @label=ObstacleVisible
 *$A4E1 AND $FC       ; Visible path: copy the active obstacle/object selector into `PRSTA`, seed the visible
                      ; limits from `PERSP`, apply the hill-edge stop hack if needed, then choose the current view.
  $A4E3 LD C,A        ;
- $A4E4 LD A,($FE6A)  ;
+ $A4E4 LD A,($FE6A)  ; #REGa = #R$FE6A
  $A4E7 AND $03       ; Copy the active obstacle/object low-bit selector into PRSTA.
  $A4E9 OR C          ;
- $A4EA LD ($FE6E),A  ;
- $A4ED LD HL,($FE3C) ;
- $A4F0 LD ($FE20),HL ;
- $A4F3 LD HL,($FE3E) ;
- $A4F6 LD ($FE22),HL ;
+ $A4EA LD ($FE6E),A  ; #R$FE6E = #REGa
+ $A4ED LD HL,($FE3C) ; #REGhl = #R$FE3C
+ $A4F0 LD ($FE20),HL ; #R$FE20 = #REGhl
+ $A4F3 LD HL,($FE3E) ; #REGhl = #R$FE3E
+ $A4F6 LD ($FE22),HL ; #R$FE22 = #REGhl
  $A4F9 BIT 1,A       ;
- $A4FB JP Z,$A576    ;
+ $A4FB JP Z,$A576    ; #R$A576
  $A4FE BIT 0,A       ;
- $A500 JP Z,$A526    ;
+ $A500 JP Z,$A526    ; #R$A526
  $A503 LD HL,($DECE) ;
  $A506 LD DE,($DED4) ;
  $A50A AND A         ;
@@ -7269,7 +7269,7 @@ c$A37B LD A,$18      ;
  $A51D RR L          ;
  $A51F ADD HL,DE     ;
  $A520 LD ($DE96),HL ;
- $A523 JP $A576      ;
+ $A523 JP $A576      ; #R$A576
 *$A526 LD HL,($DECE) ;
  $A529 LD DE,($DED4) ;
  $A52D AND A         ;
@@ -7292,41 +7292,41 @@ c$A37B LD A,$18      ;
  $A54F ADD HL,DE     ;
  $A550 LD ($DECA),HL ;
  $A553 LD DE,$0080   ;
- $A556 LD HL,($FE20) ;
+ $A556 LD HL,($FE20) ; #REGhl = #R$FE20
  $A559 ADD HL,DE     ;
  $A55A LD A,H        ;
  $A55B CP $01        ;
- $A55D JP P,$A571    ;
- $A560 LD HL,($FE22) ;
+ $A55D JP P,$A571    ; #R$A571
+ $A560 LD HL,($FE22) ; #REGhl = #R$FE22
  $A563 ADD HL,DE     ;
  $A564 LD A,H        ;
  $A565 AND A         ;
- $A566 JP P,$A576    ;
+ $A566 JP P,$A576    ; #R$A576
  $A569 LD HL,$E740   ; Probable left-edge hill-stop hack in the off-screen
  $A56C SET 7,(HL)    ; playfield buffer.
- $A56E JP $A576      ;
+ $A56E JP $A576      ; #R$A576
 *$A571 LD HL,$E75F   ; Probable matching right-edge hill-stop hack.
  $A574 SET 7,(HL)    ;
 @label=ObstacleSelectVisibleLineData
 *$A576 LD HL,($DE9C) ; Choose the current obstacle/object visible-line view by projected X ordering, then draw.
  $A579 LD DE,($DE9A) ;
  $A57D SBC HL,DE     ;
- $A57F JP P,$A596    ;
+ $A57F JP P,$A596    ; #R$A596
  $A582 LD HL,($DE98) ; XPERS+$06
  $A585 SBC HL,DE     ;
- $A587 JP P,$A590    ;
+ $A587 JP P,$A590    ; #R$A590
  $A58A LD HL,$003C   ;
- $A58D JP $A59C      ;
+ $A58D JP $A59C      ; #R$A59C
 *$A590 LD HL,$0078   ;
- $A593 JP $A59C      ;
+ $A593 JP $A59C      ; #R$A59C
 *$A596 LD HL,$0000   ;
  $A599 LD DE,$FF80   ;
-*$A59C LD BC,($FE02) ;
+*$A59C LD BC,($FE02) ; #REGbc = #R$FE02
  $A5A0 ADD HL,BC     ;
- $A5A1 LD ($FE02),HL ;
+ $A5A1 LD ($FE02),HL ; #R$FE02 = #REGhl
  $A5A4 SUB A         ;
  $A5A5 OUT ($FE),A   ;
- $A5A7 CALL $805C    ;
+ $A5A7 CALL $805C    ; #R$805C
  $A5AA LD A,$18      ;
  $A5AC OUT ($FE),A   ;
 ; SCREEN phase
@@ -7338,29 +7338,29 @@ c$A37B LD A,$18      ;
 ; - #R$8E38: probable MHLPT
 ; - #R$8F53: probable SHLPT
 ; - #R$8C3C: SDRAW / present-and-clear
-*$A5AE CALL $8D68    ;
- $A5B1 CALL $8E08    ;
- $A5B4 CALL $8E38    ;
- $A5B7 CALL $8F53    ;
+*$A5AE CALL $8D68    ; #R$8D68
+ $A5B1 CALL $8E08    ; #R$8E08
+ $A5B4 CALL $8E38    ; #R$8E38
+ $A5B7 CALL $8F53    ; #R$8F53
  $A5BA SUB A         ;
  $A5BB OUT ($FE),A   ;
- $A5BD LD A,($FE6C)  ;
+ $A5BD LD A,($FE6C)  ; #REGa = #R$FE6C
  $A5C0 AND A         ;
- $A5C1 CALL NZ,$AA5D ;
+ $A5C1 CALL NZ,$AA5D ; #R$AA5D
  $A5C4 LD HL,$E740   ; Clear the temporary edge-stop hack bit.
  $A5C7 RES 7,(HL)    ;
  $A5C9 LD HL,$E75F   ; Clear the matching right-edge stop bit.
  $A5CC RES 7,(HL)    ;
- $A5CE CALL $8C3C    ;
- $A5D1 LD HL,$84D0   ;
- $A5D4 LD ($FE1C),HL ;
+ $A5CE CALL $8C3C    ; #R$8C3C
+ $A5D1 LD HL,$84D0   ; #REGhl = #R$84D0
+ $A5D4 LD ($FE1C),HL ; #R$FE1C = #REGhl
  $A5D7 DEC L         ;
- $A5D8 LD ($FE1E),HL ;
- $A5DB LD A,($FE58)  ;
+ $A5D8 LD ($FE1E),HL ; #R$FE1E = #REGhl
+ $A5DB LD A,($FE58)  ; #REGa = #R$FE58
  $A5DE AND A         ;
- $A5DF JP Z,$A625    ;
+ $A5DF JP Z,$A625    ; #R$A625
  $A5E2 SUB A         ;
- $A5E3 LD ($FE58),A  ;
+ $A5E3 LD ($FE58),A  ; #R$FE58 = #REGa
  $A5E6 LD HL,$E82C   ;
  $A5E9 LD B,$07      ;
  $A5EB LD C,$40      ;
@@ -7397,7 +7397,7 @@ c$A37B LD A,$18      ;
  $A61E LD (HL),A     ;
  $A61F INC H         ;
  $A620 DJNZ $A61A    ;
- $A622 JP $A64D      ;
+ $A622 JP $A64D      ; #R$A64D
 *$A625 LD HL,$E82C   ;
  $A628 LD B,$07      ;
 *$A62A SET 7,(HL)    ;
@@ -7441,11 +7441,11 @@ c$A37B LD A,$18      ;
  $A673 DJNZ $A670    ;
  $A675 LD A,$18      ;
  $A677 OUT ($FE),A   ;
- $A679 LD A,($FEEC)  ;
+ $A679 LD A,($FEEC)  ; #REGa = #R$FEEC
  $A67C AND A         ;
- $A67D JP P,$A685    ;
+ $A67D JP P,$A685    ; #R$A685
  $A680 RET           ;
- $A681 JP $A692      ;
+ $A681 JP $A692      ; #R$A692
  $A684 SUB A         ;
 
 ; InputDecodeAndMask
@@ -8784,8 +8784,8 @@ c$ADD4 LD A,$C9      ;
 ; { #R$B0EF: play the `1812` start theme. }
 ; LIST#
 @label=StartGameTransition
-c$B0BC CALL $B0EF    ;
- $B0BF LD HL,$4000   ;
+c$B0BC CALL $B0EF    ; #R$B0EF
+ $B0BF LD HL,$4000   ; #REGhl = #R$4000
  $B0C2 LD DE,$4001   ;
  $B0C5 LD BC,$17FF   ;
  $B0C8 SUB A         ;
@@ -8796,16 +8796,17 @@ c$B0BC CALL $B0EF    ;
  $B0CF LD DE,$0000   ;
  $B0D2 LDIR          ; Full-length `BC=0` self-copy delay inside the same transition.
                      ; About 393.21 ms at 3.5 MHz.
- $B0D4 LD ($FEEC),A  ;
+ $B0D4 LD ($FEEC),A  ; #R$FEEC = #REGa
  $B0D7 LD HL,$4099   ; Patch `NUMBA` to the temporary start-transition heading slot at `$4099` in
                      ; the top status strip.
  $B0DA LD ($94F0),HL ;
- $B0DD LD HL,($F700) ;
- $B0E0 LD ($FE76),HL ;
- $B0E3 CALL $94EC    ; Print the stored heading/score value in that temporary top-status slot.
+ $B0DD LD HL,($F700) ; #REGhl = #R$F700
+ $B0E0 LD ($FE76),HL ; #R$FE76 = #REGhl
+ $B0E3 CALL $94EC    ; #R$94EC
+                     ; Print the stored heading/score value in that temporary top-status slot.
  $B0E6 LD HL,$4059   ; Restore `NUMBA` to the normal gameplay score-strip position at `$4059`.
  $B0E9 LD ($94F0),HL ;
- $B0EC JP $956A      ;
+ $B0EC JP $956A      ; #R$956A
 
 ; PlayStartTheme
 ;
@@ -8826,10 +8827,11 @@ c$B0BC CALL $B0EF    ;
 ; { the repeat counter is decremented on every other toggle, so a phrase lasts roughly `(DE+1)` full cycles }
 ; LIST#
 @label=PlayStartTheme
-c$B0EF LD ($FE00),SP ;
- $B0F3 LD SP,$CA94   ; Current best read: `StartThemeData`.
+c$B0EF LD ($FE00),SP ; #R$FE00 = #REGsp
+ $B0F3 LD SP,$CA94   ; #REGsp = #R$CA94
+                     ; Current best read: `StartThemeData`.
  $B0F6 LD A,$0A      ;
-*$B0F8 LD ($FE4E),A  ;
+*$B0F8 LD ($FE4E),A  ; #R$FE4E = #REGa
  $B0FB POP HL        ;
  $B0FC POP DE        ;
  $B0FD LD A,L        ;
@@ -8862,7 +8864,7 @@ c$B0EF LD ($FE00),SP ;
  $B126 JR NZ,$B131   ;
  $B128 LD A,D        ;
  $B129 OR E          ;
- $B12A JR Z,$B135    ;
+ $B12A JR Z,$B135    ; #R$B135
  $B12C LD A,C        ;
  $B12D LD C,L        ;
  $B12E DEC DE        ;
@@ -8870,18 +8872,18 @@ c$B0EF LD ($FE00),SP ;
 *$B131 LD C,L        ;
  $B132 INC C         ;
  $B133 JP (IX)       ;
-*$B135 LD A,($FE4E)  ;
+*$B135 LD A,($FE4E)  ; #REGa = #R$FE4E
  $B138 LD HL,$0000   ;
  $B13B LD DE,$0000   ;
  $B13E LD BC,$09C4   ;
  $B141 LDIR          ; Calibrated inter-phrase delay (`HL=DE=0`, `BC=0x09C4`) inside the `1812` start-theme player.
                      ; About 15.00 ms at 3.5 MHz.
  $B143 DEC A         ;
- $B144 JP NZ,$B0F8   ;
- $B147 LD SP,($FE00) ;
+ $B144 JP NZ,$B0F8   ; #R$B0F8
+ $B147 LD SP,($FE00) ; #REGsp = #R$FE00
  $B14B RET           ;
 ; This entry point is used by the routine at #R$ADD4.
-*$B14C LD HL,$4000   ;
+*$B14C LD HL,$4000   ; #REGhl = #R$4000
  $B14F LD DE,$4001   ;
  $B152 LD BC,$17FF   ;
  $B155 LDIR          ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) before the later
@@ -8947,7 +8949,7 @@ c$B0EF LD ($FE00),SP ;
  $B1A2 INC C         ;
  $B1A3 DJNZ $B16C    ;
  $B1A5 LD BC,$0806   ;
- $B1A8 LD HL,$F700   ;
+ $B1A8 LD HL,$F700   ; #REGhl = #R$F700
 *$B1AB LD E,(HL)     ;
  $B1AC INC HL        ;
  $B1AD LD D,(HL)     ;
@@ -8967,9 +8969,9 @@ c$B0EF LD ($FE00),SP ;
                      ; later `TODAYS GREATEST` display body.
  $B1BF LD H,A        ;
  $B1C0 LD ($94F0),HL ;
- $B1C3 LD ($FE76),DE ;
+ $B1C3 LD ($FE76),DE ; #R$FE76 = #REGde
  $B1C7 EX DE,HL      ;
- $B1C8 CALL $94EC    ;
+ $B1C8 CALL $94EC    ; #R$94EC
  $B1CB POP BC        ;
  $B1CC POP HL        ;
  $B1CD INC C         ;
@@ -8989,9 +8991,10 @@ c$B0EF LD ($FE00),SP ;
  $B1E9 LD C,A        ;
  $B1EA POP AF        ;
  $B1EB BIT 1,C       ; `S` pressed?
- $B1ED JP Z,$B0BC    ; Start game.
+ $B1ED JP Z,$B0BC    ; #R$B0BC
+                     ; Start game.
  $B1F0 DEC A         ;
- $B1F1 JP NZ,$B1D9   ;
+ $B1F1 JP NZ,$B1D9   ; #R$B1D9
 
 ; AttractModeTitleSequence
 ;
@@ -9029,14 +9032,14 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B207 SUB A         ;
  $B208 RST $10       ; }
  $B209 CALL $8000    ; Call #R$8000.
- $B20C LD HL,$4000   ; {Write `0x00` to the full 6144-byte visible bitmap (`0x4000..0x57FF`).
- $B20F LD DE,$4001   ;
+ $B20C LD HL,$4000   ; {#REGhl = #R$4000
+ $B20F LD DE,$4001   ; Write `0x00` to the full 6144-byte visible bitmap (`0x4000..0x57FF`).
  $B212 LD BC,$17FF   ;
  $B215 LD (HL),$00   ;
  $B217 LDIR          ; }
- $B219 LD HL,$5800   ; {Write `0x44` to the full 768-byte attribute buffer
- $B21C LD DE,$5801   ; (`0x5800..0x5AFF`) = bright green ink on black paper, no flash.
- $B21F LD (HL),$44   ;
+ $B219 LD HL,$5800   ; {#REGhl = #R$5800
+ $B21C LD DE,$5801   ; Write `0x44` to the full 768-byte attribute buffer
+ $B21F LD (HL),$44   ; (`0x5800..0x5AFF`) = bright green ink on black paper, no flash.
  $B221 LD BC,$02FF   ;
  $B224 LDIR          ; }
  $B226 LD HL,$FE00   ; {Clear the 256-byte workspace block from #R$FE00 through `$FEFF`.
@@ -9068,48 +9071,51 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B250 LD ($FE42),HL ; }
  $B253 LD HL,$CA5E   ; {Point #R$FE46 at `$CA5E`, the common zero-axis companion table used by the
  $B256 LD ($FE46),HL ; attract-mode X-axis rotation hack.}
- $B259 LD A,($FE62)  ;
+ $B259 LD A,($FE62)  ; #REGa = #R$FE62
  $B25C ADD A,$10     ;
- $B25E LD ($FE62),A  ;
- $B261 LD HL,($FE60) ;
- $B264 LD DE,$FE0C   ;
+ $B25E LD ($FE62),A  ; #R$FE62 = #REGa
+ $B261 LD HL,($FE60) ; #REGhl = #R$FE60
+ $B264 LD DE,$FE0C   ; #REGde = #R$FE0C
  $B267 ADD HL,DE     ;
- $B268 LD ($FE60),HL ;
- $B26B LD HL,($FE5E) ;
- $B26E LD ($FE4A),HL ;
- $B271 LD HL,($FE60) ;
- $B274 LD ($FE4C),HL ;
+ $B268 LD ($FE60),HL ; #R$FE60 = #REGhl
+ $B26B LD HL,($FE5E) ; #REGhl = #R$FE5E
+ $B26E LD ($FE4A),HL ; #R$FE4A = #REGhl
+ $B271 LD HL,($FE60) ; #REGhl = #R$FE60
+ $B274 LD ($FE4C),HL ; #R$FE4C = #REGhl
  $B277 LD HL,$DD06   ;
- $B27A LD ($FE32),HL ;
+ $B27A LD ($FE32),HL ; #R$FE32 = #REGhl
  $B27D LD HL,$DDB6   ;
- $B280 LD ($FE36),HL ;
+ $B280 LD ($FE36),HL ; #R$FE36 = #REGhl
  $B283 LD L,A        ;
  $B284 LD A,$1A      ; Probable attract-mode X-axis rotation hack for the QS
                      ; logo: rotate a Y/Z-like pair via #R$88EA, then feed the
                      ; result back into the normal perspectiviser.
  $B286 CALL $88EA    ; Call #R$88EA.
- $B289 LD HL,($FE32) ;
- $B28C LD ($FE34),HL ;
- $B28F LD HL,$C9F2   ; Current best read: `QS_FixedXTable`.
- $B292 LD ($FE32),HL ;
+ $B289 LD HL,($FE32) ; #REGhl = #R$FE32
+ $B28C LD ($FE34),HL ; #R$FE34 = #REGhl
+ $B28F LD HL,$C9F2   ; #REGhl = #R$C9F2
+                     ; Current best read: `QS_FixedXTable`.
+ $B292 LD ($FE32),HL ; #R$FE32 = #REGhl
  $B295 LD HL,$DEC4   ;
- $B298 LD ($FE38),HL ;
+ $B298 LD ($FE38),HL ; #R$FE38 = #REGhl
  $B29B LD HL,$DEFC   ;
- $B29E LD ($FE3A),HL ;
+ $B29E LD ($FE3A),HL ; #R$FE3A = #REGhl
  $B2A1 LD A,$16      ; Project 22 points through `PERSP`.
  $B2A3 CALL $8660    ; Call #R$8660.
  $B2A6 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B2A8 IN A,($FE)    ;
  $B2AA AND $02       ; `S` pressed?
- $B2AC JP Z,$B0BC    ; Start game from the intro/title animation loop.
- $B2AF LD HL,$C91A   ; Current best read: `QS_LineData`.
- $B2B2 LD ($FE02),HL ;
- $B2B5 CALL $805C    ;
- $B2B8 CALL $8C3C    ;
- $B2BB LD A,($FE68)  ;
+ $B2AC JP Z,$B0BC    ; #R$B0BC
+                     ; Start game from the intro/title animation loop.
+ $B2AF LD HL,$C91A   ; #REGhl = #R$C91A
+                     ; Current best read: `QS_LineData`.
+ $B2B2 LD ($FE02),HL ; #R$FE02 = #REGhl
+ $B2B5 CALL $805C    ; #R$805C
+ $B2B8 CALL $8C3C    ; #R$8C3C
+ $B2BB LD A,($FE68)  ; #REGa = #R$FE68
  $B2BE DEC A         ;
- $B2BF LD ($FE68),A  ;
- $B2C2 JP NZ,$B24D   ;
+ $B2BF LD ($FE68),A  ; #R$FE68 = #REGa
+ $B2C2 JP NZ,$B24D   ; #R$B24D
  $B2C5 LD B,$1A      ;
  $B2C7 LD HL,$CE12   ;
 *$B2CA LD A,(HL)     ;
@@ -9126,10 +9132,10 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 ; `AttractModeTitleSequence`, entered from the preceding QS/logo stage and
 ; paired with the reverse pass at `0xB2F5`.
 @label=AttractModeTitleFlashForward
-*$B2D5 LD HL,$5800   ;
+*$B2D5 LD HL,$5800   ; #REGhl = #R$5800
  $B2D8 INC (HL)      ;
  $B2D9 BIT 3,(HL)    ;
- $B2DB JP NZ,$B2F5   ;
+ $B2DB JP NZ,$B2F5   ; #R$B2F5
  $B2DE LD DE,$5801   ;
  $B2E1 LD BC,$02FF   ;
  $B2E4 LDIR          ; Flood the full attribute buffer (`0x5800..0x5AFF`) from the current seed byte
@@ -9141,7 +9147,8 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B2EB LD C,A        ;
  $B2EC POP AF        ;
  $B2ED BIT 1,C       ; `S` pressed?
- $B2EF JP Z,$B0BC    ; Start game.
+ $B2EF JP Z,$B0BC    ; #R$B0BC
+                     ; Start game.
  $B2F2 JP $B2D5      ; Jump to #R$B2D5.
 ; Current best read: reverse title flash/fade pass.
 ; This is an internal entry point within `AttractModeTitleSequence`, not a
@@ -9149,7 +9156,7 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 ; restore, and pre-separation prelude.
 @label=AttractModeTitleFlashReverse
 *$B2F5 DEC (HL)      ;
-*$B2F6 LD HL,$5800   ;
+*$B2F6 LD HL,$5800   ; #REGhl = #R$5800
  $B2F9 DEC (HL)      ;
  $B2FA BIT 3,(HL)    ;
  $B2FC JP NZ,$B30A   ;
@@ -9157,11 +9164,11 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B302 LD BC,$02FF   ;
  $B305 LDIR          ; Repeat the same full-buffer attribute flood while stepping the `0x5800` seed
                      ; value back down through the reverse half of the colour cycle.
- $B307 JP $B2F6      ;
+ $B307 JP $B2F6      ; #R$B2F6
 *$B30A INC (HL)      ;
  $B30B DEC A         ;
- $B30C JP NZ,$B2D5   ;
- $B30F LD HL,$5800   ;
+ $B30C JP NZ,$B2D5   ; #R$B2D5
+ $B30F LD HL,$5800   ; #REGhl = #R$5800
  $B312 LD DE,$5801   ;
  $B315 LD (HL),$44   ;
  $B317 LD BC,$02FF   ;
@@ -9189,8 +9196,8 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B33D LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x4E20`) in the title-separation prelude.
                      ; About 120.00 ms at 3.5 MHz.
  $B33F DEC A         ;
- $B340 JP NZ,$B31E   ;
- $B343 JP $B3FB      ;
+ $B340 JP NZ,$B31E   ; #R$B31E
+ $B343 JP $B3FB      ; #R$B3FB
 ; Current best read: attract-mode stage B helper, drawing the split
 ; `BATTLE` / `ZONE` title words with the same X-axis tumble hack used for `QS`.
 ; .
@@ -9200,98 +9207,113 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 ; { second pass: repeat the same pipeline for the `ZONE` title word with its own rotating Y/Z seed tables, fixed X table, and companion line-data family }
 ; LIST#
 @label=AttractModeDrawBattleAndZone
-*$B346 LD HL,$C7B0   ; Current best read: `BATTLE_RotatingYZTable`.
- $B349 LD ($FE42),HL ;
- $B34C LD HL,$CA5E   ; Current best read: `Attract_ZeroAxisCompanionTable`.
- $B34F LD ($FE46),HL ;
- $B352 LD HL,($FE5E) ; First title word X offset.
- $B355 LD ($FE4A),HL ;
- $B358 LD HL,($FE60) ; First title word Z offset.
- $B35B LD ($FE4C),HL ;
+*$B346 LD HL,$C7B0   ; #REGhl = #R$C7B0
+                     ; Current best read: `BATTLE_RotatingYZTable`.
+ $B349 LD ($FE42),HL ; #R$FE42 = #REGhl
+ $B34C LD HL,$CA5E   ; #REGhl = #R$CA5E
+                     ; Current best read: `Attract_ZeroAxisCompanionTable`.
+ $B34F LD ($FE46),HL ; #R$FE46 = #REGhl
+ $B352 LD HL,($FE5E) ; #REGhl = #R$FE5E
+                     ; First title word X offset.
+ $B355 LD ($FE4A),HL ; #R$FE4A = #REGhl
+ $B358 LD HL,($FE60) ; #REGhl = #R$FE60
+                     ; First title word Z offset.
+ $B35B LD ($FE4C),HL ; #R$FE4C = #REGhl
  $B35E LD HL,$DD06   ;
- $B361 LD ($FE32),HL ;
+ $B361 LD ($FE32),HL ; #R$FE32 = #REGhl
  $B364 LD HL,$DDB6   ;
- $B367 LD ($FE36),HL ;
- $B36A LD A,($FE62)  ; First title word angle.
+ $B367 LD ($FE36),HL ; #R$FE36 = #REGhl
+ $B36A LD A,($FE62)  ; #REGa = #R$FE62
+                     ; First title word angle.
  $B36D LD L,A        ;
  $B36E LD A,$1A      ; Probable attract-mode X-axis rotation hack, part 1:
                      ; feed a non-standard coordinate pair through the normal
                      ; X/Z rotator at #R$88EA to obtain a rotated Y/Z pair.
- $B370 CALL $88EA    ;
- $B373 LD HL,($FE32) ; Take the freshly rotated first output table
+ $B370 CALL $88EA    ; #R$88EA
+ $B373 LD HL,($FE32) ; #REGhl = #R$FE32
+                     ; Take the freshly rotated first output table
  $B376 LD ($FE34),HL ; and reuse it as the Y-input table for #R$8660.
- $B379 LD HL,$C814   ; Swap in `BATTLE_FixedXTable` before
+ $B379 LD HL,$C814   ; #REGhl = #R$C814
+                     ; Swap in `BATTLE_FixedXTable` before
                      ; perspective projection.
- $B37C LD ($FE32),HL ;
+ $B37C LD ($FE32),HL ; #R$FE32 = #REGhl
  $B37F LD HL,$DEC4   ;
- $B382 LD ($FE38),HL ;
+ $B382 LD ($FE38),HL ; #R$FE38 = #REGhl
  $B385 LD HL,$DEFC   ;
- $B388 LD ($FE3A),HL ;
+ $B388 LD ($FE3A),HL ; #R$FE3A = #REGhl
  $B38B LD A,$16      ;
- $B38D CALL $8660    ;
+ $B38D CALL $8660    ; #R$8660
  $B390 LD A,C        ;
  $B391 AND A         ;
  $B392 RET NZ        ;
- $B393 LD HL,$C602   ; First line-data block in the paired title-word family;
+ $B393 LD HL,$C602   ; #REGhl = #R$C602
+                     ; First line-data block in the paired title-word family;
                      ; current best read: the wider `BATTLE` piece.
- $B396 LD ($FE02),HL ;
- $B399 CALL $805C    ;
- $B39C LD HL,$C7E4   ; Current best read: `ZONE_RotatingYZTable`.
- $B39F LD ($FE42),HL ;
- $B3A2 LD HL,$CA5E   ; Current best read: `Attract_ZeroAxisCompanionTable`.
- $B3A5 LD ($FE46),HL ;
- $B3A8 LD HL,($FE8E) ; Second title word X offset.
- $B3AB LD ($FE4A),HL ;
- $B3AE LD HL,($FE90) ; Second title word Z offset.
- $B3B1 LD ($FE4C),HL ;
+ $B396 LD ($FE02),HL ; #R$FE02 = #REGhl
+ $B399 CALL $805C    ; #R$805C
+ $B39C LD HL,$C7E4   ; #REGhl = #R$C7E4
+                     ; Current best read: `ZONE_RotatingYZTable`.
+ $B39F LD ($FE42),HL ; #R$FE42 = #REGhl
+ $B3A2 LD HL,$CA5E   ; #REGhl = #R$CA5E
+                     ; Current best read: `Attract_ZeroAxisCompanionTable`.
+ $B3A5 LD ($FE46),HL ; #R$FE46 = #REGhl
+ $B3A8 LD HL,($FE8E) ; #REGhl = #R$FE8E
+                     ; Second title word X offset.
+ $B3AB LD ($FE4A),HL ; #R$FE4A = #REGhl
+ $B3AE LD HL,($FE90) ; #REGhl = #R$FE90
+                     ; Second title word Z offset.
+ $B3B1 LD ($FE4C),HL ; #R$FE4C = #REGhl
  $B3B4 LD HL,$DD00   ;
- $B3B7 LD ($FE32),HL ;
+ $B3B7 LD ($FE32),HL ; #R$FE32 = #REGhl
  $B3BA LD HL,$DDB0   ;
- $B3BD LD ($FE36),HL ;
- $B3C0 LD A,($FE92)  ; Second title word angle.
+ $B3BD LD ($FE36),HL ; #R$FE36 = #REGhl
+ $B3C0 LD A,($FE92)  ; #REGa = #R$FE92
+                     ; Second title word angle.
  $B3C3 LD L,A        ;
  $B3C4 LD A,$17      ; Same probable attract-mode Y/Z-rotation hack for the
                      ; second title/logo piece.
- $B3C6 CALL $88EA    ;
- $B3C9 LD HL,($FE32) ;
- $B3CC LD ($FE34),HL ;
- $B3CF LD HL,$C848   ; Swap in `ZONE_FixedXTable`.
- $B3D2 LD ($FE32),HL ;
+ $B3C6 CALL $88EA    ; #R$88EA
+ $B3C9 LD HL,($FE32) ; #REGhl = #R$FE32
+ $B3CC LD ($FE34),HL ; #R$FE34 = #REGhl
+ $B3CF LD HL,$C848   ; #REGhl = #R$C848
+                     ; Swap in `ZONE_FixedXTable`.
+ $B3D2 LD ($FE32),HL ; #R$FE32 = #REGhl
  $B3D5 LD HL,$DEBE   ;
- $B3D8 LD ($FE38),HL ;
+ $B3D8 LD ($FE38),HL ; #R$FE38 = #REGhl
  $B3DB LD HL,$DEF6   ;
- $B3DE LD ($FE3A),HL ;
+ $B3DE LD ($FE3A),HL ; #R$FE3A = #REGhl
  $B3E1 LD A,$13      ;
- $B3E3 CALL $8660    ;
+ $B3E3 CALL $8660    ; #R$8660
  $B3E6 LD A,C        ;
  $B3E7 AND A         ;
  $B3E8 RET NZ        ;
- $B3E9 CALL $805C    ; `LNLPT` advances FE02, so this second draw likely uses
+ $B3E9 CALL $805C    ; #R$805C
+                     ; `LNLPT` advances FE02, so this second draw likely uses
                      ; `ZONE_LineData`; current best read: the
                      ; narrower `ZONE` piece.
- $B3EC CALL $8C3C    ;
+ $B3EC CALL $8C3C    ; #R$8C3C
  $B3EF LD A,$FD      ;
  $B3F1 IN A,($FE)    ;
  $B3F3 AND $02       ;
  $B3F5 RET NZ        ;
  $B3F6 POP HL        ;
  $B3F7 POP HL        ;
- $B3F8 JP $B0BC      ;
+ $B3F8 JP $B0BC      ; #R$B0BC
 ; Current best read: post-title separation / zoom-away phase.
 ; .
 ; This block seeds the shared title-word positions and angles, then steps through
 ; the later motion sub-phases at `B418`, `B43B`, `B451`, `B48C`, and `B4D1`.
 @label=AttractModeTitleSeparationAndFlyoff
 *$B3FB LD HL,$0000   ;
- $B3FE LD ($FE8E),HL ;
- $B401 LD ($FE5E),HL ;
+ $B3FE LD ($FE8E),HL ; #R$FE8E = #REGhl
+ $B401 LD ($FE5E),HL ; #R$FE5E = #REGhl
  $B404 SUB A         ;
- $B405 LD ($FE62),A  ;
+ $B405 LD ($FE62),A  ; #R$FE62 = #REGa
  $B408 LD A,$40      ;
- $B40A LD ($FE92),A  ;
+ $B40A LD ($FE92),A  ; #R$FE92 = #REGa
  $B40D LD HL,$0000   ;
- $B410 LD ($FE60),HL ;
- $B413 LD ($FE90),HL ;
+ $B410 LD ($FE60),HL ; #R$FE60 = #REGhl
+ $B413 LD ($FE90),HL ; #R$FE90 = #REGhl
  $B416 LD B,$18      ;
 ; Current best read: first post-title motion pass.
 ; Both title words still share the same horizontal offsets (`FE5E=FE8E=0`),
@@ -9299,59 +9321,59 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 ; (`FE60=FE90`) are stepped together before each call to
 ; `AttractModeDrawBattleAndZone`.
 @label=AttractModeTitleJointMotionPass
-*$B418 LD A,($FE62)  ;
+*$B418 LD A,($FE62)  ; #REGa = #R$FE62
  $B41B ADD A,$10     ;
- $B41D LD ($FE62),A  ;
+ $B41D LD ($FE62),A  ; #R$FE62 = #REGa
  $B420 ADD A,$40     ;
- $B422 LD ($FE92),A  ;
- $B425 LD HL,($FE60) ;
+ $B422 LD ($FE92),A  ; #R$FE92 = #REGa
+ $B425 LD HL,($FE60) ; #REGhl = #R$FE60
  $B428 LD DE,$0032   ;
  $B42B ADD HL,DE     ;
- $B42C LD ($FE60),HL ;
- $B42F LD ($FE90),HL ;
+ $B42C LD ($FE60),HL ; #R$FE60 = #REGhl
+ $B42F LD ($FE90),HL ; #R$FE90 = #REGhl
  $B432 PUSH BC       ;
- $B433 CALL $B346    ;
+ $B433 CALL $B346    ; #R$B346
  $B436 POP BC        ;
- $B437 DJNZ $B418    ;
+ $B437 DJNZ $B418    ; #R$B418
  $B439 LD B,$08      ;
 ; Current best read: short hold/settle pass.
 ; The words keep tumbling and their angles still advance, but the shared Z
 ; offset is held steady.
 @label=AttractModeTitleHoldPass
-*$B43B LD A,($FE62)  ;
+*$B43B LD A,($FE62)  ; #REGa = #R$FE62
  $B43E ADD A,$10     ;
- $B440 LD ($FE62),A  ;
+ $B440 LD ($FE62),A  ; #R$FE62 = #REGa
  $B443 ADD A,$40     ;
- $B445 LD ($FE92),A  ;
+ $B445 LD ($FE92),A  ; #R$FE92 = #REGa
  $B448 PUSH BC       ;
- $B449 CALL $B346    ;
+ $B449 CALL $B346    ; #R$B346
  $B44C POP BC        ;
- $B44D DJNZ $B43B    ;
+ $B44D DJNZ $B43B    ; #R$B43B
  $B44F LD B,$10      ;
 ; Current best read: title separation pass.
 ; The first word moves right via `FE5E += 2`, the second moves left via
 ; `FE8E -= 4`, while both tumble angles continue to advance.
 @label=AttractModeTitleSeparationPass
-*$B451 LD A,($FE62)  ;
+*$B451 LD A,($FE62)  ; #REGa = #R$FE62
  $B454 ADD A,$10     ;
- $B456 LD ($FE62),A  ;
- $B459 LD A,($FE92)  ;
+ $B456 LD ($FE62),A  ; #R$FE62 = #REGa
+ $B459 LD A,($FE92)  ; #REGa = #R$FE92
  $B45C ADD A,$0C     ;
- $B45E LD ($FE92),A  ;
- $B461 LD HL,($FE5E) ;
+ $B45E LD ($FE92),A  ; #R$FE92 = #REGa
+ $B461 LD HL,($FE5E) ; #REGhl = #R$FE5E
  $B464 INC HL        ;
  $B465 INC HL        ;
- $B466 LD ($FE5E),HL ;
- $B469 LD HL,($FE8E) ;
+ $B466 LD ($FE5E),HL ; #R$FE5E = #REGhl
+ $B469 LD HL,($FE8E) ; #REGhl = #R$FE8E
  $B46C DEC HL        ;
  $B46D DEC HL        ;
  $B46E DEC HL        ;
  $B46F DEC HL        ;
- $B470 LD ($FE8E),HL ;
+ $B470 LD ($FE8E),HL ; #R$FE8E = #REGhl
  $B473 PUSH BC       ;
- $B474 CALL $B346    ;
+ $B474 CALL $B346    ; #R$B346
  $B477 POP BC        ;
- $B478 DJNZ $B451    ;
+ $B478 DJNZ $B451    ; #R$B451
  $B47A LD HL,$0000   ;
  $B47D LD DE,$0000   ;
  $B480 LD BC,$0000   ;
@@ -9361,14 +9383,15 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
                      ; About 393.21 ms at 3.5 MHz.
  $B487 LDIR          ; Third full-length `BC=0` delay in the same pause block.
                      ; About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
- $B489 JP $B4B2      ;
+ $B489 JP $B4B2      ; #R$B4B2
 ; Current best read: attract-mode credits/footer text stage.
 ; .
 ; It prints the lower-screen footer text plus the `1984` year digits, pauses,
 ; and then hands off to the later flyoff/footer redraw phase.
 @label=AttractModeCreditsFooter
 *$B48C LD B,$20      ;
- $B48E LD HL,$C5DA   ; Current best read: `AttractModeCreditsFooterText`, i.e. the lower-screen
+ $B48E LD HL,$C5DA   ; #REGhl = #R$C5DA
+                     ; Current best read: `AttractModeCreditsFooterText`, i.e. the lower-screen
                      ; `BY BILL WITTS / QUICKSILVA` footer.
 *$B491 LD A,(HL)     ;
  $B492 INC HL        ;
@@ -9382,15 +9405,15 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B49A LD BC,$5015   ; Base destination for the `1984` footer-year digits, just below the attract
                      ; credits text.
  $B49D LD A,$01      ;
- $B49F CALL $948C    ;
+ $B49F CALL $948C    ; #R$948C
  $B4A2 LD A,$09      ;
- $B4A4 CALL $948C    ;
+ $B4A4 CALL $948C    ; #R$948C
  $B4A7 LD A,$08      ;
- $B4A9 CALL $948C    ;
+ $B4A9 CALL $948C    ; #R$948C
  $B4AC LD A,$04      ;
- $B4AE CALL $948C    ;
+ $B4AE CALL $948C    ; #R$948C
  $B4B1 RET           ;
-*$B4B2 CALL $B48C    ;
+*$B4B2 CALL $B48C    ; #R$B48C
  $B4B5 LD HL,$0000   ;
  $B4B8 LD DE,$0000   ;
  $B4BB LD BC,$0000   ;
@@ -9400,7 +9423,7 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
                      ; About 393.21 ms at 3.5 MHz.
  $B4C2 LDIR          ; Third full-length `BC=0` delay in the same block.
                      ; About 393.21 ms at 3.5 MHz, or about 1.18 s across the 3-pass pause.
- $B4C4 LD HL,$4000   ;
+ $B4C4 LD HL,$4000   ; #REGhl = #R$4000
  $B4C7 LD DE,$4001   ;
  $B4CA LD BC,$07FF   ;
  $B4CD LDIR          ; Clear the top 2048 bytes of the visible bitmap (`0x4000..0x47FF`), i.e. the
@@ -9413,46 +9436,47 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
 ; This is the last long attract-title motion stage before the forced showcase
 ; setup and entity-demo pages.
 @label=AttractModeTitleFlyoffWithFooter
-*$B4D1 LD HL,($FE60) ;
+*$B4D1 LD HL,($FE60) ; #REGhl = #R$FE60
  $B4D4 LD DE,$00C8   ;
  $B4D7 ADD HL,DE     ;
- $B4D8 LD ($FE60),HL ;
- $B4DB LD HL,($FE90) ;
+ $B4D8 LD ($FE60),HL ; #R$FE60 = #REGhl
+ $B4DB LD HL,($FE90) ; #REGhl = #R$FE90
  $B4DE ADD HL,DE     ;
- $B4DF LD ($FE90),HL ;
- $B4E2 LD A,($FE62)  ;
+ $B4DF LD ($FE90),HL ; #R$FE90 = #REGhl
+ $B4E2 LD A,($FE62)  ; #REGa = #R$FE62
  $B4E5 SUB $08       ;
- $B4E7 LD ($FE62),A  ;
- $B4EA LD A,($FE92)  ;
+ $B4E7 LD ($FE62),A  ; #R$FE62 = #REGa
+ $B4EA LD A,($FE92)  ; #REGa = #R$FE92
  $B4ED ADD A,$08     ;
- $B4EF LD ($FE92),A  ;
+ $B4EF LD ($FE92),A  ; #R$FE92 = #REGa
  $B4F2 PUSH BC       ;
- $B4F3 CALL $B346    ;
- $B4F6 CALL $B48C    ;
+ $B4F3 CALL $B346    ; #R$B346
+ $B4F6 CALL $B48C    ; #R$B48C
  $B4F9 POP BC        ;
- $B4FA DJNZ $B4D1    ;
- $B4FC LD HL,$4000   ;
+ $B4FA DJNZ $B4D1    ; #R$B4D1
+ $B4FC LD HL,$4000   ; #REGhl = #R$4000
  $B4FF LD DE,$4001   ;
  $B502 LD BC,$17FF   ;
  $B505 LD (HL),$00   ;
  $B507 LDIR          ; Clear the full 6144-byte visible bitmap (`0x4000..0x57FF`) after the title
                      ; flyoff completes.
  $B509 LD A,$80      ;
- $B50B LD ($FEEC),A  ;
+ $B50B LD ($FEEC),A  ; #R$FEEC = #REGa
  $B50E LD A,$C9      ; Probable self-modifying attract-mode hack:
- $B510 LD ($8C3C),A  ; patch SDRAW temporarily,
+ $B510 LD ($8C3C),A  ; #R$8C3C = #REGa
+                     ; patch SDRAW temporarily,
  $B513 SUB A         ;
  $B514 LD ($960D),A  ; and patch the `LD (HL),$43` immediate at `0x960C` down to `0x00`,
                      ; so the showcase reinitialiser makes the top five attribute rows black on
                      ; black instead of bright magenta on black.
- $B517 CALL $956A    ;
+ $B517 CALL $956A    ; #R$956A
  $B51A LD A,$21      ; Restore the patched bytes after the forced demo setup.
- $B51C LD ($8C3C),A  ;
- $B51F CALL $8C5E    ;
+ $B51C LD ($8C3C),A  ; #R$8C3C = #REGa
+ $B51F CALL $8C5E    ; #R$8C5E
  $B522 LD A,$43      ;
  $B524 LD ($960D),A  ; Restore the `0x960C` immediate to `0x43`
                      ; = bright magenta ink on black paper for the normal top status strip.
- $B527 LD HL,$4000   ;
+ $B527 LD HL,$4000   ; #REGhl = #R$4000
  $B52A LD DE,$4001   ;
  $B52D LD BC,$1800   ;
  $B530 LD (HL),$00   ; Clear the full 6144-byte visible bitmap; because the overlap-fill runs one
@@ -9468,16 +9492,16 @@ c$B1F4 LD A,$12      ; {FLASH: OFF.
  $B53B LD BC,$0260   ;
  $B53E LDIR          ; Fill the remaining nineteen attribute rows (`0x58A0..0x5AFF`) with `0x44`
                      ; = bright green ink on black paper, no flash.
- $B540 CALL $8C3C    ;
+ $B540 CALL $8C3C    ; #R$8C3C
  $B543 LD HL,$1000   ;
- $B546 LD ($FE5E),HL ;
+ $B546 LD ($FE5E),HL ; #R$FE5E = #REGhl
  $B549 LD HL,$2800   ;
- $B54C LD ($FE60),HL ;
+ $B54C LD ($FE60),HL ; #R$FE60 = #REGhl
  $B54F LD HL,$00C0   ;
- $B552 LD ($FE62),HL ;
+ $B552 LD ($FE62),HL ; #R$FE62 = #REGhl
  $B555 LD A,$40      ;
- $B557 LD ($FE66),A  ;
- $B55A JP $B587      ;
+ $B557 LD ($FE66),A  ; #R$FE66 = #REGa
+ $B55A JP $B587      ; #R$B587
 
 ; AttractModeShowcaseFrame
 ;
@@ -9521,7 +9545,7 @@ c$B55D CALL $977E    ; Call #R$977E.
 ; with an `S` check between each showcase stage.
 @label=AttractModeEntityShowcase
 c$B587 LD HL,$00C0   ;
- $B58A LD ($FE62),HL ;
+ $B58A LD ($FE62),HL ; #R$FE62 = #REGhl
 ; Current best read: tank showcase loop.
 ; Evidence:
 ; #LIST
@@ -9531,25 +9555,26 @@ c$B587 LD HL,$00C0   ;
 ; LIST#
 @label=AttractModeShowcaseTank
  $B58D LD HL,$0001   ;
- $B590 LD ($FE76),HL ;
- $B593 CALL $B55D    ;
+ $B590 LD ($FE76),HL ; #R$FE76 = #REGhl
+ $B593 CALL $B55D    ; #R$B55D
  $B596 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B598 IN A,($FE)    ;
  $B59A AND $02       ; `S` pressed?
- $B59C JP Z,$B0BC    ; Start game from the attract loop.
- $B59F LD A,($FE6E)  ;
+ $B59C JP Z,$B0BC    ; #R$B0BC
+                     ; Start game from the attract loop.
+ $B59F LD A,($FE6E)  ; #REGa = #R$FE6E
  $B5A2 AND $80       ;
- $B5A4 JP NZ,$B587   ;
+ $B5A4 JP NZ,$B587   ; #R$B587
  $B5A7 LD A,($FE5F)  ;
  $B5AA AND A         ;
- $B5AB JP P,$B587    ;
+ $B5AB JP P,$B587    ; #R$B587
  $B5AE LD HL,$F000   ;
- $B5B1 LD ($FE5E),HL ;
+ $B5B1 LD ($FE5E),HL ; #R$FE5E = #REGhl
  $B5B4 LD HL,$2800   ;
- $B5B7 LD ($FE60),HL ;
+ $B5B7 LD ($FE60),HL ; #R$FE60 = #REGhl
  $B5BA LD A,$40      ;
- $B5BC LD ($FE66),A  ;
- $B5BF LD ($FE6A),A  ;
+ $B5BC LD ($FE66),A  ; #R$FE66 = #REGa
+ $B5BF LD ($FE6A),A  ; #R$FE6A = #REGa
 ; Current best read: supertank showcase loop.
 ; Evidence:
 ; #LIST
@@ -9558,30 +9583,31 @@ c$B587 LD HL,$00C0   ;
 ; LIST#
 @label=AttractModeShowcaseSupertank
 *$B5C2 LD HL,$0040   ;
- $B5C5 LD ($FE62),HL ;
+ $B5C5 LD ($FE62),HL ; #R$FE62 = #REGhl
  $B5C8 LD HL,$0003   ;
- $B5CB LD ($FE76),HL ;
- $B5CE CALL $B55D    ;
+ $B5CB LD ($FE76),HL ; #R$FE76 = #REGhl
+ $B5CE CALL $B55D    ; #R$B55D
  $B5D1 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B5D3 IN A,($FE)    ;
  $B5D5 AND $02       ; `S` pressed?
- $B5D7 JP Z,$B0BC    ; Start game from the attract loop.
- $B5DA LD A,($FE6E)  ;
+ $B5D7 JP Z,$B0BC    ; #R$B0BC
+                     ; Start game from the attract loop.
+ $B5DA LD A,($FE6E)  ; #REGa = #R$FE6E
  $B5DD AND $40       ;
- $B5DF JP NZ,$B5C2   ;
+ $B5DF JP NZ,$B5C2   ; #R$B5C2
  $B5E2 LD A,($FE5F)  ;
  $B5E5 AND A         ;
- $B5E6 JP M,$B5C2    ;
+ $B5E6 JP M,$B5C2    ; #R$B5C2
  $B5E9 LD A,$FF      ;
- $B5EB LD ($FE94),A  ;
+ $B5EB LD ($FE94),A  ; #R$FE94 = #REGa
  $B5EE LD HL,$FF9C   ;
- $B5F1 LD ($FE96),HL ;
+ $B5F1 LD ($FE96),HL ; #R$FE96 = #REGhl
  $B5F4 LD A,$A0      ;
- $B5F6 LD ($FE6A),A  ;
+ $B5F6 LD ($FE6A),A  ; #R$FE6A = #REGa
  $B5F9 LD HL,$A800   ;
- $B5FC LD ($FE60),HL ;
+ $B5FC LD ($FE60),HL ; #R$FE60 = #REGhl
  $B5FF LD HL,$1000   ;
- $B602 LD ($FE8E),HL ;
+ $B602 LD ($FE8E),HL ; #R$FE8E = #REGhl
 ; Current best read: saucer showcase loop.
 ; Evidence:
 ; #LIST
@@ -9591,24 +9617,25 @@ c$B587 LD HL,$00C0   ;
 ; LIST#
 @label=AttractModeShowcaseSaucer
 *$B605 LD HL,$0000   ;
- $B608 LD ($FE62),HL ;
+ $B608 LD ($FE62),HL ; #R$FE62 = #REGhl
  $B60B LD HL,$0005   ;
- $B60E LD ($FE76),HL ;
- $B611 CALL $B55D    ;
+ $B60E LD ($FE76),HL ; #R$FE76 = #REGhl
+ $B611 CALL $B55D    ; #R$B55D
  $B614 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B616 IN A,($FE)    ;
  $B618 AND $02       ; `S` pressed?
- $B61A JP Z,$B0BC    ; Start game from the attract loop.
- $B61D LD A,($FE6E)  ;
+ $B61A JP Z,$B0BC    ; #R$B0BC
+                     ; Start game from the attract loop.
+ $B61D LD A,($FE6E)  ; #REGa = #R$FE6E
  $B620 AND $20       ;
- $B622 JP NZ,$B605   ;
+ $B622 JP NZ,$B605   ; #R$B605
  $B625 LD A,($FE8F)  ;
  $B628 AND A         ;
- $B629 JP P,$B605    ;
+ $B629 JP P,$B605    ; #R$B605
  $B62C LD A,$03      ;
- $B62E LD ($FE78),A  ;
- $B631 LD HL,$7530   ;
- $B634 LD ($FE70),HL ;
+ $B62E LD ($FE78),A  ; #R$FE78 = #REGa
+ $B631 LD HL,$7530   ; #REGhl = #R$7530
+ $B634 LD ($FE70),HL ; #R$FE70 = #REGhl
 ; Current best read: missile showcase loop.
 ; Evidence:
 ; #LIST
@@ -9618,16 +9645,17 @@ c$B587 LD HL,$00C0   ;
 ; LIST#
 @label=AttractModeShowcaseMissile
 *$B637 LD HL,$0002   ;
- $B63A LD ($FE76),HL ;
- $B63D CALL $B55D    ;
+ $B63A LD ($FE76),HL ; #R$FE76 = #REGhl
+ $B63D CALL $B55D    ; #R$B55D
  $B640 LD A,$FD      ; Read the `A S D F G` keyboard row.
  $B642 IN A,($FE)    ;
  $B644 AND $02       ; `S` pressed?
- $B646 JP Z,$B0BC    ; Start game from the attract loop.
+ $B646 JP Z,$B0BC    ; #R$B0BC
+                     ; Start game from the attract loop.
  $B649 LD A,($FE81)  ;
  $B64C CP $04        ;
- $B64E JP P,$B637    ;
- $B651 LD HL,$4000   ;
+ $B64E JP P,$B637    ; #R$B637
+ $B651 LD HL,$4000   ; #REGhl = #R$4000
  $B654 LD DE,$4001   ;
  $B657 LD BC,$1800   ;
  $B65A LD (HL),$00   ;
@@ -9659,7 +9687,8 @@ c$B66C LD A,(HL)     ; Load the next character from the text pointer in `HL`.
  $B671 POP HL        ; the stack.}
  $B672 INC HL        ; Increment the string pointer by one to point to the next
                      ; character.
- $B673 DJNZ $B66C    ; Decrease the character counter by one and loop back to
+ $B673 DJNZ $B66C    ; #R$B66C
+                     ; Decrease the character counter by one and loop back to
                      ; #R$B66C until all characters have been printed.
  $B675 RET           ; Return.
 
@@ -9679,7 +9708,7 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
 *$B685 LD A,$FD      ;
  $B687 IN A,($FE)    ;
  $B689 AND %00000010 ; Keep only bit 1.
- $B68B JP Z,$B0BC    ;
+ $B68B JP Z,$B0BC    ; #R$B0BC
  $B68E PUSH BC       ;
  $B68F LD HL,$0000   ;
  $B692 LD DE,$0000   ;
@@ -9687,8 +9716,8 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
  $B698 LDIR          ; Full-length `BC=0` dwell delay after the first instructions page.
                      ; About 393.21 ms at 3.5 MHz.
  $B69A POP BC        ;
- $B69B DJNZ $B685    ;
- $B69D LD HL,$4000   ;
+ $B69B DJNZ $B685    ; #R$B685
+ $B69D LD HL,$4000   ; #REGhl = #R$4000
  $B6A0 LD DE,$4001   ;
  $B6A3 LD BC,$17FF   ;
  $B6A6 LD (HL),$00   ;
@@ -9703,7 +9732,7 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
 *$B6B9 LD A,$FD      ;
  $B6BB IN A,($FE)    ;
  $B6BD AND $02       ;
- $B6BF JP Z,$B0BC    ;
+ $B6BF JP Z,$B0BC    ; #R$B0BC
  $B6C2 PUSH BC       ;
  $B6C3 LD HL,$0000   ;
  $B6C6 LD DE,$0000   ;
@@ -9711,23 +9740,23 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
  $B6CC LDIR          ; Full-length `BC=0` dwell delay after the second instructions page.
                      ; About 393.21 ms at 3.5 MHz.
  $B6CE POP BC        ;
- $B6CF DJNZ $B6B9    ;
+ $B6CF DJNZ $B6B9    ; #R$B6B9
  $B6D1 LD HL,$C8B4   ; #HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
                      ; back to *<a rel="noopener nofollow"
                      ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>
                      ; before returning to the title flow.)
  $B6D4 LD ($5C36),HL ;
-*$B6D7 JP $B1F4      ;
- $B6DA LD ($FE76),HL ;
+*$B6D7 JP $B1F4      ; #R$B1F4
+ $B6DA LD ($FE76),HL ; #R$FE76 = #REGhl
  $B6DD CALL $B5FD    ;
  $B6E0 LD A,$FD      ;
  $B6E2 IN A,($FE)    ;
  $B6E4 AND $02       ;
- $B6E6 JP Z,$B0BC    ;
+ $B6E6 JP Z,$B0BC    ; #R$B0BC
  $B6E9 LD A,($FE81)  ;
  $B6EC CP $04        ;
- $B6EE JP P,$B6D7    ;
- $B6F1 LD HL,$4000   ;
+ $B6EE JP P,$B6D7    ; #R$B6D7
+ $B6F1 LD HL,$4000   ; #REGhl = #R$4000
  $B6F4 LD DE,$4001   ;
  $B6F7 LD BC,$1800   ;
  $B6FA LD (HL),$00   ;
@@ -9741,7 +9770,7 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
                      ; `$3C00`, i.e. the standard ROM character set, for the later plain-text
                      ; instructions/text phase.)
  $B706 LD ($5C36),HL ;
- $B709 JP $B716      ;
+ $B709 JP $B716      ; #R$B716
 *$B70C LD A,(HL)     ;
  $B70D PUSH HL       ;
  $B70E PUSH BC       ;
@@ -9760,7 +9789,7 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
 *$B725 LD A,$FD      ;
  $B727 IN A,($FE)    ;
  $B729 AND $02       ;
- $B72B JP Z,$B0BC    ;
+ $B72B JP Z,$B0BC    ; #R$B0BC
  $B72E PUSH BC       ;
  $B72F LD HL,$0000   ;
  $B732 LD DE,$0000   ;
@@ -9768,8 +9797,8 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
  $B738 LDIR          ; Full-length `BC=0` dwell delay in the later instructions/text phase.
                      ; About 393.21 ms at 3.5 MHz.
  $B73A POP BC        ;
- $B73B DJNZ $B725    ;
- $B73D LD HL,$4000   ;
+ $B73B DJNZ $B725    ; #R$B725
+ $B73D LD HL,$4000   ; #REGhl = #R$4000
  $B740 LD DE,$4001   ;
  $B743 LD BC,$17FF   ;
  $B746 LD (HL),$00   ;
@@ -9783,7 +9812,7 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
 *$B759 LD A,$FD      ;
  $B75B IN A,($FE)    ;
  $B75D AND $02       ;
- $B75F JP Z,$B0BC    ;
+ $B75F JP Z,$B0BC    ; #R$B0BC
  $B762 PUSH BC       ;
  $B763 LD HL,$0000   ;
  $B766 LD DE,$0000   ;
@@ -9791,7 +9820,7 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
  $B76C LDIR          ; Full-length `BC=0` dwell delay after the final instructions text.
                      ; About 393.21 ms at 3.5 MHz.
  $B76E POP BC        ;
- $B76F DJNZ $B759    ;
+ $B76F DJNZ $B759    ; #R$B759
  $B771 LD HL,$C8B4   ; {#HTML(Restore the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
  $B774 LD ($5C36),HL ; to *<a rel="noopener nofollow"
                      ; href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>
