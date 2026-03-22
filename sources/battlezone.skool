@@ -8304,8 +8304,8 @@ c$AD3E LD BC,$0000   ;
  $AD46 AND $E0       ;
  $AD48 JP Z,$AD50    ;
  $AD4B LD A,$F3      ;
- $AD4D LD ($F732),A  ;
-*$AD50 LD A,($F732)  ;
+ $AD4D LD ($F732),A  ; #REGa = #R$F732.
+*$AD50 LD A,($F732)  ; #R$F732 = #REGa.
  $AD53 CP $F3        ;
  $AD55 JP NZ,$AD5A   ;
  $AD58 SUB A         ;
@@ -8351,9 +8351,9 @@ c$AD3E LD BC,$0000   ;
  $ADB6 JP $ADBB      ;
 *$ADB9 SUB A         ;
  $ADBA RET           ;
-*$ADBB LD A,($FE54)  ;
+*$ADBB LD A,($FE54)  ; #REGa = #R$FE54.
  $ADBE OR D          ;
- $ADBF LD ($FE54),A  ;
+ $ADBF LD ($FE54),A  ; #R$FE54 = #REGa.
  $ADC2 LD A,C        ;
  $ADC3 RET           ;
 
@@ -8380,11 +8380,11 @@ u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; This entry point is used by the routine at #R$977E.
 @label=CRASH
 c$ADD4 LD A,$C9      ;
- $ADD6 LD ($8C5E),A  ;
+ $ADD6 LD ($8C5E),A  ; #R$8C5E = #REGa.
  $ADD9 LD HL,$C8B4   ;
  $ADDC LD ($5C36),HL ;
- $ADDF LD HL,$CC9C   ;
- $ADE2 LD ($FE02),HL ;
+ $ADDF LD HL,$CC9C   ; #REGhl = #R$CC9C.
+ $ADE2 LD ($FE02),HL ; #R$FE02 = #REGhl.
  $ADE5 CALL $8D68    ;
  $ADE8 CALL $8E08    ;
  $ADEB CALL $8E38    ;
@@ -8399,8 +8399,8 @@ c$ADD4 LD A,$C9      ;
  $AE06 LD BC,$2710   ;
  $AE09 LDIR          ; Calibrated delay (`HL=DE=0`, `BC=0x2710`) between early crash-overlay passes.
                      ; About 60.00 ms at 3.5 MHz.
- $AE0B LD HL,$CC9C   ;
- $AE0E LD ($FE02),HL ;
+ $AE0B LD HL,$CC9C   ; #REGhl = #R$CC9C.
+ $AE0E LD ($FE02),HL ; #R$FE02 = #REGhl.
  $AE11 CALL $805C    ;
  $AE14 CALL $805C    ;
  $AE17 CALL $8C3C    ;
@@ -8412,13 +8412,13 @@ c$ADD4 LD A,$C9      ;
  $AE29 LD BC,$2710   ;
  $AE2C LDIR          ; Second calibrated delay (`HL=DE=0`, `BC=0x2710`) in the same crash sequence.
                      ; About 60.00 ms at 3.5 MHz.
- $AE2E LD HL,$CC9C   ;
- $AE31 LD ($FE02),HL ;
+ $AE2E LD HL,$CC9C   ; #REGhl = #R$CC9C.
+ $AE31 LD ($FE02),HL ; #R$FE02 = #REGhl.
  $AE34 CALL $805C    ;
  $AE37 CALL $805C    ;
  $AE3A CALL $805C    ;
  $AE3D LD A,$21      ;
- $AE3F LD ($8C5E),A  ;
+ $AE3F LD ($8C5E),A  ; #R$8C5E = #REGa.
  $AE42 CALL $8C3C    ;
  $AE45 LD B,$14      ;
 *$AE47 PUSH BC       ;
@@ -8433,9 +8433,9 @@ c$ADD4 LD A,$C9      ;
                      ; About 120.00 ms per pass at 3.5 MHz, before the enclosing 20-iteration loop.
  $AE5B POP BC        ;
  $AE5C DJNZ $AE47    ;
- $AE5E LD A,($FEE4)  ; Load lives (`SHIPS` in the notebook).
+ $AE5E LD A,($FEE4)  ; #REGa = #R$FEE4.
  $AE61 DEC A         ;
- $AE62 LD ($FEE4),A  ; Store decremented lives.
+ $AE62 LD ($FEE4),A  ; #R$FEE4 = #REGa.
  $AE65 JP Z,$AE90    ;
  $AE68 CP $07        ;
  $AE6A JP NC,$AE81   ;
@@ -8452,9 +8452,9 @@ c$ADD4 LD A,$C9      ;
  $AE7E CALL $948C    ;
 *$AE81 LD B,$18      ;
  $AE83 SUB A         ;
- $AE84 LD ($FE6A),A  ;
- $AE87 LD ($FE6C),A  ;
- $AE8A LD ($FE6E),A  ;
+ $AE84 LD ($FE6A),A  ; #R$FE6A = #REGa.
+ $AE87 LD ($FE6C),A  ; #R$FE6C = #REGa.
+ $AE8A LD ($FE6E),A  ; #R$FE6E = #REGa.
  $AE8D JP $9644      ;
 *$AE90 LD A,$02      ;
  $AE92 LD HL,$0000   ;
@@ -13332,7 +13332,15 @@ b$F700 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F718 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F720 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F728 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $F730 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $F730 DEFB $00,$00
+
+; prob_KEMPSTScratch
+;
+; Provisional `KEMPST` scratch byte used to round-trip the filtered movement
+; code.
+@label=prob_KEMPSTScratch
+b$F732 DEFB $00
+ $F733 DEFB $00,$00,$00,$00,$00
  $F738 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F740 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $F748 DEFB $00,$00,$00,$00,$00,$00,$00,$00

@@ -5935,7 +5935,9 @@ C $AD46,h2
 C $AD48,h3
 C $AD4B,h2
 C $AD4D,h3
+. #REGa = #R$F732.
 C $AD50,h3
+. #R$F732 = #REGa.
 C $AD53,h2
 C $AD55,h3
 C $AD5D,h2
@@ -5976,7 +5978,9 @@ C $ADB1,h3
 C $ADB4,h2
 C $ADB6,h3
 C $ADBB,h3
+. #REGa = #R$FE54.
 C $ADBF,h3
+. #R$FE54 = #REGa.
 u $ADC4
 . Padding / reserved growth space after `KEMPST`.
 . This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
@@ -5999,10 +6003,13 @@ D $ADD4
 c $ADD4 CRASH
 C $ADD4,h2
 C $ADD6,h3
+. #R$8C5E = #REGa.
 C $ADD9,h3
 C $ADDC,h3
 C $ADDF,h3
+. #REGhl = #R$CC9C.
 C $ADE2,h3
+. #R$FE02 = #REGhl.
 C $ADE5,h3
 C $ADE8,h3
 C $ADEB,h3
@@ -6019,7 +6026,9 @@ C $AE09,h2
 . Calibrated delay (`HL=DE=0`, `BC=0x2710`) between early crash-overlay passes.
 . About 60.00 ms at 3.5 MHz.
 C $AE0B,h3
+. #REGhl = #R$CC9C.
 C $AE0E,h3
+. #R$FE02 = #REGhl.
 C $AE11,h3
 C $AE14,h3
 C $AE17,h3
@@ -6033,12 +6042,15 @@ C $AE2C,h2
 . Second calibrated delay (`HL=DE=0`, `BC=0x2710`) in the same crash sequence.
 . About 60.00 ms at 3.5 MHz.
 C $AE2E,h3
+. #REGhl = #R$CC9C.
 C $AE31,h3
+. #R$FE02 = #REGhl.
 C $AE34,h3
 C $AE37,h3
 C $AE3A,h3
 C $AE3D,h2
 C $AE3F,h3
+. #R$8C5E = #REGa.
 C $AE42,h3
 C $AE45,h2
 C $AE48,h3
@@ -6051,10 +6063,10 @@ C $AE59,h2
 . About 120.00 ms per pass at 3.5 MHz, before the enclosing 20-iteration loop.
 C $AE5C,h2
 C $AE5E,h3
-. Load lives (`SHIPS` in the notebook).
+. #REGa = #R$FEE4.
 C $AE61,1
 C $AE62,h3
-. Store decremented lives.
+. #R$FEE4 = #REGa.
 C $AE65,h3
 C $AE68,h2
 C $AE6A,h3
@@ -6066,8 +6078,11 @@ C $AE7C,h2
 C $AE7E,h3
 C $AE81,h2
 C $AE84,h3
+. #R$FE6A = #REGa.
 C $AE87,h3
+. #R$FE6C = #REGa.
 C $AE8A,h3
+. #R$FE6E = #REGa.
 C $AE8D,h3
 C $AE90,h2
 C $AE92,h3
@@ -9753,7 +9768,12 @@ B $F710,8,h8
 B $F718,8,h8
 B $F720,8,h8
 B $F728,8,h8
-B $F730,8,h8
+B $F730,2,h2
+b $F732 prob_KEMPSTScratch
+D $F732 Provisional `KEMPST` scratch byte used to round-trip the filtered movement code.
+@ $F732 label=prob_KEMPSTScratch
+B $F732,1,h1
+B $F733,5,h5
 B $F738,8,h8
 B $F740,8,h8
 B $F748,8,h8

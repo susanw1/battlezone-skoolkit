@@ -165,6 +165,7 @@ Working summary of verified facts, local source material, and open questions for
 - Added `NumberGlyphs` label at `0xCD80`.
 - Added a confident joystick-input mapping:
 - `KEMPST` at `0xAD3E`: reads Kempston port `0x1F` and maps joystick state into the movement bitfield
+- `prob_KEMPSTScratch` at `0xF732`: provisional scratch byte used internally by `KEMPST` while it round-trips the filtered movement code
 - the `0xA685..0xA75E` block now has notebook-backed comments as the `KEYIN` / keyboard-interpretation path that merges input, applies obstacle masking, and sets up `KMOV` / `TURN`
 - that input block is now split more explicitly as:
   - `KEYIN` / `InputDecodeAndMask` at `0xA685`

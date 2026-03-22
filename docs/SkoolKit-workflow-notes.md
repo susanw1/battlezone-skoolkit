@@ -225,6 +225,12 @@ Address-decoding rule:
   sure the row-level note still names the relevant `#R$...` slot
 - use `utils/addr_comment_audit.py` to list address-bearing instruction rows and
   get a conservative set of suggested decode fragments before editing
+- the audit helper skips `CALL`/`JP`/`JR` targets because SkoolKit already
+  renders those as links; use it for load/store-style address rows instead
+- if a memory slot is clearly used but not yet fully named, give it a provisional
+  label such as `prob_...` or `unknown_...` and add a short note in the data
+  area describing where it is used; do not leave repeated anonymous references
+  as dead work
 
 Status taxonomy:
 
@@ -316,6 +322,8 @@ So:
 
 - labels on `CALL`, `JP`, `JR` targets are high-value
 - data/table anchors are high-value
+- the row-comment audit should not try to annotate branch targets, because the
+  HTML already links them
 - for non-clickable operands, a `#R` comment is often the most readable way to
   add a hyperlink in the HTML
 - for workspace/status slots, `#R$...` works much better when those slots are
