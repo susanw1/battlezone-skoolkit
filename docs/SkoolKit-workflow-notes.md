@@ -177,6 +177,20 @@ Practical rule:
   not change that symbolic-only key column, but it does help with ordinary
   entry links and `#R$...` address targets elsewhere
 
+Compact decoder routines:
+
+- for a routine whose job is mostly to decode a hardware input or similar
+  compact protocol, lead with a small table that maps the bits/fields first
+- keep the top summary to one short behavioural paragraph, then use row-level
+  comments for the exact instruction effects
+- if the routine uses a real but not-yet-final scratch slot, give it a
+  provisional `prob_...` label and a short note in the data area
+- keep speculative reasoning out of the row comments themselves; put it in a
+  prose note or a maintainer comment instead
+- this pattern is especially useful for routines like `KEMPST`, where the
+  external interface is simple but the internal byte-flow still benefits from
+  line-by-line decoding
+
 Large-page structuring rule:
 
 - when a long code chain is one coherent routine page, do not split it into

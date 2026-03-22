@@ -4,7 +4,8 @@
 The goal is conservative: identify lines whose instruction contains an address
 operand but whose comment does not yet mention that address in a linkable form.
 For a small set of common load/store patterns, also suggest a terse comment
-fragment that can be appended manually in ctl.
+fragment that can be appended manually in ctl. Branch/call targets are skipped
+because SkoolKit already renders those as links.
 
 Usage:
   python3 utils/addr_comment_audit.py sources/battlezone.skool
@@ -36,7 +37,7 @@ INSTR_RE = re.compile(
 MEM_LOAD_RE = re.compile(r"^LD\s+(?P<reg>A|BC|DE|HL|SP),\(\$(?P<addr>[0-9A-F]{4})\)$")
 MEM_STORE_RE = re.compile(r"^LD\s+\(\$(?P<addr>[0-9A-F]{4})\),(?P<reg>A|BC|DE|HL|SP)$")
 IMM_LOAD_RE = re.compile(r"^LD\s+(?P<reg>A|BC|DE|HL|SP),\$(?P<addr>[0-9A-F]{4})$")
-CALL_JP_RE = re.compile(r"^(?:CALL|JP)\s+\$?(?P<addr>[0-9A-F]{4})$")
+BRANCH_RE = re.compile(r"^(?:CALL|JP|JR)\s+\$?(?P<addr>[0-9A-F]{4})$")
 
 
 REG_MAP = {
@@ -77,7 +78,7 @@ def suggest_comment(instr: str, known_targets: set[str]) -> str:
         addr = m.group("addr")
         if addr in known_targets:
             return f"{reg} = #R${addr}"
-        return f"{reg} = ${addr}"
+        return ""
 
     m = MEM_STORE_RE.match(instr)
     if m:
@@ -85,7 +86,7 @@ def suggest_comment(instr: str, known_targets: set[str]) -> str:
         addr = m.group("addr")
         if addr in known_targets:
             return f"#R${addr} = {reg}"
-        return f"${addr} = {reg}"
+        return ""
 
     m = IMM_LOAD_RE.match(instr)
     if m:
@@ -93,19 +94,15 @@ def suggest_comment(instr: str, known_targets: set[str]) -> str:
         addr = m.group("addr")
         if addr in known_targets:
             return f"{reg} = #R${addr}"
-        return f"{reg} = ${addr}"
+        return ""
 
-    m = CALL_JP_RE.match(instr)
-    if m:
-        addr = m.group("addr")
-        if addr in known_targets:
-            return f"#R${addr}"
-        return f"${addr}"
+    if BRANCH_RE.match(instr):
+        return ""
 
-    # Generic fallback for any other instruction that contains a direct address.
-    generic = re.findall(r"\$([0-9A-F]{4})", instr)
+    # Generic fallback only for address-like tokens that resolve to a real ctl target.
+    generic = [a for a in re.findall(r"\$([0-9A-F]{4})", instr) if a in known_targets]
     if generic:
-        linked = [f"#R${a}" if a in known_targets else f"${a}" for a in generic]
+        linked = [f"#R${a}" for a in generic]
         return " / ".join(linked)
 
     return ""

@@ -3642,6 +3642,7 @@ c$8C3C LD HL,$DFA0   ;
  $8C56 LD DE,$4800   ;
  $8C59 LD BC,$1000   ;
  $8C5C LDIR          ;
+; SELF-MODIFYING CODE ALERT!
 ; This entry point is used by the title flash/fade phase inside `AttractModeTitleSequence`.
 ; The crash/death path at `0xADD4` temporarily patches this opcode byte to
 ; `RET` (`0xC9`) and later restores it to `LD HL,nn` (`0x21`) at `0xAE3D`.
@@ -8282,9 +8283,11 @@ c$AD0C DI            ; Disable interrupts.
  $AD16 LDIR          ; }
  $AD18 JP $B1F4      ; Jump to #R$B1F4.
 
+; More padding
+;
 ; Padding / reserved space between the title-entry copy block and `KEMPST`.
 ; No direct callers/jumpers land here, and no code currently reads from it.
-b$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
+u$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD23 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD2B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD33 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -8292,70 +8295,83 @@ b$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; KEMPST
 ;
-; Used by the routine at #R$977E.
+; Callable subroutine used by the routine at #R$977E. Reads the status of a Kempston joystick and interprets what it says.
+; Status is read from port $1F and return result as KMOV (in #REGa).
+; #TABLE(default,centre,centre,centre,centre,centre,centre,centre,centre)
+; { =h,r2 Item | =h,c8 Bit }
+; { =h 7 | =h 6 | =h 5 | =h 4 | =h 3 | =h 2 | =h 1 | =h 0 }
+; { Port# $1F | 0 | 0 | 0 | FIRE | UP | DOWN | LEFT | RIGHT }
+; { KMOV | FWD | REV | LEFTx1 | RIGHTx1 | LEFTx2 | RIGHTx2 | 0 | 0 }
+; TABLE#
+; First, Joystick is read, and FIRE key is checked. Then, 8 directions are checked individually and mapped to the set of actions. This is fairly simplistic compared to the keyboard - no attempt to mimic the "tank tracks" approach of the keyboard is made. Joystick up and down are mapped to forwards and reverse, and left and right are mapped to rotate. Diagonal action performs a forward and back AND a single-speed rotate. Hard left or right performs a double-speed rotate, "rotate on the spot").
 ;
 ; O:A `KMOV` movement code
 @label=KEMPST
 c$AD3E LD BC,$0000   ;
- $AD41 IN A,($1F)    ;
- $AD43 AND A         ;
+ $AD41 IN A,($1F)    ; Read from Kempston port
+ $AD43 AND A         ; If 0, no input so simply return
  $AD44 RET Z         ;
- $AD45 LD D,A        ;
- $AD46 AND $E0       ;
- $AD48 JP Z,$AD50    ;
- $AD4B LD A,$F3      ;
- $AD4D LD ($F732),A  ; #REGa = #R$F732.
-*$AD50 LD A,($F732)  ; #R$F732 = #REGa.
- $AD53 CP $F3        ;
+ $AD45 LD D,A        ; Preserve joystick reading in #REGd
+ $AD46 AND %11100000 ; {Not sure what this code is about. Normally, the top 3
+ $AD48 JP Z,$AD50    ; bits should be zero, and here, if they are non-zero, we
+ $AD4B LD A,$F3      ; use $FB instead. Some marker value, so we can abort if
+                     ; the joystick is giving anomalous output? Something must
+                     ; have happened to create suspicion...}
+ $AD4D LD ($F732),A  ; #R$F732 = #REGa (pretend the Kempston code was $F3)
+*$AD50 LD A,($F732)  ; #REGa = #R$F732.
+ $AD53 CP $F3        ; Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0
  $AD55 JP NZ,$AD5A   ;
- $AD58 SUB A         ;
+ $AD58 SUB A         ; return KMOV = 0 (no movement)
  $AD59 RET           ;
-*$AD5A LD A,D        ;
- $AD5B BIT 4,A       ;
- $AD5D LD D,$00      ;
- $AD5F JP Z,$AD69    ;
- $AD62 AND $0F       ;
+@label=KEMPST_CHK
+*$AD5A LD A,D        ; Recover joystick reading into #REGa
+ $AD5B BIT 4,A       ; Check `FIRE` button on joystick
+ $AD5D LD D,$00      ; Use b7 in #REGd to record if user has pressed `FIRE` (0 means not)
+ $AD5F JP Z,$AD69    ; If b4 set, then `FIRE` pressed, so #REGd = `FIRE` ($80, to be OR'ed into #R$FE54)
+ $AD62 AND $0F       ; (clear the upper bits, and proceed to check lower bits)
  $AD64 LD D,$80      ;
  $AD66 JP Z,$ADBB    ;
-*$AD69 CP $0A        ;
+*$AD69 CP $0A        ; Check joystick = UP + LEFT?
  $AD6B JP NZ,$AD73   ;
- $AD6E LD C,$A0      ;
+ $AD6E LD C,$A0      ; Then KMOV = $A0 (FWD + LEFTx1)
  $AD70 JP $ADBB      ;
-*$AD73 CP $08        ;
+*$AD73 CP $08        ; Check joystick = UP?
  $AD75 JP NZ,$AD7D   ;
- $AD78 LD C,$80      ;
+ $AD78 LD C,$80      ; Then KMOV = $80 (FWD)
  $AD7A JP $ADBB      ;
-*$AD7D CP $09        ;
+*$AD7D CP $09        ; Check joystick = UP + RIGHT?
  $AD7F JP NZ,$AD87   ;
- $AD82 LD C,$90      ;
+ $AD82 LD C,$90      ; Then KMOV = $90 (FWD + RIGHTx1)
  $AD84 JP $ADBB      ;
-*$AD87 CP $01        ;
+*$AD87 CP $01        ; Check joystick = RIGHT?
  $AD89 JP NZ,$AD91   ;
- $AD8C LD C,$04      ;
+ $AD8C LD C,$04      ; Then KMOV = $04 (RIGHTx2)
  $AD8E JP $ADBB      ;
-*$AD91 CP $05        ;
+*$AD91 CP $05        ; Check joystick = DOWN + RIGHT?
  $AD93 JP NZ,$AD9B   ;
- $AD96 LD C,$50      ;
+ $AD96 LD C,$50      ; Then KMOV = $50 (REV + RIGHTx1)
  $AD98 JP $ADBB      ;
-*$AD9B CP $04        ;
+*$AD9B CP $04        ; Check joystick = DOWN?
  $AD9D JP NZ,$ADA5   ;
- $ADA0 LD C,$40      ;
+ $ADA0 LD C,$40      ; Then KMOV = $40 (REV)
  $ADA2 JP $ADBB      ;
-*$ADA5 CP $06        ;
+*$ADA5 CP $06        ; Check joystick = DOWN + LEFT?
  $ADA7 JP NZ,$ADAF   ;
- $ADAA LD C,$60      ;
+ $ADAA LD C,$60      ; Then KMOV = $60 (REV + LEFTx1)
  $ADAC JP $ADBB      ;
-*$ADAF CP $02        ;
+*$ADAF CP $02        ; Check joystick = LEFT?
  $ADB1 JP NZ,$ADB9   ;
- $ADB4 LD C,$08      ;
+ $ADB4 LD C,$08      ; Then KMOV = $08 (LEFTx2)
  $ADB6 JP $ADBB      ;
+@label=KEMPST_NOMOV
 *$ADB9 SUB A         ;
  $ADBA RET           ;
+@label=KEMPST_END
 *$ADBB LD A,($FE54)  ; #REGa = #R$FE54.
  $ADBE OR D          ;
- $ADBF LD ($FE54),A  ; #R$FE54 = #REGa.
- $ADC2 LD A,C        ;
- $ADC3 RET           ;
+ $ADBF LD ($FE54),A  ; #R$FE54 = #REGa | #REGd ($80 if firing, 0 if not).
+ $ADC2 LD A,C        ; {Move KMOV to #REGa, and return
+ $ADC3 RET           ; }
 
 ; Padding / reserved growth space after `KEMPST`.
 ; This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
@@ -13807,25 +13823,23 @@ b$FE52 DEFW $0000    ; Notebook name preserved. Current shipped read: persistent
                      ; temporarily uses it via `SP` while clearing transient radar state, and later
                      ; entity logic samples its first byte as a proximity/range reference.
 
-; TRIGA
+; TRIGA - Trigger fired?
 @label=TRIGA
-b$FE54 DEFW $0000    ; Notebook name preserved, but shipped behaviour is now clear: fire-request
-                     ; latch. Keyboard/Kempston decode ORs fire into this slot, and the player-fire
-                     ; path at `0x97D6` consumes and clears it.
+b$FE54 DEFB $00      ; Current best decoded movement-state byte.
+                     ; #LIST
+                     ; { `0x00` idle }
+                     ; { `0x80` forward }
+                     ; { `0x40` back }
+                     ; { `0xA0` forward+left }
+                     ; { `0x90` forward+right }
+                     ; { `0x60` back+left }
+                     ; { `0x50` back+right }
+                     ; { `0x08` left on the spot }
+                     ; { `0x04` right on the spot }
+                     ; LIST#
+ $FE55 DEFB $00
 
-; KMOV
-; Current best decoded movement-state byte.
-; #LIST
-; { `0x00` idle }
-; { `0x80` forward }
-; { `0x40` back }
-; { `0xA0` forward+left }
-; { `0x90` forward+right }
-; { `0x60` back+left }
-; { `0x50` back+right }
-; { `0x08` left on the spot }
-; { `0x04` right on the spot }
-; LIST#
+; KMOV - Decoded keyboard movement state
 @label=KMOV
 b$FE56 DEFW $0000    ; Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
                      ; `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
@@ -14117,23 +14131,22 @@ b$FEA8 DEFB $00,$00,$00,$00 ; Live bullet workspace.
 @label=DeferredEffectYLOC
  $FEE2 DEFB $00,$00
 
-; Tail Status
-; Lives
-@label=Lives
+; SHIPS - Lives remaining
+; Number of remaining ships == Lives
+@label=Ships
 b$FEE4 DEFB $00
 
 ; Data block at FEE5
 ;
-; Tail-status block.
+; Status block.
 ; #LIST
-; { `FEE4` = lives counter (`SHIPS` in the notebook) }
-; { `FEE5` = unknown tail-status byte; known to exist, meaning still unconfirmed }
+; { `FEE5` = unknown status byte; known to exist, meaning still unconfirmed }
 ; { `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by `SCOPR` }
 ; { `FEE8/FEEA` = `SelectedObstacleX` / `SelectedObstacleZ`, the currently selected obstacle/object world-space `(X,Z)` pair passed into `ObstacleRotateAndProject` }
 ; { `FEEC` = small attract/start transition latch reused by the later input bridge at `0xA679` }
 ; { `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words fed into the shared deferred-effect setup at `0xAC22` }
 ; LIST#
-@label=prob_TailStatusByte
+@label=unknown_StatusByte
 b$FEE5 DEFB $00
 @label=ExtraLifeThresholdBCD
  $FEE6 DEFB $00,$00
@@ -14150,7 +14163,7 @@ b$FEE5 DEFB $00
  $FEF0 DEFB $00,$00
 @label=BulletImpactSourceOrientation
  $FEF2 DEFB $00,$00
-@label=TailStatusPad
+@label=StatusPadding
  $FEF4 DEFB $00
  $FEF5 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $FEFD DEFB $00,$00,$00,$DD,$21,$00,$40,$11

@@ -2053,6 +2053,7 @@ C $8C53,h3
 C $8C56,h3
 C $8C59,h3
 N $8C5E
+. SELF-MODIFYING CODE ALERT!
 . This entry point is used by the title flash/fade phase inside `AttractModeTitleSequence`.
 . The crash/death path at `0xADD4` temporarily patches this opcode byte to
 . `RET` (`0xC9`) and later restores it to `LD HL,nn` (`0x21`) at `0xAE3D`.
@@ -5916,71 +5917,116 @@ C $AD0D,11,h9,2
 . Copy 36 bytes of startup seed data from #R$8CA0 to #R$F700.
 C $AD18,h3
 . Jump to #R$B1F4.
-b $AD1B
-. Padding / reserved space between the title-entry copy block and `KEMPST`.
+u $AD1B More padding
+D $AD1B Padding / reserved space between the title-entry copy block and `KEMPST`.
 . No direct callers/jumpers land here, and no code currently reads from it.
-B $AD1B,8,h8
-B $AD23,8,h8
-B $AD2B,8,h8
-B $AD33,8,h8
-B $AD3B,3,h3
+B $AD1B,35,h8
 c $AD3E KEMPST
 D $AD3E
-. Used by the routine at #R$977E.
+. Callable subroutine used by the routine at #R$977E. Reads the status of a Kempston joystick and interprets what it says.
+. Status is read from port $1F and return result as KMOV (in #REGa).
+. #TABLE(default,centre,centre,centre,centre,centre,centre,centre,centre)
+. { =h,r2 Item | =h,c8 Bit }
+. { =h 7 | =h 6 | =h 5 | =h 4 | =h 3 | =h 2 | =h 1 | =h 0 }
+. { Port# $1F | 0 | 0 | 0 | FIRE | UP | DOWN | LEFT | RIGHT }
+. { KMOV | FWD | REV | LEFTx1 | RIGHTx1 | LEFTx2 | RIGHTx2 | 0 | 0 }
+. TABLE#
+
+. First, Joystick is read, and FIRE key is checked. Then, 8 directions are checked individually and mapped to the set of actions. This is fairly simplistic compared to the keyboard - no attempt to mimic the "tank tracks" approach of the keyboard is made. Joystick up and down are mapped to forwards and reverse, and left and right are mapped to rotate. Diagonal action performs a forward and back AND a single-speed rotate. Hard left or right performs a double-speed rotate, "rotate on the spot"). 
+
 R $AD3E O:A `KMOV` movement code
 @ $AD3E label=KEMPST
 C $AD3E,h3
 C $AD41,h2
-C $AD46,h2
+. Read from Kempston port
+C $AD43,h1
+. If 0, no input so simply return
+C $AD44,h1
+C $AD45,h1
+. Preserve joystick reading in #REGd
+M $AD46,7 *Unclear*. Normally, the top 3 bits should be zero, and here, if they are non-zero, we use $FB instead. Perhaps some marker value, so we can abort if the joystick is giving anomalous output? Something must have happened to create suspicion, possibly around some edge case.
+C $AD46,b2
 C $AD48,h3
 C $AD4B,h2
 C $AD4D,h3
-. #REGa = #R$F732.
+. #R$F732 = #REGa (pretend the Kempston code was $F3)
 C $AD50,h3
-. #R$F732 = #REGa.
+. #REGa = #R$F732.
 C $AD53,h2
+. Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0
 C $AD55,h3
+C $AD58,h1
+. return KMOV = 0 (no movement)
+C $AD5A,h1
+@ $AD5A label=KEMPST_CHK
+. Recover joystick reading into #REGa
+C $AD5B,h2
+. Check `FIRE` button on joystick
 C $AD5D,h2
+. Use b7 in #REGd to record if user has pressed `FIRE` (0 means not)
 C $AD5F,h3
+. If b4 set, then `FIRE` pressed, so #REGd = `FIRE` ($80, to be OR'ed into #R$FE54)
 C $AD62,h2
+. (clear the upper bits, and proceed to check lower bits)
 C $AD64,h2
 C $AD66,h3
 C $AD69,h2
+. Check joystick = UP + LEFT?
 C $AD6B,h3
 C $AD6E,h2
+. Then KMOV = $A0 (FWD + LEFTx1)
 C $AD70,h3
 C $AD73,h2
+. Check joystick = UP?
 C $AD75,h3
 C $AD78,h2
+. Then KMOV = $80 (FWD)
 C $AD7A,h3
 C $AD7D,h2
+. Check joystick = UP + RIGHT?
 C $AD7F,h3
 C $AD82,h2
+. Then KMOV = $90 (FWD + RIGHTx1)
 C $AD84,h3
 C $AD87,h2
+. Check joystick = RIGHT?
 C $AD89,h3
 C $AD8C,h2
+. Then KMOV = $04 (RIGHTx2)
 C $AD8E,h3
 C $AD91,h2
+. Check joystick = DOWN + RIGHT?
 C $AD93,h3
 C $AD96,h2
+. Then KMOV = $50 (REV + RIGHTx1)
 C $AD98,h3
 C $AD9B,h2
+. Check joystick = DOWN?
 C $AD9D,h3
 C $ADA0,h2
+. Then KMOV = $40 (REV)
 C $ADA2,h3
 C $ADA5,h2
+. Check joystick = DOWN + LEFT?
 C $ADA7,h3
 C $ADAA,h2
+. Then KMOV = $60 (REV + LEFTx1)
 C $ADAC,h3
 C $ADAF,h2
+. Check joystick = LEFT?
 C $ADB1,h3
 C $ADB4,h2
+. Then KMOV = $08 (LEFTx2)
 C $ADB6,h3
+@ $ADB9 label=KEMPST_NOMOV
+C $ADB9,h2
+@ $ADBB label=KEMPST_END
 C $ADBB,h3
 . #REGa = #R$FE54.
 C $ADBF,h3
-. #R$FE54 = #REGa.
+. #R$FE54 = #REGa | #REGd ($80 if firing, 0 if not).
+C $ADC2
+. Move KMOV to #REGa, and return
 u $ADC4
 . Padding / reserved growth space after `KEMPST`.
 . This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
@@ -10251,15 +10297,13 @@ W $FE52,2,h2
 . helper-table base, initialised to `$6300`. `RADARClearWorkspace`
 . temporarily uses it via `SP` while clearing transient radar state, and later
 . entity logic samples its first byte as a proximity/range reference.
-b $FE54 TRIGA
+b $FE54 TRIGA - Trigger fired?
 @ $FE54 label=TRIGA
-W $FE54,2,h2
-. Notebook name preserved, but shipped behaviour is now clear: fire-request
-. latch. Keyboard/Kempston decode ORs fire into this slot, and the player-fire
+B $FE54,h1 Fire-request latch. Keyboard/Kempston decode ORs fire into this slot, and the player-fire
 . path at `0x97D6` consumes and clears it.
-b $FE56 KMOV
+b $FE56 KMOV - Decoded keyboard movement state
 @ $FE56 label=KMOV
-. Current best decoded movement-state byte.
+B $FE54,h1 Current best decoded movement-state byte.
 . #LIST
 . { `0x00` idle }
 . { `0x80` forward }
@@ -10540,22 +10584,21 @@ B $FEDE,2,h2
 B $FEE0,2,h2
 @ $FEE2 label=DeferredEffectYLOC
 B $FEE2,2,h2
-b $FEE4 Tail Status
-. Lives
-@ $FEE4 label=Lives
+b $FEE4 SHIPS - Lives remaining
+. Number of remaining ships == Lives
+@ $FEE4 label=Ships
 B $FEE4,1,h1
 b $FEE5
-D $FEE5 Tail-status block.
+D $FEE5 Status block.
 . #LIST
-. { `FEE4` = lives counter (`SHIPS` in the notebook) }
-. { `FEE5` = unknown tail-status byte; known to exist, meaning still unconfirmed }
+. { `FEE5` = unknown status byte; known to exist, meaning still unconfirmed }
 . { `FEE6/FEE7` = next extra-life threshold in packed BCD, read and doubled by `SCOPR` }
 . { `FEE8/FEEA` = `SelectedObstacleX` / `SelectedObstacleZ`, the currently selected obstacle/object world-space `(X,Z)` pair passed into `ObstacleRotateAndProject` }
 . { `FEEC` = small attract/start transition latch reused by the later input bridge at `0xA679` }
 . { `FEEE/FEF0/FEF2` = temporary bullet-impact effect source X/Z/orientation words fed into the shared deferred-effect setup at `0xAC22` }
 . LIST#
 B $FEE5,1,h1
-@ $FEE5 label=prob_TailStatusByte
+@ $FEE5 label=unknown_StatusByte
 B $FEE6,2,h2
 @ $FEE6 label=ExtraLifeThresholdBCD
 @ $FEEC label=AttractStartLatch
@@ -10571,7 +10614,7 @@ B $FEEE,2,h2
 B $FEF0,2,h2
 @ $FEF2 label=BulletImpactSourceOrientation
 B $FEF2,2,h2
-@ $FEF4 label=TailStatusPad
+@ $FEF4 label=StatusPadding
 B $FEF4,1,h1
 B $FEF5,8,h8
 B $FEFD,8,h8
