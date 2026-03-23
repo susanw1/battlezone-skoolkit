@@ -35,134 +35,7 @@ D $7C00
 . no longer trusted now that the radar code is known to index the same pages
 . directly while plotting blips.
 @ $7C00 label=PlotLookupTables
-B $7C00,8,h8
-B $7C08,8,h8
-B $7C10,8,h8
-B $7C18,8,h8
-B $7C20,8,h8
-B $7C28,8,h8
-B $7C30,8,h8
-B $7C38,8,h8
-B $7C40,8,h8
-B $7C48,8,h8
-B $7C50,8,h8
-B $7C58,8,h8
-B $7C60,8,h8
-B $7C68,8,h8
-B $7C70,8,h8
-B $7C78,8,h8
-B $7C80,8,h8
-B $7C88,8,h8
-B $7C90,8,h8
-B $7C98,8,h8
-B $7CA0,8,h8
-B $7CA8,8,h8
-B $7CB0,8,h8
-B $7CB8,8,h8
-B $7CC0,8,h8
-B $7CC8,8,h8
-B $7CD0,8,h8
-B $7CD8,8,h8
-B $7CE0,8,h8
-B $7CE8,8,h8
-B $7CF0,8,h8
-B $7CF8,8,h8
-B $7D00,8,h8
-B $7D08,8,h8
-B $7D10,8,h8
-B $7D18,8,h8
-B $7D20,8,h8
-B $7D28,8,h8
-B $7D30,8,h8
-B $7D38,8,h8
-B $7D40,8,h8
-B $7D48,8,h8
-B $7D50,8,h8
-B $7D58,8,h8
-B $7D60,8,h8
-B $7D68,8,h8
-B $7D70,8,h8
-B $7D78,8,h8
-B $7D80,8,h8
-B $7D88,8,h8
-B $7D90,8,h8
-B $7D98,8,h8
-B $7DA0,8,h8
-B $7DA8,8,h8
-B $7DB0,8,h8
-B $7DB8,8,h8
-B $7DC0,8,h8
-B $7DC8,8,h8
-B $7DD0,8,h8
-B $7DD8,8,h8
-B $7DE0,8,h8
-B $7DE8,8,h8
-B $7DF0,8,h8
-B $7DF8,8,h8
-B $7E00,8,h8
-B $7E08,8,h8
-B $7E10,8,h8
-B $7E18,8,h8
-B $7E20,8,h8
-B $7E28,8,h8
-B $7E30,8,h8
-B $7E38,8,h8
-B $7E40,8,h8
-B $7E48,8,h8
-B $7E50,8,h8
-B $7E58,8,h8
-B $7E60,8,h8
-B $7E68,8,h8
-B $7E70,8,h8
-B $7E78,8,h8
-B $7E80,8,h8
-B $7E88,8,h8
-B $7E90,8,h8
-B $7E98,8,h8
-B $7EA0,8,h8
-B $7EA8,8,h8
-B $7EB0,8,h8
-B $7EB8,8,h8
-B $7EC0,8,h8
-B $7EC8,8,h8
-B $7ED0,8,h8
-B $7ED8,8,h8
-B $7EE0,8,h8
-B $7EE8,8,h8
-B $7EF0,8,h8
-B $7EF8,8,h8
-B $7F00,8,h8
-B $7F08,8,h8
-B $7F10,8,h8
-B $7F18,8,h8
-B $7F20,8,h8
-B $7F28,8,h8
-B $7F30,8,h8
-B $7F38,8,h8
-B $7F40,8,h8
-B $7F48,8,h8
-B $7F50,8,h8
-B $7F58,8,h8
-B $7F60,8,h8
-B $7F68,8,h8
-B $7F70,8,h8
-B $7F78,8,h8
-B $7F80,8,h8
-B $7F88,8,h8
-B $7F90,8,h8
-B $7F98,8,h8
-B $7FA0,8,h8
-B $7FA8,8,h8
-B $7FB0,8,h8
-B $7FB8,8,h8
-B $7FC0,8,h8
-B $7FC8,8,h8
-B $7FD0,8,h8
-B $7FD8,8,h8
-B $7FE0,8,h8
-B $7FE8,8,h8
-B $7FF0,8,h8
-B $7FF8,8,h8
+
 c $8000
 . InitLineHelperTables
 D $8000
@@ -4849,7 +4722,7 @@ C $ACB7,h2
 C $ACB9,h3
 . #R$FE02 = #REGhl.
 C $ACBD,h2
-u $ACC0 Padding
+u $ACC0 Padding after #R$AC22 routine
 D $ACC0 Padding / reserved growth space between the deferred-effect block and `#R$AD0C`.
 . This `NOP` run follows a hard `RET` and ends at the next round-number helper
 . boundary.
@@ -4870,9 +4743,7 @@ C $AD0D,11,h9,2
 . Copy 36 bytes of startup seed data from #R$8CA0 to #R$F700.
 C $AD18,h3
 . Jump to #R$B1F4.
-u $AD1B More padding
-D $AD1B Padding / reserved space between the title-entry copy block and `KEMPST`.
-. No direct callers/jumpers land here, and no code currently reads from it.
+u $AD1B Padding after #R$AD0C
 c $AD3E KEMPST
 D $AD3E
 . Callable subroutine used by the routine at #R$977E. Reads the status of a Kempston joystick and interprets what it says.
@@ -4896,7 +4767,7 @@ C $AD43,h1
 C $AD44,h1
 C $AD45,h1
 . Preserve joystick reading in #REGd
-M $AD46,7 *Unclear*. Normally, the top 3 bits should be zero, and here, if they are non-zero, we use $FB instead. Perhaps some marker value, so we can abort if the joystick is giving anomalous output? Something must have happened to create suspicion, possibly around some edge case.
+M $AD46,7 *Unclear*. Normally, the top 3 bits should be zero, and here, if they are non-zero, we use $F3 instead. Perhaps some marker value, so we can abort if the joystick is giving anomalous output? Something may have happened to create suspicion, possibly around some edge case.
 C $AD46,b2
 C $AD48,h3
 C $AD4B,h2
@@ -4905,7 +4776,7 @@ C $AD4D,h3
 C $AD50,h3
 . #REGa = #R$F732.
 C $AD53,h2
-. Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0
+. Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0. Note this is the only place where #R$F732 is used.
 C $AD55,h3
 C $AD58,h1
 . return KMOV = 0 (no movement)

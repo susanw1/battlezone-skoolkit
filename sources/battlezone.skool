@@ -8277,7 +8277,7 @@ c$AC22 AND $08       ;
  $ACBD OUT ($FE),A   ;
  $ACBF RET           ;
 
-; Padding
+; Padding after #R$AC22 routine
 ;
 ; Padding / reserved growth space between the deferred-effect block and `#R$AD0C`.
 ; This `NOP` run follows a hard `RET` and ends at the next round-number helper
@@ -8311,10 +8311,7 @@ c$AD0C DI            ; Disable interrupts.
  $AD16 LDIR          ; }
  $AD18 JP $B1F4      ; Jump to #R$B1F4.
 
-; More padding
-;
-; Padding / reserved space between the title-entry copy block and `KEMPST`.
-; No direct callers/jumpers land here, and no code currently reads from it.
+; Padding after #R$AD0C
 u$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD23 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD2B DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -8341,13 +8338,13 @@ c$AD3E LD BC,$0000   ;
  $AD44 RET Z         ;
  $AD45 LD D,A        ; Preserve joystick reading in #REGd
  $AD46 AND %11100000 ; {*Unclear*. Normally, the top 3 bits should be zero, and
- $AD48 JP Z,$AD50    ; here, if they are non-zero, we use $FB instead. Perhaps
+ $AD48 JP Z,$AD50    ; here, if they are non-zero, we use $F3 instead. Perhaps
  $AD4B LD A,$F3      ; some marker value, so we can abort if the joystick is
-                     ; giving anomalous output? Something must have happened to
+                     ; giving anomalous output? Something may have happened to
                      ; create suspicion, possibly around some edge case.}
  $AD4D LD ($F732),A  ; #R$F732 = #REGa (pretend the Kempston code was $F3)
 *$AD50 LD A,($F732)  ; #REGa = #R$F732.
- $AD53 CP $F3        ; Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0
+ $AD53 CP $F3        ; Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0. Note this is the only place where #R$F732 is used.
  $AD55 JP NZ,$AD5A   ;
  $AD58 SUB A         ; return KMOV = 0 (no movement)
  $AD59 RET           ;
