@@ -447,10 +447,8 @@ C $8631,h3
 C $8635,h3
 C $8638,h3
 C $863B,h4
-u $8640
-. Padding / reserved growth space between `LNLPT` and `PERSP`.
-. This 32-byte `NOP` run follows a hard `RET` and ends on the round boundary
-. at `0x8660`, strongly suggesting separately assembled module padding.
+u $8640 Padding after `#R$805C`
+D $8640 Padding / reserved growth space after `#R$805C` and before `#R$8660`.
 c $8660
 . PERSP Perspective [X/Z Y/Z] array calculation 
 D $8660 Used throughout gameplay and attract/title rendering. Current best notebook match: `PERSP`. Shared perspective / clip stage. It consumes transformed coordinate tables, writes projected coordinates into the `XPERS` / `YPERS` buffers, derives visible X limits, and returns status in #REGc for caller-side draw/visibility decisions.
@@ -690,10 +688,8 @@ C $88CE,h4
 C $88D2,h4
 C $88D6,h2
 . Return `C=0`: projection completed and the caller may treat the object as drawable.
-u $88D9
-. Padding / reserved growth space between `PERSP` and `RotateXZLists`.
-. This 17-byte `NOP` run follows a `RET` and ends exactly at the next module
-. boundary `0x88EA`.
+u $88D9 Padding after `#R$8660`
+D $88D9 Padding / reserved growth space after `#R$8660` and before `#R$88EA`.
 c $88EA RotateXZLists
 D $88EA Used throughout gameplay and attract/title rendering. Current best read: reusable table-driven X/Z rotation stage. It consumes the current model-space X/Z vertex lists plus angle-dependent coefficient tables, applies the active X/Z world displacement, and rewrites the current X/Z working lists in place for later perspective projection.
 D $88EA Current best structural read: four repeated multiply/accumulate passes using the shared element count in `MUCNT`, the active coefficient-table pointers in `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved source-word continuation in `MMAT`.
@@ -852,10 +848,8 @@ C $8BF9,h3
 C $8BFC,h4
 . Store the final companion rotated Z pointer back into #R$FE36.
 C $8C00,h4
-u $8C06
-. Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
-. This `NOP` run follows a hard `RET` and ends on the next separately built
-. module boundary at `0x8C3C`.
+u $8C06 Padding after `#R$88EA`
+D $8C06 Padding / reserved growth space after `#R$88EA` and before `#R$8C3C`.
 c $8C3C SDRAW
 D $8C3C Used throughout gameplay, crash/death, and attract/title/showcase rendering.
 D $8C3C Current best read: display presenter / screen copy helper. It copies the off-screen status strip and lower playfield buffers to the visible Spectrum bitmap, then clears those same off-screen buffers ready for the next frame.
@@ -898,10 +892,8 @@ C $8C77,h3
 C $8C7A,h3
 C $8C7D,h3
 C $8C80,h2
-u $8C85
-. Padding / reserved growth space between `SDRAW` and `StartupWorkspaceSeedData`.
-. This 27-byte `NOP` run follows a hard `RET` and precedes genuine embedded
-. seed data copied at reset/title start.
+u $8C85 Padding after `#R$8C3C`
+D $8C85 Padding / reserved growth space after `#R$8C3C` and before `#R$8CA0`.
 b $8CA0
 . StartupWorkspaceSeedData
 . Copied by `0xAD0C..0xAD16` into `0xF700..0xF723` during the reset/title
@@ -1053,10 +1045,8 @@ N $9081
 @ $9081 label=SHLPTStepUpRow
 N $9093
 @ $9093 label=SHLPTDone
-u $9098
-. Padding / reserved growth space between `SHLPT` and `RADAR`.
-. This `NOP` run follows a hard `RET` and ends at the next module boundary
-. `0x90BA`.
+u $9098 Padding after `#R$8F53`
+D $9098 Padding / reserved growth space after `#R$8F53` and before `#R$90BA`.
 c $90BA RADAR
 D $90BA
 . Used by the routines at #R$98F4, #R$9E3D, #R$AA5D and #R$ADD4.
@@ -4850,10 +4840,8 @@ C $ADBF,h3
 . #R$FE54 = #REGa | #REGd ($80 if firing, 0 if not).
 C $ADC2
 . Move KMOV to #REGa, and return
-u $ADC4 Padding after `KEMPST`
-D $ADC4 Padding / reserved growth space after `KEMPST`.
-. This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
-. callers/jumpers landing in it.
+u $ADC4 Padding after `#R$AD3E`
+D $ADC4 Padding / reserved growth space after `#R$AD3E`.
 @ $ADD4 label=CRASH
 c $ADD4 CRASH
 D $ADD4

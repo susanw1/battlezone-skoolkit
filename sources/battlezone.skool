@@ -2571,9 +2571,9 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $863B LD SP,($FE00) ;
  $863F RET           ;
 
-; Padding / reserved growth space between `LNLPT` and `PERSP`.
-; This 32-byte `NOP` run follows a hard `RET` and ends on the round boundary
-; at `0x8660`, strongly suggesting separately assembled module padding.
+; Padding after `#R$805C`
+;
+; Padding / reserved growth space after `#R$805C` and before `#R$8660`.
 u$8640 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8648 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8650 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -3072,9 +3072,9 @@ c$8660 LD ($FE00),SP ; Save #REGsp to #R$FE00 - #REGsp is used as a general poin
  $88D6 LD C,$00      ; Return `C=0`: projection completed and the caller may treat the object as drawable.
  $88D8 RET           ;
 
-; Padding / reserved growth space between `PERSP` and `RotateXZLists`.
-; This 17-byte `NOP` run follows a `RET` and ends exactly at the next module
-; boundary `0x88EA`.
+; Padding after `#R$8660`
+;
+; Padding / reserved growth space after `#R$8660` and before `#R$88EA`.
 u$88D9 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $88E1 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $88E9 DEFB $00
@@ -3622,9 +3622,9 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
  $8C04 EXX           ;
  $8C05 RET           ;
 
-; Padding / reserved growth space between `RotateXZLists` and `SDRAW`.
-; This `NOP` run follows a hard `RET` and ends on the next separately built
-; module boundary at `0x8C3C`.
+; Padding after `#R$88EA`
+;
+; Padding / reserved growth space after `#R$88EA` and before `#R$8C3C`.
 u$8C06 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8C0E DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8C16 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -3696,9 +3696,9 @@ c$8C3C LD HL,$DFA0   ;
  $8C82 LDIR          ;
  $8C84 RET           ;
 
-; Padding / reserved growth space between `SDRAW` and `StartupWorkspaceSeedData`.
-; This 27-byte `NOP` run follows a hard `RET` and precedes genuine embedded
-; seed data copied at reset/title start.
+; Padding after `#R$8C3C`
+;
+; Padding / reserved growth space after `#R$8C3C` and before `#R$8CA0`.
 u$8C85 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8C8D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8C95 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -4384,9 +4384,9 @@ c$8F53 CALL $8F61    ;
 *$9093 LD SP,($FE00) ;
  $9097 RET           ;
 
-; Padding / reserved growth space between `SHLPT` and `RADAR`.
-; This `NOP` run follows a hard `RET` and ends at the next module boundary
-; `0x90BA`.
+; Padding after `#R$8F53`
+;
+; Padding / reserved growth space after `#R$8F53` and before `#R$90BA`.
 u$9098 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $90A0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $90A8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -8398,11 +8398,9 @@ c$AD3E LD BC,$0000   ;
  $ADC2 LD A,C        ; {Move KMOV to #REGa, and return
  $ADC3 RET           ; }
 
-; Padding after `KEMPST`
+; Padding after `#R$AD3E`
 ;
-; Padding / reserved growth space after `KEMPST`.
-; This `NOP` run at `0xADC4..0xADD3` has no live fallthrough use and no known
-; callers/jumpers landing in it.
+; Padding / reserved growth space after `#R$AD3E`.
 u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $ADCC DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
