@@ -1078,18 +1078,16 @@ N $911C
 @ $9119 label=RADARPlotBlip
 C $9122,1
 . Return from `RADAR`.
-u $9123
-. Padding / alignment space between `RADAR` and `KeyboardMovementDecode`.
-. The `RET` at `0x9122` ends `RADAR`; the following zero/NOP bytes are unused
-. spacer/alignment bytes before the next helper at `0x9132`.
+u $9123 Padding after `#R$90BA`
+D $9123 Padding / reserved growth space after `#R$90BA` and before `#R$9132`.
 D $9132
 . Keyboard movement/button decode helper.
 . Called from gameplay input handling and the start/demo code. It scans the
 . keyboard matrix rows, normalises contradictory directions, latches the fire
-. request in #R$FE54, and returns the same compact `KMOV`
+. request in #R$FE54, and returns the same compact `#R$FE56`
 . code in `A` as the
 . Kempston routine at `0xAD3E`.
-. Current best `KMOV` code table:
+. Current best `#R$FE56` code table:
 . #LIST
 . { `0x00` idle }
 . { `0x80` forward }
@@ -1101,7 +1099,7 @@ D $9132
 . { `0x08` left on the spot }
 . { `0x04` right on the spot }
 . LIST#
-R $9132 O:A `KMOV` movement code
+R $9132 O:A `#R$FE56` movement code
 @ $9132 label=KeyboardMovementDecode
 c $9132 KeyboardMovementDecode
 C $9132,h2
@@ -1208,6 +1206,8 @@ C $91D0,1
 C $91D1,h2
 C $91D3,1
 C $91D4,1
+u $91D5 Padding after `#R$9132`
+D $91D5 Padding / reserved growth space after `#R$9132` and before `#R$91E6`.
 B $91D5,11,h11
 B $91E0,6,h6
 D $91E6
@@ -1219,7 +1219,7 @@ D $91E6
 . Indirect-entry audit note:
 . #LIST
 . { this `JP (HL)` is the only true computed routine dispatch in the shipped gameplay code }
-. { `KMOVTurnDecode` only seeds it with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312` }
+. { `#R$A714` only seeds it with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312` }
 . LIST#
 R $91E6 DE Input X coordinate word
 R $91E6 BC Input Z coordinate word
@@ -1305,7 +1305,8 @@ C $9244,1
 C $9245,1
 C $9246,1
 C $9247,1
-B $9248,2,h2
+u $9248 Padding after `#R$91EB`
+D $9248 Padding / reserved growth space after `#R$91EB` and before `#R$924A`.
 D $924A
 . Movement/turn handler variant selected via `TURN`.
 . Current best read: single-speed right turn before the shared transform.
@@ -1383,7 +1384,8 @@ C $92A9,1
 C $92AA,1
 C $92AB,1
 C $92AC,1
-B $92AD,1
+u $92AD Padding after `#R$924A`
+D $92AD Padding / reserved growth space after `#R$924A` and before `#R$92AE`.
 D $92AE
 . Movement/turn handler variant selected via `TURN`.
 . Current best read: double-speed left turn before the shared transform.
@@ -1461,7 +1463,8 @@ C $930A,1
 C $930B,1
 C $930C,1
 C $930D,1
-B $930E,4,h4
+u $930E Padding after `#R$92AE`
+D $930E Padding / reserved growth space after `#R$92AE` and before `#R$9312`.
 D $9312
 . Movement/turn handler variant selected via `TURN`.
 . Current best read: double-speed right turn before the shared transform.
@@ -1542,10 +1545,8 @@ C $9373,1
 C $9374,1
 C $9375,1
 C $9376,1
-B $9377,1
-B $9378,8,h8
-B $9380,8,h8
-B $9388,2,h2
+u $9377 Padding after `#R$9312`
+D $9377 Padding / reserved growth space after `#R$9312` and before `#R$938A`.
 D $938A
 . Shared heading/bearing helper.
 . Called with a world-space `(X,Z)` pair in `HL`/`DE`.
@@ -1557,18 +1558,11 @@ R $938A DE Signed Z component / world-space Z distance
 R $938A O:A Heading / bearing code
 @ $938A label=HeadingFromXZ
 c $938A HeadingFromXZ
-u $943D
-. Padding / reserved growth space after `HeadingFromXZ`.
-. The 3-byte `NOP` run at `0x943D..0x943F` follows a hard `RET` and precedes
-. a zeroed spacer block before `MESPR`.
-b $9440
-. Zeroed padding / spacer block between `HeadingFromXZ` and `MESPR`.
-B $9440,8,h8
-B $9448,8,h8
-B $9450,2,h2
+u $943D Padding after `#R$938A`
+D $943D Padding / reserved growth space after `#R$938A` and before `#R$938A`.
 c $9452 MESPR
 D $9452
-. HL Address of a rectangle descriptor: destination, height, width, then row-major byte data
+. Address of a rectangle descriptor: destination, height, width, then row-major byte data
 . Current best shipped read: generic message/rectangle blitter for the status
 . strip and small HUD warning areas.
 . Descriptor format:
@@ -1658,7 +1652,8 @@ C $9499,h2
 C $949F,h2
 C $94A1,1
 . Advance to the next screen column for chained calls.
-B $94A4,8,h8
+u $94A4 Padding after `#R$948C`
+D $94A4 Padding / reserved growth space after `#R$948C` and before `#R$94AC`.
 c $94AC SCOPR
 D $94AC
 . B Score increment in packed BCD
@@ -1735,11 +1730,11 @@ C $9523,h3
 C $9527,h3
 C $952B,h3
 C $952F,h3
-u $9533
-. Padding / reserved growth space before the short score-strip helper at `0x9538`.
-. This 5-byte `NOP` run follows a hard `RET` and is not a live fallthrough path.
-c $9538
-. This entry point is used by the routine at #R$977E.
+u $9533 Padding after `#R$94EC`
+D $9533 Padding / reserved growth space after `#R$94EC` and before `#R$9538`.
+c $9538 DLAY - 20ms delay function
+D $9538 This entry point is used by the routine at #R$977E.
+@ $9538 label=DLAY20MS
 C $9538,h2
 C $953A,h2
 C $953C,h3
@@ -1750,11 +1745,8 @@ C $9545,h2
 . About 4.92 ms per `LDIR` pass, or about 19.73 ms for the whole 4-pass block
 . at 3.5 MHz.
 C $9548,h3
-u $954C
-. Padding / reserved growth space between the short score-strip helper and the
-. main reset/initialisation block at `0x956A`.
-. This 30-byte `NOP` run follows a hard `RET` and ends at a round-number
-. module boundary.
+u $954C Padding after `#R$9538`
+D $954C Padding / reserved growth space after `#R$9538` and before `#R$956A`.
 c $956A GameInitAndMainLoop
 D $956A
 . Entered from the common start-game transition and the attract/showcase setup patch path.
@@ -1774,50 +1766,49 @@ D $956A
 @ $956A label=GameInitAndMainLoop
 C $956A,h3
 C $956D,h3
-. Clear `EXST1` / `EXST2`.
+. #R$FE6A = 0
 C $9570,h3
-. #R$FE6C = #REGhl
+. #R$FE6C = 0
 C $9573,h3
-. #R$FE76 = #REGhl
+. #R$FE76 = 0
 C $9576,h3
-. #R$FE78 = #REGhl
+. #R$FE78 = 0
 C $9579,h3
-. #R$FE72 = #REGhl
+. #R$FE72 = 0
 C $957C,h3
-. #R$FE7A = #REGhl
+. #R$FE7A = 0
 C $957F,h3
-. #R$FE68 = #REGhl
+. #R$FE68 = 0
 C $9582,h3
-. #R$FE54 = #REGhl
+. #R$FE54 = 0
 C $9585,h3
-. #R$FE50 = #REGhl
+. #R$FE50 = 0
 C $9588,h3
-. Clear `PRSTA` / render-state byte.
+. #R$FE6E = 0 : clear render-state byte.
 C $958B,h3
 C $958E,h3
-. #R$FEE4 = #REGhl
+. #R$FEE4 = 3
+N $9591 Initially place the obstacles at the four +/-16384 positions, equally spaced in the signed 16-bit world.
 C $9591,h3
-. #REGhl = #R$4000
 C $9594,h3
-. #R$FE9A = #REGhl
+. #R$FE9A = 16384
 C $9597,h3
-. #R$FE9C = #REGhl
+. #R$FE9C = 16384
 C $959A,h3
 C $959D,h3
-. #R$FE9E = #REGhl
+. #R$FE9E = -16384
 C $95A0,h3
-. #R$FEA0 = #REGhl
+. #R$FEA0 = -16384
 C $95A3,h3
 C $95A6,h3
-. #R$FEA2 = #REGhl
+. #R$FEA2 = -16384
 C $95A9,h3
-. #R$FEA4 = #REGhl
+. #R$FEA4 = -16384
 C $95AC,h3
-. #REGhl = #R$4000
 C $95AF,h3
-. #R$FEA6 = #REGhl
+. #R$FEA6 = 16384
 C $95B2,h3
-. #R$FE98 = #REGhl
+. #R$FE98 = 16384
 C $95B5,h3
 . #R$8000
 C $95B8,h3
@@ -3035,11 +3026,8 @@ C $A0CB,h2
 C $A0CD,h2
 C $A0CF,h2
 C $A0D2,h3
-u $A0D6
-. Padding / reserved growth space between the missile block and the shared
-. bullet update/render block.
-. This `NOP` run follows a hard `RET` and ends on the next routine boundary at
-. `#R$A122`.
+u $A0D6 Padding after `#R$956A`
+D $A0D6 Padding / reserved growth space after `#R$956A` and before `#R$A122`.
 D $A122 Shared player-bullet / hostile-bullet update, project, draw, and hit-test block. It advances the active bullet state, installs the shared transform/perspective inputs, and either draws the visible bullet or queues the appropriate deferred hit/effect path.
 . Functional phases on this page:
 . #LIST
@@ -3778,11 +3766,11 @@ c $A685
 D $A685
 . KEYIN / keyboard interpretation plus world-motion handoff.
 . This page merges Kempston and keyboard input, masks movement against nearby
-. obstacles, decodes the surviving `KMOV` state into turn/world-motion setup,
+. obstacles, decodes the surviving `#R$FE56` state into turn/world-motion setup,
 . and handles the gameplay hold-key pause loop.
 . Functional phases on this page:
 . #LIST
-. { #R$A692: store the merged keyboard/Kempston movement code in `KMOV`. }
+. { #R$A692: store the merged keyboard/Kempston movement code in `#R$FE56`. }
 . { #R$A695: mask disallowed movement bits against the four nearby obstacle pairs. }
 . { #R$A701 and #R$A70C: erase or print the obstacle warning message. }
 . { #R$A714: decode turn behaviour and the matching hill-pointer delta. }
@@ -3801,8 +3789,7 @@ C $A689,h2
 C $A68B,h2
 C $A68D,h3
 C $A692,h3
-. KMOV
-. Store the merged keyboard/Kempston movement code in `KMOV` before obstacle masking.
+. Store the merged keyboard/Kempston movement code in `#R$FE56` before obstacle masking.
 C $A695,h3
 . Test the four packed obstacle `(X,Z)` pairs and mask out disallowed movement bits when
 . the player is too close for a clear move/turn.
@@ -3859,13 +3846,13 @@ C $A70C,h3
 . Obstacle-block warning path: print the warning and restrict surviving movement bits via `C`.
 . Print the obstacle-block warning rectangle from `CF9E`.
 C $A710,h3
-R $A714 A Surviving `KMOV` movement code after obstacle masking
+R $A714 A Surviving `#R$FE56` movement code after obstacle masking
 @ $A714 label=KMOVTurnDecode
 . KMOVTurnDecode
 N $A714
-. KMOV turn decoder and hill-pointer adjustment.
+. #R$FE56 turn decoder and hill-pointer adjustment.
 .
-. Decode the surviving masked `KMOV` state into turn behaviour plus the
+. Decode the surviving masked `#R$FE56` state into turn behaviour plus the
 . hill-pointer delta that matches the chosen turn rate/direction.
 . #LIST
 . { bit 5 -> `0x91EB` single-speed left turn }
@@ -4712,10 +4699,8 @@ C $ACB7,h2
 C $ACB9,h3
 . #R$FE02 = #REGhl.
 C $ACBD,h2
-u $ACC0 Padding after #R$AC22 routine
-D $ACC0 Padding / reserved growth space between the deferred-effect block and `#R$AD0C`.
-. This `NOP` run follows a hard `RET` and ends at the next round-number helper
-. boundary.
+u $ACC0 Padding after `#R$AC22`
+D $ACC0 Padding / reserved growth space after `#R$AC22` and before `#R$AD0C`.
 c $AD0C Game Entry Point
 D $AD0C
 @ $AD0C label=GameEntryPoint
@@ -4733,21 +4718,22 @@ C $AD0D,11,h9,2
 . Copy 36 bytes of startup seed data from #R$8CA0 to #R$F700.
 C $AD18,h3
 . Jump to #R$B1F4.
-u $AD1B Padding after #R$AD0C
+u $AD1B Padding after `#R$AD0C`
+D $AD1B Padding / reserved growth space after `#R$AD0C` and before `#R$AD3E`.
 c $AD3E KEMPST
 D $AD3E
 . Callable subroutine used by the routine at #R$977E. Reads the status of a Kempston joystick and interprets what it says.
-. Status is read from port $1F and return result as KMOV (in #REGa).
+. Status is read from port $1F and return result as #R$FE56 (in #REGa).
 . #TABLE(default,centre,centre,centre,centre,centre,centre,centre,centre)
 . { =h,r2 Item | =h,c8 Bit }
 . { =h 7 | =h 6 | =h 5 | =h 4 | =h 3 | =h 2 | =h 1 | =h 0 }
 . { Port# $1F | 0 | 0 | 0 | FIRE | UP | DOWN | LEFT | RIGHT }
-. { KMOV | FWD | REV | LEFTx1 | RIGHTx1 | LEFTx2 | RIGHTx2 | 0 | 0 }
+. { #R$FE56 | FWD | REV | LEFTx1 | RIGHTx1 | LEFTx2 | RIGHTx2 | 0 | 0 }
 . TABLE#
 
 . First, Joystick is read, and FIRE key is checked. Then, 8 directions are checked individually and mapped to the set of actions. This is fairly simplistic compared to the keyboard - no attempt to mimic the "tank tracks" approach of the keyboard is made. Joystick up and down are mapped to forwards and reverse, and left and right are mapped to rotate. Diagonal action performs a forward and back AND a single-speed rotate. Hard left or right performs a double-speed rotate, "rotate on the spot"). 
 
-R $AD3E O:A `KMOV` movement code
+R $AD3E O:A `#R$FE56` movement code
 @ $AD3E label=KEMPST
 C $AD3E,h3
 C $AD41,h2
@@ -4766,10 +4752,10 @@ C $AD4D,h3
 C $AD50,h3
 . #REGa = #R$F732.
 C $AD53,h2
-. Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0. Note this is the only place where #R$F732 is used.
+. Check whether the $F3 value was in #R$F732, and if so, return #R$FE56 = 0. Note this is the only place where #R$F732 is used.
 C $AD55,h3
 C $AD58,h1
-. return KMOV = 0 (no movement)
+. return #R$FE56 = 0 (no movement)
 C $AD5A,h1
 @ $AD5A label=KEMPST_CHK
 . Recover joystick reading into #REGa
@@ -4787,49 +4773,49 @@ C $AD69,h2
 . Check joystick = UP + LEFT?
 C $AD6B,h3
 C $AD6E,h2
-. Then KMOV = $A0 (FWD + LEFTx1)
+. Then #R$FE56 = $A0 (FWD + LEFTx1)
 C $AD70,h3
 C $AD73,h2
 . Check joystick = UP?
 C $AD75,h3
 C $AD78,h2
-. Then KMOV = $80 (FWD)
+. Then #R$FE56 = $80 (FWD)
 C $AD7A,h3
 C $AD7D,h2
 . Check joystick = UP + RIGHT?
 C $AD7F,h3
 C $AD82,h2
-. Then KMOV = $90 (FWD + RIGHTx1)
+. Then #R$FE56 = $90 (FWD + RIGHTx1)
 C $AD84,h3
 C $AD87,h2
 . Check joystick = RIGHT?
 C $AD89,h3
 C $AD8C,h2
-. Then KMOV = $04 (RIGHTx2)
+. Then #R$FE56 = $04 (RIGHTx2)
 C $AD8E,h3
 C $AD91,h2
 . Check joystick = DOWN + RIGHT?
 C $AD93,h3
 C $AD96,h2
-. Then KMOV = $50 (REV + RIGHTx1)
+. Then #R$FE56 = $50 (REV + RIGHTx1)
 C $AD98,h3
 C $AD9B,h2
 . Check joystick = DOWN?
 C $AD9D,h3
 C $ADA0,h2
-. Then KMOV = $40 (REV)
+. Then #R$FE56 = $40 (REV)
 C $ADA2,h3
 C $ADA5,h2
 . Check joystick = DOWN + LEFT?
 C $ADA7,h3
 C $ADAA,h2
-. Then KMOV = $60 (REV + LEFTx1)
+. Then #R$FE56 = $60 (REV + LEFTx1)
 C $ADAC,h3
 C $ADAF,h2
 . Check joystick = LEFT?
 C $ADB1,h3
 C $ADB4,h2
-. Then KMOV = $08 (LEFTx2)
+. Then #R$FE56 = $08 (LEFTx2)
 C $ADB6,h3
 @ $ADB9 label=KEMPST_NOMOV
 C $ADB9,h2
@@ -4839,17 +4825,17 @@ C $ADBB,h3
 C $ADBF,h3
 . #R$FE54 = #REGa | #REGd ($80 if firing, 0 if not).
 C $ADC2
-. Move KMOV to #REGa, and return
+. Move #R$FE56 to #REGa, and return
 u $ADC4 Padding after `#R$AD3E`
-D $ADC4 Padding / reserved growth space after `#R$AD3E`.
+D $ADC4 Padding / reserved growth space after `#R$AD3E` and before `#R$ADD4`.
 @ $ADD4 label=CRASH
 c $ADD4 CRASH
 D $ADD4
 . Probable `CRASH` / lose-life and game-over sequence.
 . This is the current best code match for the notebook's page-17 `CRASH`
-. heading: repeated animation/display work, decrement lives at `FEE4`, branch
+. heading: repeated animation/display work, decrement lives at `#R$FEE4`, branch
 . to a zero-lives end sequence, otherwise return to the main reinitialisation
-. path at `9644`.
+. path at `#R$9644`.
 . Current best refinement from the data it uses:
 . #LIST
 . { `CC9C` is a probable screen-break / crack line-data block drawn three times before the life counter is decremented }
@@ -6321,397 +6307,36 @@ D $B77A
 @ $B77A label=GameEntryVector
 C $B77A,h3
 . Jump to the primary `GameEntryPoint` at #R$AD0C.
-b $B77D Zero-filled post-entry gap
-D $B77D Zero-filled data gap after `GameEntryVector`.
-.       No live references are currently known; this looks more like reserved growth
-.       space or packaged slack than active title/instructions data.
-B $B77D,8,h8
-B $B785,8,h8
-B $B78D,8,h8
-B $B795,8,h8
-B $B79D,8,h8
-B $B7A5,8,h8
-B $B7AD,8,h8
-B $B7B5,8,h8
-B $B7BD,8,h8
-B $B7C5,8,h8
-B $B7CD,8,h8
-B $B7D5,8,h8
-B $B7DD,8,h8
-B $B7E5,8,h8
-B $B7ED,8,h8
-B $B7F5,8,h8
-B $B7FD,8,h8
-B $B805,8,h8
-B $B80D,8,h8
-B $B815,8,h8
-B $B81D,8,h8
-B $B825,8,h8
-B $B82D,8,h8
-B $B835,8,h8
-B $B83D,8,h8
-B $B845,8,h8
-B $B84D,8,h8
-B $B855,8,h8
-B $B85D,8,h8
-B $B865,8,h8
-B $B86D,8,h8
-B $B875,8,h8
-B $B87D,8,h8
-B $B885,8,h8
-B $B88D,8,h8
-B $B895,8,h8
-B $B89D,8,h8
-B $B8A5,8,h8
-B $B8AD,8,h8
-B $B8B5,8,h8
-B $B8BD,8,h8
-B $B8C5,8,h8
-B $B8CD,8,h8
-B $B8D5,8,h8
-B $B8DD,8,h8
-B $B8E5,8,h8
-B $B8ED,8,h8
-B $B8F5,8,h8
-B $B8FD,8,h8
-B $B905,8,h8
-B $B90D,8,h8
-B $B915,8,h8
-B $B91D,8,h8
-B $B925,8,h8
-B $B92D,8,h8
-B $B935,8,h8
-B $B93D,8,h8
-B $B945,8,h8
-B $B94D,8,h8
-B $B955,8,h8
-B $B95D,8,h8
-B $B965,8,h8
-B $B96D,8,h8
-B $B975,8,h8
-B $B97D,8,h8
-B $B985,8,h8
-B $B98D,8,h8
-B $B995,8,h8
-B $B99D,8,h8
-B $B9A5,8,h8
-B $B9AD,8,h8
-B $B9B5,8,h8
-B $B9BD,8,h8
-B $B9C5,8,h8
-B $B9CD,8,h8
-B $B9D5,8,h8
-B $B9DD,8,h8
-B $B9E5,8,h8
-B $B9ED,8,h8
-B $B9F5,8,h8
-B $B9FD,8,h8
-B $BA05,8,h8
-B $BA0D,8,h8
-B $BA15,8,h8
-B $BA1D,8,h8
-B $BA25,8,h8
-B $BA2D,8,h8
-B $BA35,8,h8
-B $BA3D,8,h8
-B $BA45,8,h8
-B $BA4D,8,h8
-B $BA55,8,h8
-B $BA5D,8,h8
-B $BA65,8,h8
-B $BA6D,8,h8
-B $BA75,8,h8
-B $BA7D,8,h8
-B $BA85,8,h8
-B $BA8D,8,h8
-B $BA95,8,h8
-B $BA9D,8,h8
-B $BAA5,8,h8
-B $BAAD,8,h8
-B $BAB5,8,h8
-B $BABD,8,h8
-B $BAC5,8,h8
-B $BACD,8,h8
-B $BAD5,8,h8
-B $BADD,8,h8
-B $BAE5,8,h8
-B $BAED,8,h8
-B $BAF5,8,h8
-B $BAFD,8,h8
-B $BB05,8,h8
-B $BB0D,8,h8
-B $BB15,8,h8
-B $BB1D,8,h8
-B $BB25,8,h8
-B $BB2D,8,h8
-B $BB35,8,h8
-B $BB3D,8,h8
-B $BB45,8,h8
-B $BB4D,8,h8
-B $BB55,8,h8
-B $BB5D,8,h8
-B $BB65,8,h8
-B $BB6D,8,h8
-B $BB75,8,h8
-B $BB7D,8,h8
-B $BB85,8,h8
-B $BB8D,8,h8
-B $BB95,8,h8
-B $BB9D,8,h8
-B $BBA5,8,h8
-B $BBAD,8,h8
-B $BBB5,8,h8
-B $BBBD,8,h8
-B $BBC5,8,h8
-B $BBCD,8,h8
-B $BBD5,8,h8
-B $BBDD,8,h8
-B $BBE5,8,h8
-B $BBED,8,h8
-B $BBF5,8,h8
-B $BBFD,8,h8
-B $BC05,8,h8
-B $BC0D,8,h8
-B $BC15,8,h8
-B $BC1D,8,h8
-B $BC25,8,h8
-B $BC2D,8,h8
-B $BC35,8,h8
-B $BC3D,8,h8
-B $BC45,8,h8
-B $BC4D,8,h8
-B $BC55,8,h8
-B $BC5D,8,h8
-B $BC65,8,h8
-B $BC6D,8,h8
-B $BC75,8,h8
-B $BC7D,8,h8
-B $BC85,8,h8
-B $BC8D,8,h8
-B $BC95,8,h8
-B $BC9D,8,h8
-B $BCA5,8,h8
-B $BCAD,8,h8
-B $BCB5,8,h8
-B $BCBD,8,h8
-B $BCC5,8,h8
-B $BCCD,8,h8
-B $BCD5,8,h8
-B $BCDD,8,h8
-B $BCE5,8,h8
-B $BCED,8,h8
-B $BCF5,8,h8
-B $BCFD,8,h8
-B $BD05,8,h8
-B $BD0D,8,h8
-B $BD15,8,h8
-B $BD1D,8,h8
-B $BD25,8,h8
-B $BD2D,8,h8
-B $BD35,8,h8
-B $BD3D,8,h8
-B $BD45,8,h8
-B $BD4D,8,h8
-B $BD55,8,h8
-B $BD5D,8,h8
-B $BD65,8,h8
-B $BD6D,8,h8
-B $BD75,8,h8
-B $BD7D,8,h8
-B $BD85,8,h8
-B $BD8D,8,h8
-B $BD95,8,h8
-B $BD9D,8,h8
-B $BDA5,8,h8
-B $BDAD,8,h8
-B $BDB5,8,h8
-B $BDBD,8,h8
-B $BDC5,8,h8
-B $BDCD,8,h8
-B $BDD5,8,h8
-B $BDDD,8,h8
-B $BDE5,8,h8
-B $BDED,8,h8
-B $BDF5,8,h8
-B $BDFD,8,h8
-B $BE05,8,h8
-B $BE0D,8,h8
-B $BE15,8,h8
-B $BE1D,8,h8
-B $BE25,8,h8
-B $BE2D,8,h8
-B $BE35,8,h8
-B $BE3D,8,h8
-B $BE45,8,h8
-B $BE4D,8,h8
-B $BE55,8,h8
-B $BE5D,8,h8
-B $BE65,8,h8
-B $BE6D,8,h8
-B $BE75,8,h8
-B $BE7D,8,h8
-B $BE85,8,h8
-B $BE8D,8,h8
-B $BE95,8,h8
-B $BE9D,8,h8
-B $BEA5,8,h8
-B $BEAD,8,h8
-B $BEB5,8,h8
-B $BEBD,8,h8
-B $BEC5,8,h8
-B $BECD,8,h8
-B $BED5,8,h8
-B $BEDD,8,h8
-B $BEE5,8,h8
-B $BEED,8,h8
-B $BEF5,8,h8
-B $BEFD,8,h8
-B $BF05,8,h8
-B $BF0D,8,h8
-B $BF15,8,h8
-B $BF1D,8,h8
-B $BF25,8,h8
-B $BF2D,8,h8
-B $BF35,8,h8
-B $BF3D,8,h8
-B $BF45,8,h8
-B $BF4D,8,h8
-B $BF55,8,h8
-B $BF5D,8,h8
-B $BF65,8,h8
-B $BF6D,8,h8
-B $BF75,8,h8
-B $BF7D,8,h8
-B $BF85,8,h8
-B $BF8D,8,h8
-B $BF95,8,h8
-B $BF9D,8,h8
-B $BFA5,8,h8
-B $BFAD,8,h8
-B $BFB5,8,h8
-B $BFBD,8,h8
-B $BFC5,8,h8
-B $BFCD,8,h8
-B $BFD5,8,h8
-B $BFDD,8,h8
-B $BFE5,8,h8
-B $BFED,8,h8
-B $BFF5,8,h8
-B $BFFD,8,h8
-B $C005,8,h8
-B $C00D,8,h8
-B $C015,8,h8
-B $C01D,8,h8
-B $C025,8,h8
-B $C02D,8,h8
-B $C035,8,h8
-B $C03D,8,h8
-B $C045,8,h8
-B $C04D,8,h8
-B $C055,8,h8
-B $C05D,8,h8
-B $C065,8,h8
-B $C06D,8,h8
-B $C075,8,h8
-B $C07D,8,h8
-B $C085,8,h8
-B $C08D,8,h8
-B $C095,8,h8
-B $C09D,8,h8
-B $C0A5,8,h8
-B $C0AD,8,h8
-B $C0B5,8,h8
-B $C0BD,8,h8
-B $C0C5,8,h8
-B $C0CD,8,h8
-B $C0D5,8,h8
-B $C0DD,8,h8
-B $C0E5,8,h8
-B $C0ED,8,h8
-B $C0F5,8,h8
-B $C0FD,8,h8
-B $C105,8,h8
-B $C10D,8,h8
-B $C115,8,h8
-B $C11D,8,h8
-B $C125,8,h8
-B $C12D,8,h8
-B $C135,8,h8
-B $C13D,8,h8
-B $C145,8,h8
-B $C14D,8,h8
-B $C155,8,h8
-B $C15D,8,h8
-B $C165,8,h8
-B $C16D,8,h8
-B $C175,8,h8
-B $C17D,8,h8
-B $C185,8,h8
-B $C18D,8,h8
-B $C195,8,h8
-B $C19D,8,h8
-B $C1A5,8,h8
-B $C1AD,8,h8
-B $C1B5,8,h8
-B $C1BD,8,h8
-B $C1C5,8,h8
-B $C1CD,8,h8
-B $C1D5,8,h8
-B $C1DD,8,h8
-B $C1E5,8,h8
-B $C1ED,8,h8
-B $C1F5,8,h8
-B $C1FD,8,h8
-B $C205,8,h8
-B $C20D,8,h8
-B $C215,8,h8
-B $C21D,8,h8
-B $C225,8,h8
-B $C22D,8,h8
-B $C235,8,h8
-B $C23D,8,h8
-B $C245,8,h8
-B $C24D,8,h8
-B $C255,8,h8
-B $C25D,8,h8
-B $C265,8,h8
-B $C26D,8,h8
-B $C275,8,h8
-B $C27D,8,h8
-B $C285,8,h8
-B $C28D,8,h8
-B $C295,8,h8
-B $C29D,8,h8
-B $C2A5,8,h8
-B $C2AD,8,h8
-B $C2B5,1,h1
+u $B77D Zero-filled gap after code
+D $B77D No live references are currently known to any of this block.
+;
+; Big Gap!
+;
 t $C2B6
-. Showcase prompt text block.
-@ $C2B6 label=PressStartPrompt
+. Start game prompt text block.
+@ $C2B6 label=PressStartPromptMsg
 B $C2B6,3,h3
 . PRINT AT row 5, column 8 in the lower half of the screen.
 T $C2B9,16,16
 . Text body: 16 characters.
 t $C2C9
-. Controls heading text block.
-@ $C2C9 label=ControlsHeading
+. Instructions page 1.
+@ $C2C9 label=InstructionsPage1Msg
+D $C2C9 Controls / instructions page 1 body for the full-screen instructions display.
 B $C2C9,3,h3
-. PRINT AT row 0, column 0 at the top-left of the instructions page.
+M $C2C9 PRINT AT row 0, column 0 at the top-left of the instructions page.
 T $C2CC,9,9
-. Text body: 9 characters.
-N $C2D5
-. Controls / instructions page 1 body for the full-screen instructions display.
-T $C2D5,65,h3:29:h1:31:h1
-T $C316,65,13:h2:11:h2:9:h1:11:h1:6:h2:4:h2:1
-T $C357,65,1:h1:11:h3:12:h2:9:h1:11:h1:2:h2:5:h2:2
-T $C398,65,3:h2:3:h3:11:h3:9:h3:21:h1:5:h1
-T $C3D9,22,h1:4:h2:15
+T $C2D5 h3:29:h1:31:h1
+T $C316 h2:11:h2:9:h1:11:h1:6:h2:4:h2:1
+T $C357 h1:11:h3:12:h2:9:h1:11:h1:2:h2:5:h2:2
+T $C398 h2:3:h3:11:h3:9:h3:21:h1:5:h1
+T $C3D9 4:h2:15
 t $C3EF
-. Controls / instructions page 2 text block for the full-screen instructions
+. Instructions page 2
 . display.
-@ $C3EF label=ControlsText
+@ $C3EF label=InstructionsPage2Msg
 B $C3EF,3,h3
-. PRINT AT row 0, column 0 at the top-left of the second instructions page.
+M $C3EF PRINT AT row 0, column 0 at the top-left of the second instructions page.
 T $C3F2,65,25:h1:30:h1:8
 T $C433,65,65
 T $C474,65,18:h1:14:h1:8:h2:10:h1:2:h1:7
@@ -6721,13 +6346,14 @@ T $C537,65,44:h2:18:h1
 T $C578,65,20:h1:35:h1:8
 T $C5B9,33,24:h9
 t $C5DA
-. Attract footer text block for the lower-screen `BY BILL WITTS / QUICKSILVA`
-. credits region.
-@ $C5DA label=AttractModeCreditsFooterText
+. Credits text
+D $C5DA Attract footer text block for the lower-screen credits
+@ $C5DA label=AttractModeCreditsFooterMsg
 T $C5DA,32,h3:13:h3:13
 T $C5FA,8,h8
-b $C602 AttractModeTitleWordLineDataFamily
-D $C602 Probable attract-mode title-word line-data family.
+
+w $C602 Attract-mode Title Line Data Family
+D $C602 Attract-mode title-word line-data family.
 .       This range appears to contain two consecutive `LNLPT` blocks:
 .	#LIST
 .       { first block at $C602 begins with count `$1E` (30 lines) }
@@ -6736,64 +6362,14 @@ D $C602 Probable attract-mode title-word line-data family.
 .       Because `LNLPT` updates `FE02` on return, the attract pipeline at #R$B346
 .       can draw the first title piece and then the second one without reloading
 .       #R$FE02 ($FE02).
-B $C602,8,h8
-B $C60A,8,h8
-B $C612,8,h8
-B $C61A,8,h8
-B $C622,8,h8
-B $C62A,8,h8
-B $C632,8,h8
-B $C63A,8,h8
-B $C642,8,h8
-B $C64A,8,h8
-B $C652,8,h8
-B $C65A,8,h8
-B $C662,8,h8
-B $C66A,8,h8
-B $C672,8,h8
-B $C67A,8,h8
-B $C682,8,h8
-B $C68A,8,h8
-B $C692,8,h8
-B $C69A,8,h8
-B $C6A2,8,h8
-B $C6AA,8,h8
-B $C6B2,8,h8
-B $C6BA,8,h8
-B $C6C2,8,h8
-B $C6CA,8,h8
-B $C6D2,8,h8
-B $C6DA,8,h8
-B $C6E2,8,h8
-B $C6EA,8,h8
-B $C6F2,1,h1
+@ $C602 label=BATTLE_Text_LineData
+B $C602,1,h1
+W $C603,,8
 N $C6F3
 . `ZONE` line-data block in the paired title-word family.
-@ $C6F3 label=ZONE_LineData
-B $C6F3,7,h7
-B $C6FA,8,h8
-B $C702,8,h8
-B $C70A,8,h8
-B $C712,8,h8
-B $C71A,8,h8
-B $C722,8,h8
-B $C72A,8,h8
-B $C732,8,h8
-B $C73A,8,h8
-B $C742,8,h8
-B $C74A,8,h8
-B $C752,8,h8
-B $C75A,8,h8
-B $C762,8,h8
-B $C76A,8,h8
-B $C772,8,h8
-B $C77A,8,h8
-B $C782,8,h8
-B $C78A,8,h8
-B $C792,8,h8
-B $C79A,8,h8
-B $C7A2,8,h8
-B $C7AA,6,h6
+@ $C6F3 label=ZONE_Text_LineData
+B $C6F3,1,h1
+W $C6F4,,8
 N $C7B0
 . `BATTLE` rotating Y/Z seed table begins at $C7B0.
 @ $C7B0 label=BATTLE_RotatingYZTable
@@ -6861,26 +6437,9 @@ N $C91A
 . two large point clusters, fitting the two-letter QS mark better than the
 . later title words.
 @ $C91A label=QS_LineData
-B $C91A,8,h8
-B $C922,8,h8
-B $C92A,8,h8
-B $C932,8,h8
-B $C93A,8,h8
-B $C942,8,h8
-B $C94A,8,h8
-B $C952,8,h8
-B $C95A,8,h8
-B $C962,8,h8
-B $C96A,8,h8
-B $C972,8,h8
-B $C97A,8,h8
-B $C982,8,h8
-B $C98A,8,h8
-B $C992,8,h8
-B $C99A,8,h8
-B $C9A2,8,h8
-B $C9AA,8,h8
-B $C9B2,2,h2
+B $C91A,,h1
+W $C91B,,8
+
 b $C9B4
 . Custom Font
 @ $C9B4 label=CustomFont
@@ -9128,7 +8687,7 @@ B $FE54,h1 Current best decoded movement-state byte.
 . LIST#
 W $FE56,2,h2
 . Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
-. `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
+. `KEYIN`; consumed immediately by `#R$A714` and later movement masking.
 b $FE58 SIGHT
 @ $FE58 label=SIGHT
 W $FE58,2,h2
@@ -9146,9 +8705,9 @@ b $FE5C TURN
 @ $FE5C label=TURN
 W $FE5C,2,h2
 . Current turn-handler dispatch pointer.
-. `KMOVTurnDecode` is the sole writer: it stores one of the four view-turn
-. handlers (`0x91EB`, `0x924A`, `0x92AE`, `0x9312`) here, and
-. `TurnTransformDispatcher` then jumps through it via `JP (HL)`.
+. `#R$A714` is the sole writer: it stores one of the four view-turn
+. handlers (`#R$91EB` ($91EB), `#R$924A` ($924A), `#R$92AE` ($92AE), `#R$9312` ($)) here, and
+. `#R$91E6` then jumps through it via `JP (HL)`.
 b $FE5E
 . Current entity/effect position/orientation workspace.
 . #LIST
@@ -9397,7 +8956,7 @@ B $FEE0,2,h2
 B $FEE2,2,h2
 b $FEE4 SHIPS - Lives remaining
 . Number of remaining ships == Lives
-@ $FEE4 label=Ships
+@ $FEE4 label=SHIPS
 B $FEE4,1,h1
 b $FEE5
 D $FEE5 Status block.

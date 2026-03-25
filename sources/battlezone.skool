@@ -4490,9 +4490,9 @@ c$90BA PUSH HL       ;
  $9121 LD (HL),A     ;
  $9122 RET           ; Return from `RADAR`.
 
-; Padding / alignment space between `RADAR` and `KeyboardMovementDecode`.
-; The `RET` at `0x9122` ends `RADAR`; the following zero/NOP bytes are unused
-; spacer/alignment bytes before the next helper at `0x9132`.
+; Padding after `#R$90BA`
+;
+; Padding / reserved growth space after `#R$90BA` and before `#R$9132`.
 u$9123 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $912B DEFB $00,$00,$00,$00,$00,$00,$00
 
@@ -4501,10 +4501,10 @@ u$9123 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; Keyboard movement/button decode helper.
 ; Called from gameplay input handling and the start/demo code. It scans the
 ; keyboard matrix rows, normalises contradictory directions, latches the fire
-; request in #R$FE54, and returns the same compact `KMOV`
+; request in #R$FE54, and returns the same compact `#R$FE56`
 ; code in `A` as the
 ; Kempston routine at `0xAD3E`.
-; Current best `KMOV` code table:
+; Current best `#R$FE56` code table:
 ; #LIST
 ; { `0x00` idle }
 ; { `0x80` forward }
@@ -4517,113 +4517,117 @@ u$9123 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; { `0x04` right on the spot }
 ; LIST#
 ;
-; O:A `KMOV` movement code
+; O:A `#R$FE56` movement code
 @label=KeyboardMovementDecode
-c$9132 LD D,$00                                         ;
- $9134 LD C,$FE                                         ;
- $9136 LD B,C                                           ;
- $9137 IN A,(C)                                         ;
- $9139 CPL                                              ;
- $913A LD E,A                                           ;
- $913B LD B,$FD                                         ;
- $913D IN A,(C)                                         ;
- $913F CPL                                              ;
- $9140 OR E                                             ;
- $9141 JR Z,$9145                                       ;
- $9143 SET 3,D                                          ;
-*$9145 LD B,$FB                                         ;
- $9147 IN A,(C)                                         ;
- $9149 CPL                                              ;
- $914A LD E,A                                           ;
- $914B LD B,$F7                                         ;
- $914D IN A,(C)                                         ;
- $914F CPL                                              ;
- $9150 OR E                                             ;
- $9151 JR Z,$9155                                       ;
- $9153 SET 4,D                                          ;
-*$9155 LD B,$BF                                         ;
- $9157 IN A,(C)                                         ;
- $9159 CPL                                              ;
- $915A LD E,A                                           ;
- $915B LD B,$7F                                         ;
- $915D IN A,(C)                                         ;
- $915F CPL                                              ;
- $9160 OR E                                             ;
- $9161 JR Z,$9165                                       ;
- $9163 SET 2,D                                          ;
-*$9165 LD B,$DF                                         ;
- $9167 IN A,(C)                                         ;
- $9169 CPL                                              ;
- $916A LD E,A                                           ;
- $916B LD B,$EF                                         ;
- $916D IN A,(C)                                         ;
- $916F CPL                                              ;
- $9170 AND $FE                                          ;
- $9172 OR E                                             ;
- $9173 JR Z,$9177                                       ;
- $9175 SET 1,D                                          ;
-*$9177 IN A,(C)                                         ;
- $9179 CPL                                              ;
- $917A AND $01                                          ;
- $917C JR Z,$917F                                       ;
- $917E INC D                                            ;
-*$917F LD C,D                                           ;
- $9180 LD A,C                                           ;
- $9181 AND $06                                          ;
- $9183 CP $06                                           ;
- $9185 JR NZ,$918A                                      ;
- $9187 CPL                                              ;
- $9188 AND C                                            ;
- $9189 LD C,A                                           ;
-*$918A LD A,C                                           ;
- $918B AND $18                                          ;
- $918D CP $18                                           ;
- $918F JR NZ,$9194                                      ;
- $9191 CPL                                              ;
- $9192 AND C                                            ;
- $9193 LD C,A                                           ;
-*$9194 LD A,C                                           ;
- $9195 AND $01                                          ;
- $9197 JR Z,$919E                                       ;
+c$9132 LD D,$00      ;
+ $9134 LD C,$FE      ;
+ $9136 LD B,C        ;
+ $9137 IN A,(C)      ;
+ $9139 CPL           ;
+ $913A LD E,A        ;
+ $913B LD B,$FD      ;
+ $913D IN A,(C)      ;
+ $913F CPL           ;
+ $9140 OR E          ;
+ $9141 JR Z,$9145    ;
+ $9143 SET 3,D       ;
+*$9145 LD B,$FB      ;
+ $9147 IN A,(C)      ;
+ $9149 CPL           ;
+ $914A LD E,A        ;
+ $914B LD B,$F7      ;
+ $914D IN A,(C)      ;
+ $914F CPL           ;
+ $9150 OR E          ;
+ $9151 JR Z,$9155    ;
+ $9153 SET 4,D       ;
+*$9155 LD B,$BF      ;
+ $9157 IN A,(C)      ;
+ $9159 CPL           ;
+ $915A LD E,A        ;
+ $915B LD B,$7F      ;
+ $915D IN A,(C)      ;
+ $915F CPL           ;
+ $9160 OR E          ;
+ $9161 JR Z,$9165    ;
+ $9163 SET 2,D       ;
+*$9165 LD B,$DF      ;
+ $9167 IN A,(C)      ;
+ $9169 CPL           ;
+ $916A LD E,A        ;
+ $916B LD B,$EF      ;
+ $916D IN A,(C)      ;
+ $916F CPL           ;
+ $9170 AND $FE       ;
+ $9172 OR E          ;
+ $9173 JR Z,$9177    ;
+ $9175 SET 1,D       ;
+*$9177 IN A,(C)      ;
+ $9179 CPL           ;
+ $917A AND $01       ;
+ $917C JR Z,$917F    ;
+ $917E INC D         ;
+*$917F LD C,D        ;
+ $9180 LD A,C        ;
+ $9181 AND $06       ;
+ $9183 CP $06        ;
+ $9185 JR NZ,$918A   ;
+ $9187 CPL           ;
+ $9188 AND C         ;
+ $9189 LD C,A        ;
+*$918A LD A,C        ;
+ $918B AND $18       ;
+ $918D CP $18        ;
+ $918F JR NZ,$9194   ;
+ $9191 CPL           ;
+ $9192 AND C         ;
+ $9193 LD C,A        ;
+*$9194 LD A,C        ;
+ $9195 AND $01       ;
+ $9197 JR Z,$919E    ;
 ; Latch the fire request into #R$FE54 and clear the fire bit before decoding the surviving movement state.
- $9199 LD ($FE54),A                                     ;
- $919C RES 0,C                                          ;
-*$919E LD A,C                                           ;
- $919F AND A                                            ;
- $91A0 JR NZ,$91A4                                      ;
- $91A2 SUB A                                            ;
- $91A3 RET                                              ;
-*$91A4 BIT 1,C                                          ;
- $91A6 JR Z,$91B7                                       ;
- $91A8 BIT 3,C                                          ;
- $91AA JR Z,$91AF                                       ;
- $91AC LD A,$08                                         ;
- $91AE RET                                              ;
-*$91AF LD A,$80                                         ;
- $91B1 BIT 4,C                                          ;
- $91B3 RET NZ                                           ;
- $91B4 LD A,$A0                                         ;
- $91B6 RET                                              ;
-*$91B7 BIT 2,C                                          ;
- $91B9 JR Z,$91CA                                       ;
- $91BB BIT 4,C                                          ;
- $91BD JR Z,$91C2                                       ;
- $91BF LD A,$04                                         ;
- $91C1 RET                                              ;
-*$91C2 LD A,$40                                         ;
- $91C4 BIT 3,C                                          ;
- $91C6 RET NZ                                           ;
- $91C7 LD A,$50                                         ;
- $91C9 RET                                              ;
-*$91CA BIT 3,C                                          ;
- $91CC JR Z,$91D1                                       ;
- $91CE LD A,$60                                         ;
- $91D0 RET                                              ;
-*$91D1 LD A,$90                                         ;
- $91D3 RET                                              ;
- $91D4 RET                                              ;
- $91D5 DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ;
- $91E0 DEFB $00,$00,$00,$00,$00,$00                     ;
+ $9199 LD ($FE54),A  ;
+ $919C RES 0,C       ;
+*$919E LD A,C        ;
+ $919F AND A         ;
+ $91A0 JR NZ,$91A4   ;
+ $91A2 SUB A         ;
+ $91A3 RET           ;
+*$91A4 BIT 1,C       ;
+ $91A6 JR Z,$91B7    ;
+ $91A8 BIT 3,C       ;
+ $91AA JR Z,$91AF    ;
+ $91AC LD A,$08      ;
+ $91AE RET           ;
+*$91AF LD A,$80      ;
+ $91B1 BIT 4,C       ;
+ $91B3 RET NZ        ;
+ $91B4 LD A,$A0      ;
+ $91B6 RET           ;
+*$91B7 BIT 2,C       ;
+ $91B9 JR Z,$91CA    ;
+ $91BB BIT 4,C       ;
+ $91BD JR Z,$91C2    ;
+ $91BF LD A,$04      ;
+ $91C1 RET           ;
+*$91C2 LD A,$40      ;
+ $91C4 BIT 3,C       ;
+ $91C6 RET NZ        ;
+ $91C7 LD A,$50      ;
+ $91C9 RET           ;
+*$91CA BIT 3,C       ;
+ $91CC JR Z,$91D1    ;
+ $91CE LD A,$60      ;
+ $91D0 RET           ;
+*$91D1 LD A,$90      ;
+ $91D3 RET           ;
+ $91D4 RET           ;
+
+; Padding after `#R$9132`
+;
+; Padding / reserved growth space after `#R$9132` and before `#R$91E6`.
+u$91D5 DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+ $91E0 DEFB $00,$00,$00,$00,$00,$00
 
 ; TurnTransformDispatcher
 ;
@@ -4635,7 +4639,7 @@ c$9132 LD D,$00                                         ;
 ; Indirect-entry audit note:
 ; #LIST
 ; { this `JP (HL)` is the only true computed routine dispatch in the shipped gameplay code }
-; { `KMOVTurnDecode` only seeds it with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312` }
+; { `#R$A714` only seeds it with `0x91EB`, `0x924A`, `0x92AE`, or `0x9312` }
 ; LIST#
 ;
 ;   DE Input X coordinate word
@@ -4723,7 +4727,11 @@ c$91EB POP HL        ; Movement/turn handler variant selected via `TURN`; curren
  $9245 POP DE        ;
  $9246 POP HL        ;
  $9247 RET           ;
- $9248 DEFB $00,$00  ;
+
+; Padding after `#R$91EB`
+;
+; Padding / reserved growth space after `#R$91EB` and before `#R$924A`.
+u$9248 DEFB $00,$00
 
 ; TurnHandlerRight1
 ;
@@ -4803,7 +4811,11 @@ c$924A POP HL        ;
  $92AA POP DE        ;
  $92AB POP HL        ;
  $92AC RET           ;
- $92AD DEFB $00      ;
+
+; Padding after `#R$924A`
+;
+; Padding / reserved growth space after `#R$924A` and before `#R$92AE`.
+u$92AD DEFB $00
 
 ; TurnHandlerLeft2
 ;
@@ -4816,74 +4828,78 @@ c$924A POP HL        ;
 ; O:BC Updated Z coordinate word
 ; O:HL Updated view-turn angle / accumulator
 @label=TurnHandlerLeft2
-c$92AE POP HL               ;
- $92AF INC HL               ;
- $92B0 INC HL               ;
- $92B1 RES 1,H              ;
- $92B3 PUSH HL              ;
- $92B4 PUSH DE              ;
- $92B5 PUSH BC              ;
- $92B6 LD C,B               ;
- $92B7 LD A,B               ;
- $92B8 AND A                ;
- $92B9 JP P,$92BE           ;
- $92BC CPL                  ;
- $92BD LD B,A               ;
-*$92BE SRL B                ;
- $92C0 SRL A                ;
- $92C2 SRL B                ;
- $92C4 ADD A,B              ;
- $92C5 SRL B                ;
- $92C7 SRL B                ;
- $92C9 SRL B                ;
- $92CB ADD A,B              ;
- $92CC LD L,A               ;
- $92CD LD H,$00             ;
- $92CF ADD HL,HL            ;
- $92D0 ADD HL,HL            ;
- $92D1 ADD HL,HL            ;
- $92D2 BIT 7,C              ;
- $92D4 JR NZ,$92DA          ;
- $92D6 ADD HL,DE            ;
- $92D7 JP $92DE             ;
-*$92DA AND A                ;
- $92DB EX DE,HL             ;
- $92DC SBC HL,DE            ;
-*$92DE POP DE               ;
- $92DF POP BC               ;
- $92E0 PUSH HL              ;
- $92E1 LD C,B               ;
- $92E2 LD A,B               ;
- $92E3 AND A                ;
- $92E4 JP P,$92E9           ;
- $92E7 CPL                  ;
- $92E8 LD B,A               ;
-*$92E9 SRL A                ;
- $92EB SRL B                ;
- $92ED SRL B                ;
- $92EF ADD A,B              ;
- $92F0 SRL B                ;
- $92F2 SRL B                ;
- $92F4 SRL B                ;
- $92F6 ADD A,B              ;
- $92F7 LD L,A               ;
- $92F8 LD H,$00             ;
- $92FA ADD HL,HL            ;
- $92FB ADD HL,HL            ;
- $92FC ADD HL,HL            ;
- $92FD BIT 7,C              ;
- $92FF JR Z,$9305           ;
- $9301 ADD HL,DE            ;
- $9302 JP $9309             ;
-*$9305 AND A                ;
- $9306 EX DE,HL             ;
- $9307 SBC HL,DE            ;
-*$9309 LD B,H               ;
- $930A LD C,L               ;
- $930B POP DE               ;
- $930C POP HL               ;
- $930D RET                  ;
- $930E DEFB $00,$00,$00,$00 ;
+c$92AE POP HL        ;
+ $92AF INC HL        ;
+ $92B0 INC HL        ;
+ $92B1 RES 1,H       ;
+ $92B3 PUSH HL       ;
+ $92B4 PUSH DE       ;
+ $92B5 PUSH BC       ;
+ $92B6 LD C,B        ;
+ $92B7 LD A,B        ;
+ $92B8 AND A         ;
+ $92B9 JP P,$92BE    ;
+ $92BC CPL           ;
+ $92BD LD B,A        ;
+*$92BE SRL B         ;
+ $92C0 SRL A         ;
+ $92C2 SRL B         ;
+ $92C4 ADD A,B       ;
+ $92C5 SRL B         ;
+ $92C7 SRL B         ;
+ $92C9 SRL B         ;
+ $92CB ADD A,B       ;
+ $92CC LD L,A        ;
+ $92CD LD H,$00      ;
+ $92CF ADD HL,HL     ;
+ $92D0 ADD HL,HL     ;
+ $92D1 ADD HL,HL     ;
+ $92D2 BIT 7,C       ;
+ $92D4 JR NZ,$92DA   ;
+ $92D6 ADD HL,DE     ;
+ $92D7 JP $92DE      ;
+*$92DA AND A         ;
+ $92DB EX DE,HL      ;
+ $92DC SBC HL,DE     ;
+*$92DE POP DE        ;
+ $92DF POP BC        ;
+ $92E0 PUSH HL       ;
+ $92E1 LD C,B        ;
+ $92E2 LD A,B        ;
+ $92E3 AND A         ;
+ $92E4 JP P,$92E9    ;
+ $92E7 CPL           ;
+ $92E8 LD B,A        ;
+*$92E9 SRL A         ;
+ $92EB SRL B         ;
+ $92ED SRL B         ;
+ $92EF ADD A,B       ;
+ $92F0 SRL B         ;
+ $92F2 SRL B         ;
+ $92F4 SRL B         ;
+ $92F6 ADD A,B       ;
+ $92F7 LD L,A        ;
+ $92F8 LD H,$00      ;
+ $92FA ADD HL,HL     ;
+ $92FB ADD HL,HL     ;
+ $92FC ADD HL,HL     ;
+ $92FD BIT 7,C       ;
+ $92FF JR Z,$9305    ;
+ $9301 ADD HL,DE     ;
+ $9302 JP $9309      ;
+*$9305 AND A         ;
+ $9306 EX DE,HL      ;
+ $9307 SBC HL,DE     ;
+*$9309 LD B,H        ;
+ $930A LD C,L        ;
+ $930B POP DE        ;
+ $930C POP HL        ;
+ $930D RET           ;
+
+; Padding after `#R$92AE`
+;
+; Padding / reserved growth space after `#R$92AE` and before `#R$9312`.
+u$930E DEFB $00,$00,$00,$00
 
 ; TurnHandlerRight2
 ;
@@ -4896,80 +4912,83 @@ c$92AE POP HL               ;
 ; O:BC Updated Z coordinate word
 ; O:HL Updated view-turn angle / accumulator
 @label=TurnHandlerRight2
-c$9312 POP HL                               ;
- $9313 DEC HL                               ;
- $9314 DEC HL                               ;
- $9315 LD A,H                               ;
- $9316 AND A                                ;
- $9317 JP P,$931C                           ;
- $931A LD H,$01                             ;
-*$931C PUSH HL                              ;
- $931D PUSH DE                              ;
- $931E PUSH BC                              ;
- $931F LD C,B                               ;
- $9320 LD A,B                               ;
- $9321 AND A                                ;
- $9322 JP P,$9327                           ;
- $9325 CPL                                  ;
- $9326 LD B,A                               ;
-*$9327 SRL B                                ;
- $9329 SRL A                                ;
- $932B SRL B                                ;
- $932D ADD A,B                              ;
- $932E SRL B                                ;
- $9330 SRL B                                ;
- $9332 SRL B                                ;
- $9334 ADD A,B                              ;
- $9335 LD L,A                               ;
- $9336 LD H,$00                             ;
- $9338 ADD HL,HL                            ;
- $9339 ADD HL,HL                            ;
- $933A ADD HL,HL                            ;
- $933B BIT 7,C                              ;
- $933D JR Z,$9343                           ;
- $933F ADD HL,DE                            ;
- $9340 JP $9347                             ;
-*$9343 AND A                                ;
- $9344 EX DE,HL                             ;
- $9345 SBC HL,DE                            ;
-*$9347 POP DE                               ;
- $9348 POP BC                               ;
- $9349 PUSH HL                              ;
- $934A LD C,B                               ;
- $934B LD A,B                               ;
- $934C AND A                                ;
- $934D JP P,$9352                           ;
- $9350 CPL                                  ;
- $9351 LD B,A                               ;
-*$9352 SRL A                                ;
- $9354 SRL B                                ;
- $9356 SRL B                                ;
- $9358 ADD A,B                              ;
- $9359 SRL B                                ;
- $935B SRL B                                ;
- $935D SRL B                                ;
- $935F ADD A,B                              ;
- $9360 LD L,A                               ;
- $9361 LD H,$00                             ;
- $9363 ADD HL,HL                            ;
- $9364 ADD HL,HL                            ;
- $9365 ADD HL,HL                            ;
- $9366 BIT 7,C                              ;
- $9368 JR NZ,$936E                          ;
- $936A ADD HL,DE                            ;
- $936B JP $9372                             ;
-*$936E AND A                                ;
- $936F EX DE,HL                             ;
- $9370 SBC HL,DE                            ;
-*$9372 LD B,H                               ;
- $9373 LD C,L                               ;
- $9374 POP DE                               ;
- $9375 POP HL                               ;
- $9376 RET                                  ;
- $9377 DEFB $00                             ;
- $9378 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
- $9380 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
- $9388 DEFB $00,$00                         ;
+c$9312 POP HL        ;
+ $9313 DEC HL        ;
+ $9314 DEC HL        ;
+ $9315 LD A,H        ;
+ $9316 AND A         ;
+ $9317 JP P,$931C    ;
+ $931A LD H,$01      ;
+*$931C PUSH HL       ;
+ $931D PUSH DE       ;
+ $931E PUSH BC       ;
+ $931F LD C,B        ;
+ $9320 LD A,B        ;
+ $9321 AND A         ;
+ $9322 JP P,$9327    ;
+ $9325 CPL           ;
+ $9326 LD B,A        ;
+*$9327 SRL B         ;
+ $9329 SRL A         ;
+ $932B SRL B         ;
+ $932D ADD A,B       ;
+ $932E SRL B         ;
+ $9330 SRL B         ;
+ $9332 SRL B         ;
+ $9334 ADD A,B       ;
+ $9335 LD L,A        ;
+ $9336 LD H,$00      ;
+ $9338 ADD HL,HL     ;
+ $9339 ADD HL,HL     ;
+ $933A ADD HL,HL     ;
+ $933B BIT 7,C       ;
+ $933D JR Z,$9343    ;
+ $933F ADD HL,DE     ;
+ $9340 JP $9347      ;
+*$9343 AND A         ;
+ $9344 EX DE,HL      ;
+ $9345 SBC HL,DE     ;
+*$9347 POP DE        ;
+ $9348 POP BC        ;
+ $9349 PUSH HL       ;
+ $934A LD C,B        ;
+ $934B LD A,B        ;
+ $934C AND A         ;
+ $934D JP P,$9352    ;
+ $9350 CPL           ;
+ $9351 LD B,A        ;
+*$9352 SRL A         ;
+ $9354 SRL B         ;
+ $9356 SRL B         ;
+ $9358 ADD A,B       ;
+ $9359 SRL B         ;
+ $935B SRL B         ;
+ $935D SRL B         ;
+ $935F ADD A,B       ;
+ $9360 LD L,A        ;
+ $9361 LD H,$00      ;
+ $9363 ADD HL,HL     ;
+ $9364 ADD HL,HL     ;
+ $9365 ADD HL,HL     ;
+ $9366 BIT 7,C       ;
+ $9368 JR NZ,$936E   ;
+ $936A ADD HL,DE     ;
+ $936B JP $9372      ;
+*$936E AND A         ;
+ $936F EX DE,HL      ;
+ $9370 SBC HL,DE     ;
+*$9372 LD B,H        ;
+ $9373 LD C,L        ;
+ $9374 POP DE        ;
+ $9375 POP HL        ;
+ $9376 RET           ;
+
+; Padding after `#R$9312`
+;
+; Padding / reserved growth space after `#R$9312` and before `#R$938A`.
+u$9377 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $937F DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $9387 DEFB $00,$00,$00
 
 ; HeadingFromXZ
 ;
@@ -5104,19 +5123,16 @@ c$938A LD A,H        ;
  $943A NEG           ;
  $943C RET           ;
 
-; Padding / reserved growth space after `HeadingFromXZ`.
-; The 3-byte `NOP` run at `0x943D..0x943F` follows a hard `RET` and precedes
-; a zeroed spacer block before `MESPR`.
-u$943D DEFB $00,$00,$00
-
-; Zeroed padding / spacer block between `HeadingFromXZ` and `MESPR`.
-b$9440 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9448 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9450 DEFB $00,$00
+; Padding after `#R$938A`
+;
+; Padding / reserved growth space after `#R$938A` and before `#R$938A`.
+u$943D DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $9445 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $944D DEFB $00,$00,$00,$00,$00
 
 ; MESPR
 ;
-; HL Address of a rectangle descriptor: destination, height, width, then row-major byte data
+; Address of a rectangle descriptor: destination, height, width, then row-major byte data
 ; Current best shipped read: generic message/rectangle blitter for the status
 ; strip and small HUD warning areas.
 ; Descriptor format:
@@ -5207,26 +5223,30 @@ c$9476 LD E,(HL)     ; Load the destination address low byte.
 ;   BC Destination address
 ; O:BC Destination advanced one column to the right for chained glyph plots
 @label=PlotNumberGlyph
-c$948C PUSH BC                              ; Preserve the destination pointer for the caller.
- $948D AND $0F                              ; Keep only the low nibble.
- $948F RLCA                                 ; Multiply by eight to index 8-byte glyphs.
- $9490 RLCA                                 ;
- $9491 RLCA                                 ;
- $9492 LD D,B                               ; Move the destination address into DE.
- $9493 LD E,C                               ;
- $9494 LD HL,$CD80                          ; NumberGlyphs
- $9497 ADD A,L                              ;
- $9498 LD L,A                               ;
- $9499 LD B,$07                             ; Copy the 7 visible rows of the glyph.
-*$949B LD A,(HL)                            ;
- $949C LD (DE),A                            ;
- $949D INC HL                               ;
- $949E INC D                                ;
- $949F DJNZ $949B                           ;
- $94A1 POP BC                               ; Advance to the next screen column for chained calls.
- $94A2 INC BC                               ;
- $94A3 RET                                  ;
- $94A4 DEFB $00,$00,$00,$00,$00,$00,$00,$00 ;
+c$948C PUSH BC       ; Preserve the destination pointer for the caller.
+ $948D AND $0F       ; Keep only the low nibble.
+ $948F RLCA          ; Multiply by eight to index 8-byte glyphs.
+ $9490 RLCA          ;
+ $9491 RLCA          ;
+ $9492 LD D,B        ; Move the destination address into DE.
+ $9493 LD E,C        ;
+ $9494 LD HL,$CD80   ; NumberGlyphs
+ $9497 ADD A,L       ;
+ $9498 LD L,A        ;
+ $9499 LD B,$07      ; Copy the 7 visible rows of the glyph.
+*$949B LD A,(HL)     ;
+ $949C LD (DE),A     ;
+ $949D INC HL        ;
+ $949E INC D         ;
+ $949F DJNZ $949B    ;
+ $94A1 POP BC        ; Advance to the next screen column for chained calls.
+ $94A2 INC BC        ;
+ $94A3 RET           ;
+
+; Padding after `#R$948C`
+;
+; Padding / reserved growth space after `#R$948C` and before `#R$94AC`.
+u$94A4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; SCOPR
 ;
@@ -5328,13 +5348,15 @@ c$94EC LD ($FE76),HL ; Persist the current packed BCD value.
  $952F CALL $948C    ;
  $9532 RET           ;
 
-; Padding / reserved growth space before the short score-strip helper at `0x9538`.
-; This 5-byte `NOP` run follows a hard `RET` and is not a live fallthrough path.
+; Padding after `#R$94EC`
+;
+; Padding / reserved growth space after `#R$94EC` and before `#R$9538`.
 u$9533 DEFB $00,$00,$00,$00,$00
 
-; This entry point is used by the routine at #R$977E.
+; DLAY - 20ms delay function
 ;
-; Used by the routines at #R$956A, #R$A122 and #R$A37B.
+; This entry point is used by the routine at #R$977E.
+@label=DLAY20MS
 c$9538 LD A,$00      ;
  $953A ADD A,$04     ;
 *$953C LD HL,$0000   ;
@@ -5347,10 +5369,9 @@ c$9538 LD A,$00      ;
  $9548 JP NZ,$953C   ;
  $954B RET           ;
 
-; Padding / reserved growth space between the short score-strip helper and the
-; main reset/initialisation block at `0x956A`.
-; This 30-byte `NOP` run follows a hard `RET` and ends at a round-number
-; module boundary.
+; Padding after `#R$9538`
+;
+; Padding / reserved growth space after `#R$9538` and before `#R$956A`.
 u$954C DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $9554 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $955C DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -5374,30 +5395,32 @@ u$954C DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; LIST#
 @label=GameInitAndMainLoop
 c$956A LD HL,$0000   ;
- $956D LD ($FE6A),HL ; Clear `EXST1` / `EXST2`.
- $9570 LD ($FE6C),HL ; #R$FE6C = #REGhl
- $9573 LD ($FE76),HL ; #R$FE76 = #REGhl
- $9576 LD ($FE78),HL ; #R$FE78 = #REGhl
- $9579 LD ($FE72),HL ; #R$FE72 = #REGhl
- $957C LD ($FE7A),HL ; #R$FE7A = #REGhl
- $957F LD ($FE68),HL ; #R$FE68 = #REGhl
- $9582 LD ($FE54),HL ; #R$FE54 = #REGhl
- $9585 LD ($FE50),HL ; #R$FE50 = #REGhl
- $9588 LD ($FE6E),HL ; Clear `PRSTA` / render-state byte.
+ $956D LD ($FE6A),HL ; #R$FE6A = 0
+ $9570 LD ($FE6C),HL ; #R$FE6C = 0
+ $9573 LD ($FE76),HL ; #R$FE76 = 0
+ $9576 LD ($FE78),HL ; #R$FE78 = 0
+ $9579 LD ($FE72),HL ; #R$FE72 = 0
+ $957C LD ($FE7A),HL ; #R$FE7A = 0
+ $957F LD ($FE68),HL ; #R$FE68 = 0
+ $9582 LD ($FE54),HL ; #R$FE54 = 0
+ $9585 LD ($FE50),HL ; #R$FE50 = 0
+ $9588 LD ($FE6E),HL ; #R$FE6E = 0 : clear render-state byte.
  $958B LD HL,$0003   ;
- $958E LD ($FEE4),HL ; #R$FEE4 = #REGhl
- $9591 LD HL,$4000   ; #REGhl = #R$4000
- $9594 LD ($FE9A),HL ; #R$FE9A = #REGhl
- $9597 LD ($FE9C),HL ; #R$FE9C = #REGhl
+ $958E LD ($FEE4),HL ; #R$FEE4 = 3
+; Initially place the obstacles at the four +/-16384 positions, equally spaced
+; in the signed 16-bit world.
+ $9591 LD HL,$4000   ;
+ $9594 LD ($FE9A),HL ; #R$FE9A = 16384
+ $9597 LD ($FE9C),HL ; #R$FE9C = 16384
  $959A LD HL,$C000   ;
- $959D LD ($FE9E),HL ; #R$FE9E = #REGhl
- $95A0 LD ($FEA0),HL ; #R$FEA0 = #REGhl
+ $959D LD ($FE9E),HL ; #R$FE9E = -16384
+ $95A0 LD ($FEA0),HL ; #R$FEA0 = -16384
  $95A3 LD HL,$C000   ;
- $95A6 LD ($FEA2),HL ; #R$FEA2 = #REGhl
- $95A9 LD ($FEA4),HL ; #R$FEA4 = #REGhl
- $95AC LD HL,$4000   ; #REGhl = #R$4000
- $95AF LD ($FEA6),HL ; #R$FEA6 = #REGhl
- $95B2 LD ($FE98),HL ; #R$FE98 = #REGhl
+ $95A6 LD ($FEA2),HL ; #R$FEA2 = -16384
+ $95A9 LD ($FEA4),HL ; #R$FEA4 = -16384
+ $95AC LD HL,$4000   ;
+ $95AF LD ($FEA6),HL ; #R$FEA6 = 16384
+ $95B2 LD ($FE98),HL ; #R$FE98 = 16384
  $95B5 CALL $8000    ; #R$8000
  $95B8 LD HL,$6900   ; #REGhl = #R$6900
  $95BB LD ($FE2C),HL ; #R$FE2C = #REGhl
@@ -6806,10 +6829,9 @@ c$956A LD HL,$0000   ;
  $A0D2 JP NZ,$A0C7   ;
  $A0D5 RET           ;
 
-; Padding / reserved growth space between the missile block and the shared
-; bullet update/render block.
-; This `NOP` run follows a hard `RET` and ends on the next routine boundary at
-; `#R$A122`.
+; Padding after `#R$956A`
+;
+; Padding / reserved growth space after `#R$956A` and before `#R$A122`.
 u$A0D6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $A0DE DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $A0E6 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -7480,11 +7502,11 @@ c$A37B LD A,$18      ;
 ;
 ; KEYIN / keyboard interpretation plus world-motion handoff.
 ; This page merges Kempston and keyboard input, masks movement against nearby
-; obstacles, decodes the surviving `KMOV` state into turn/world-motion setup,
+; obstacles, decodes the surviving `#R$FE56` state into turn/world-motion setup,
 ; and handles the gameplay hold-key pause loop.
 ; Functional phases on this page:
 ; #LIST
-; { #R$A692: store the merged keyboard/Kempston movement code in `KMOV`. }
+; { #R$A692: store the merged keyboard/Kempston movement code in `#R$FE56`. }
 ; { #R$A695: mask disallowed movement bits against the four nearby obstacle pairs. }
 ; { #R$A701 and #R$A70C: erase or print the obstacle warning message. }
 ; { #R$A714: decode turn behaviour and the matching hill-pointer delta. }
@@ -7511,8 +7533,7 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
  $A691 OR B          ;
 ; This entry point is used by the routine at #R$A37B.
 @label=InputStoreKMOV
-*$A692 LD ($FE56),A  ; KMOV
-                     ; Store the merged keyboard/Kempston movement code in `KMOV` before obstacle masking.
+*$A692 LD ($FE56),A  ; Store the merged keyboard/Kempston movement code in `#R$FE56` before obstacle masking.
 @label=InputMaskAgainstObstacles
  $A695 LD A,($FE99)  ; Test the four packed obstacle `(X,Z)` pairs and mask out disallowed movement bits when
                      ; the player is too close for a clear move/turn.
@@ -7571,9 +7592,9 @@ c$A685 CALL $AD3E    ; Read Kempston movement bits if present.
  $A70F PUSH BC       ;
  $A710 CALL $9452    ;
  $A713 POP BC        ;
-; KMOV turn decoder and hill-pointer adjustment.
+; #R$FE56 turn decoder and hill-pointer adjustment.
 ; .
-; Decode the surviving masked `KMOV` state into turn behaviour plus the
+; Decode the surviving masked `#R$FE56` state into turn behaviour plus the
 ; hill-pointer delta that matches the chosen turn rate/direction.
 ; #LIST
 ; { bit 5 -> `0x91EB` single-speed left turn }
@@ -8277,11 +8298,9 @@ c$AC22 AND $08       ;
  $ACBD OUT ($FE),A   ;
  $ACBF RET           ;
 
-; Padding after #R$AC22 routine
+; Padding after `#R$AC22`
 ;
-; Padding / reserved growth space between the deferred-effect block and `#R$AD0C`.
-; This `NOP` run follows a hard `RET` and ends at the next round-number helper
-; boundary.
+; Padding / reserved growth space after `#R$AC22` and before `#R$AD0C`.
 u$ACC0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $ACC8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $ACD0 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -8311,7 +8330,9 @@ c$AD0C DI            ; Disable interrupts.
  $AD16 LDIR          ; }
  $AD18 JP $B1F4      ; Jump to #R$B1F4.
 
-; Padding after #R$AD0C
+; Padding after `#R$AD0C`
+;
+; Padding / reserved growth space after `#R$AD0C` and before `#R$AD3E`.
 u$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD23 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $AD2B DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -8321,16 +8342,16 @@ u$AD1B DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; KEMPST
 ;
 ; Callable subroutine used by the routine at #R$977E. Reads the status of a Kempston joystick and interprets what it says.
-; Status is read from port $1F and return result as KMOV (in #REGa).
+; Status is read from port $1F and return result as #R$FE56 (in #REGa).
 ; #TABLE(default,centre,centre,centre,centre,centre,centre,centre,centre)
 ; { =h,r2 Item | =h,c8 Bit }
 ; { =h 7 | =h 6 | =h 5 | =h 4 | =h 3 | =h 2 | =h 1 | =h 0 }
 ; { Port# $1F | 0 | 0 | 0 | FIRE | UP | DOWN | LEFT | RIGHT }
-; { KMOV | FWD | REV | LEFTx1 | RIGHTx1 | LEFTx2 | RIGHTx2 | 0 | 0 }
+; { #R$FE56 | FWD | REV | LEFTx1 | RIGHTx1 | LEFTx2 | RIGHTx2 | 0 | 0 }
 ; TABLE#
 ; First, Joystick is read, and FIRE key is checked. Then, 8 directions are checked individually and mapped to the set of actions. This is fairly simplistic compared to the keyboard - no attempt to mimic the "tank tracks" approach of the keyboard is made. Joystick up and down are mapped to forwards and reverse, and left and right are mapped to rotate. Diagonal action performs a forward and back AND a single-speed rotate. Hard left or right performs a double-speed rotate, "rotate on the spot").
 ;
-; O:A `KMOV` movement code
+; O:A `#R$FE56` movement code
 @label=KEMPST
 c$AD3E LD BC,$0000   ;
  $AD41 IN A,($1F)    ; Read from Kempston port
@@ -8344,9 +8365,9 @@ c$AD3E LD BC,$0000   ;
                      ; create suspicion, possibly around some edge case.}
  $AD4D LD ($F732),A  ; #R$F732 = #REGa (pretend the Kempston code was $F3)
 *$AD50 LD A,($F732)  ; #REGa = #R$F732.
- $AD53 CP $F3        ; Check whether the $F3 value was in #R$F732, and if so, return KMOV = 0. Note this is the only place where #R$F732 is used.
+ $AD53 CP $F3        ; Check whether the $F3 value was in #R$F732, and if so, return #R$FE56 = 0. Note this is the only place where #R$F732 is used.
  $AD55 JP NZ,$AD5A   ;
- $AD58 SUB A         ; return KMOV = 0 (no movement)
+ $AD58 SUB A         ; return #R$FE56 = 0 (no movement)
  $AD59 RET           ;
 @label=KEMPST_CHK
 *$AD5A LD A,D        ; Recover joystick reading into #REGa
@@ -8358,35 +8379,35 @@ c$AD3E LD BC,$0000   ;
  $AD66 JP Z,$ADBB    ;
 *$AD69 CP $0A        ; Check joystick = UP + LEFT?
  $AD6B JP NZ,$AD73   ;
- $AD6E LD C,$A0      ; Then KMOV = $A0 (FWD + LEFTx1)
+ $AD6E LD C,$A0      ; Then #R$FE56 = $A0 (FWD + LEFTx1)
  $AD70 JP $ADBB      ;
 *$AD73 CP $08        ; Check joystick = UP?
  $AD75 JP NZ,$AD7D   ;
- $AD78 LD C,$80      ; Then KMOV = $80 (FWD)
+ $AD78 LD C,$80      ; Then #R$FE56 = $80 (FWD)
  $AD7A JP $ADBB      ;
 *$AD7D CP $09        ; Check joystick = UP + RIGHT?
  $AD7F JP NZ,$AD87   ;
- $AD82 LD C,$90      ; Then KMOV = $90 (FWD + RIGHTx1)
+ $AD82 LD C,$90      ; Then #R$FE56 = $90 (FWD + RIGHTx1)
  $AD84 JP $ADBB      ;
 *$AD87 CP $01        ; Check joystick = RIGHT?
  $AD89 JP NZ,$AD91   ;
- $AD8C LD C,$04      ; Then KMOV = $04 (RIGHTx2)
+ $AD8C LD C,$04      ; Then #R$FE56 = $04 (RIGHTx2)
  $AD8E JP $ADBB      ;
 *$AD91 CP $05        ; Check joystick = DOWN + RIGHT?
  $AD93 JP NZ,$AD9B   ;
- $AD96 LD C,$50      ; Then KMOV = $50 (REV + RIGHTx1)
+ $AD96 LD C,$50      ; Then #R$FE56 = $50 (REV + RIGHTx1)
  $AD98 JP $ADBB      ;
 *$AD9B CP $04        ; Check joystick = DOWN?
  $AD9D JP NZ,$ADA5   ;
- $ADA0 LD C,$40      ; Then KMOV = $40 (REV)
+ $ADA0 LD C,$40      ; Then #R$FE56 = $40 (REV)
  $ADA2 JP $ADBB      ;
 *$ADA5 CP $06        ; Check joystick = DOWN + LEFT?
  $ADA7 JP NZ,$ADAF   ;
- $ADAA LD C,$60      ; Then KMOV = $60 (REV + LEFTx1)
+ $ADAA LD C,$60      ; Then #R$FE56 = $60 (REV + LEFTx1)
  $ADAC JP $ADBB      ;
 *$ADAF CP $02        ; Check joystick = LEFT?
  $ADB1 JP NZ,$ADB9   ;
- $ADB4 LD C,$08      ; Then KMOV = $08 (LEFTx2)
+ $ADB4 LD C,$08      ; Then #R$FE56 = $08 (LEFTx2)
  $ADB6 JP $ADBB      ;
 @label=KEMPST_NOMOV
 *$ADB9 SUB A         ;
@@ -8395,12 +8416,12 @@ c$AD3E LD BC,$0000   ;
 *$ADBB LD A,($FE54)  ; #REGa = #R$FE54.
  $ADBE OR D          ;
  $ADBF LD ($FE54),A  ; #R$FE54 = #REGa | #REGd ($80 if firing, 0 if not).
- $ADC2 LD A,C        ; {Move KMOV to #REGa, and return
+ $ADC2 LD A,C        ; {Move #R$FE56 to #REGa, and return
  $ADC3 RET           ; }
 
 ; Padding after `#R$AD3E`
 ;
-; Padding / reserved growth space after `#R$AD3E`.
+; Padding / reserved growth space after `#R$AD3E` and before `#R$ADD4`.
 u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $ADCC DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
@@ -8408,9 +8429,9 @@ u$ADC4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ;
 ; Probable `CRASH` / lose-life and game-over sequence.
 ; This is the current best code match for the notebook's page-17 `CRASH`
-; heading: repeated animation/display work, decrement lives at `FEE4`, branch
+; heading: repeated animation/display work, decrement lives at `#R$FEE4`, branch
 ; to a zero-lives end sequence, otherwise return to the main reinitialisation
-; path at `9644`.
+; path at `#R$9644`.
 ; Current best refinement from the data it uses:
 ; #LIST
 ; { `CC9C` is a probable screen-break / crack line-data block drawn three times before the life counter is decremented }
@@ -9875,12 +9896,10 @@ c$B676 LD HL,$C2C9   ; Load #R$C2C9, i.e. the first full-screen instructions pag
 @label=GameEntryVector
 c$B77A JP $AD0C      ; Jump to the primary `GameEntryPoint` at #R$AD0C.
 
-; Zero-filled post-entry gap
+; Zero-filled gap after code
 ;
-; Zero-filled data gap after `GameEntryVector`.
-;       No live references are currently known; this looks more like reserved growth
-;       space or packaged slack than active title/instructions data.
-b$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; No live references are currently known to any of this block.
+u$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $B785 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $B78D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $B795 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -10241,44 +10260,47 @@ b$B77D DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $C2AD DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $C2B5 DEFB $00
 
-; Showcase prompt text block.
-@label=PressStartPrompt
+; Start game prompt text block.
+@label=PressStartPromptMsg
 t$C2B6 DEFB $16,$05,$08        ; PRINT AT row 5, column 8 in the lower half of the screen.
  $C2B9 DEFM "PRESS[S[TO[START" ; Text body: 16 characters.
 
-; Controls heading text block.
-@label=ControlsHeading
-t$C2C9 DEFB $16,$00,$00                                                                                                                  ; PRINT AT row 0, column 0 at the top-left of the instructions page.
- $C2CC DEFM "CONTROLS:"                                                                                                                  ; Text body: 9 characters.
+; Instructions page 1.
+;
 ; Controls / instructions page 1 body for the full-screen instructions display.
- $C2D5 DEFM $0D,$0D,$0D,"YOUR TANK HAS TWO CATERPILLAR",$0D,"TRACKS. THESE CAN BE CONTROLLED",$0D
- $C316 DEFM "INDIVIDUALLY.",$0D,$0D,"LEFT TRACK:",$0D,$0D,"1-5 & Q-T",$06,"  = FORWARD",$0D,"A-G & ",$14,$01,"CAPS",$14,$00,"-"
- $C357 DEFM "V",$06,"  = REVERSE",$0D,$0D,$0D,"RIGHT TRACK:",$0D,$0D,"6-9 & Y-P",$06,"  = FORWARD",$0D,"J-",$14,$01,"ENTER",$14,$00," &"
- $C398 DEFM " B-",$14,$01,"SPC",$14,$00,$06,"  = REVERSE",$16,$12,$0F,"0  = FIRE",$16,$14,$04,"H = HOLD    S = START",$0D,"     ",$14
- $C3D9 DEFM $01,"CAPS",$14,$00," H = ABORT GAME"
+@label=InstructionsPage1Msg
+t$C2C9 DEFB $16,$00,$00                                                                                                                  ; {PRINT AT
+ $C2CC DEFM "CONTROLS:"                                                                                                                  ; row 0,
+ $C2D5 DEFM $0D,$0D,$0D,"YOUR TANK HAS TWO CATERPILLAR",$0D,"TRACKS. THESE CAN BE CONTROLLED",$0D                                        ; column 0
+ $C316 DEFM "INDIVIDUALLY.",$0D,$0D,"LEFT TRACK:",$0D,$0D,"1-5 & Q-T",$06,"  = FORWARD",$0D,"A-G & ",$14,$01,"CAPS",$14,$00,"-"          ; at the
+ $C357 DEFM "V",$06,"  = REVERSE",$0D,$0D,$0D,"RIGHT TRACK:",$0D,$0D,"6-9 & Y-P",$06,"  = FORWARD",$0D,"J-",$14,$01,"ENTER",$14,$00," &" ; top-left
+ $C398 DEFM " B-",$14,$01,"SPC",$14,$00,$06,"  = REVERSE",$16,$12,$0F,"0  = FIRE",$16,$14,$04,"H = HOLD    S = START",$0D,"     ",$14    ; of the
+ $C3D9 DEFM $01,"CAPS",$14,$00," H = ABORT GAME"                                                                                         ; instructions
+                                                                                                                                         ; page.}
 
-; Controls / instructions page 2 text block for the full-screen instructions
+; Instructions page 2
 ; display.
-@label=ControlsText
-t$C3EF DEFB $16,$00,$00                                                                                          ; PRINT AT row 0, column 0 at the top-left of the second instructions page.
- $C3F2 DEFM "THESE CONTROLS ARE EASIER",$CC,"USEBY CONSIDERING THE KEYBOARD",$CC," BE QUAR"
- $C433 DEFM "TERED. THE QUARTER ON THETOP LEFT (1-5,Q-T) WILL MAKE THELEFT TRA"
- $C474 DEFM "CK DRIVE FORWARDS,",$C6," THE TANK WILL",$D1,"FORWARDS",$C6,$CC,"THE RIGHT.",$0D,"TO",$D1,"FORWARD"
- $C4B5 DEFM "S, MAKE BOTH",$0D,"TRACKS GO FORWARDS.",$0D,"BY MOVING ONE TRACK FORWARD ",$C6,"THE"
- $C4F6 DEFM " OTHER BACK, THE TANK CAN BE TURNED ",$AC,"DOUBLE SPEED ON THE   SPOT.",$0D
- $C537 DEFM "(THIS GAME IS KEMPSTON JOYSTICK  COMPATABLE)",$0D,$0D,"USE OBJECTS (CUBES",$C6
- $C578 DEFM "PYRAMIDS)AS SHIELDS,",$C6,"USE THE RADAR TOFIND THE ENEMY. DO ",$C3,"STAY IN "
- $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00
+@label=InstructionsPage2Msg
+t$C3EF DEFB $16,$00,$00                                                                                          ; {PRINT AT
+ $C3F2 DEFM "THESE CONTROLS ARE EASIER",$CC,"USEBY CONSIDERING THE KEYBOARD",$CC," BE QUAR"                      ; row 0,
+ $C433 DEFM "TERED. THE QUARTER ON THETOP LEFT (1-5,Q-T) WILL MAKE THELEFT TRA"                                  ; column 0
+ $C474 DEFM "CK DRIVE FORWARDS,",$C6," THE TANK WILL",$D1,"FORWARDS",$C6,$CC,"THE RIGHT.",$0D,"TO",$D1,"FORWARD" ; at the
+ $C4B5 DEFM "S, MAKE BOTH",$0D,"TRACKS GO FORWARDS.",$0D,"BY MOVING ONE TRACK FORWARD ",$C6,"THE"                ; top-left
+ $C4F6 DEFM " OTHER BACK, THE TANK CAN BE TURNED ",$AC,"DOUBLE SPEED ON THE   SPOT.",$0D                         ; of the
+ $C537 DEFM "(THIS GAME IS KEMPSTON JOYSTICK  COMPATABLE)",$0D,$0D,"USE OBJECTS (CUBES",$C6                      ; second
+ $C578 DEFM "PYRAMIDS)AS SHIELDS,",$C6,"USE THE RADAR TOFIND THE ENEMY. DO ",$C3,"STAY IN "                      ; instructions
+ $C5B9 DEFM " ONE PLACE FOR TOO LONG.",$00,$00,$00,$00,$00,$00,$00,$00,$00                                       ; page.}
 
-; Attract footer text block for the lower-screen `BY BILL WITTS / QUICKSILVA`
-; credits region.
-@label=AttractModeCreditsFooterText
+; Credits text
+;
+; Attract footer text block for the lower-screen credits
+@label=AttractModeCreditsFooterMsg
 t$C5DA DEFM $16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
  $C5FA DEFM $00,$00,$00,$00,$00,$00,$00,$00
 
-; AttractModeTitleWordLineDataFamily
+; Attract-mode Title Line Data Family
 ;
-; Probable attract-mode title-word line-data family.
+; Attract-mode title-word line-data family.
 ;       This range appears to contain two consecutive `LNLPT` blocks:
 ; #LIST
 ;       { first block at $C602 begins with count `$1E` (30 lines) }
@@ -10287,63 +10309,65 @@ t$C5DA DEFM $16,$0B,$0A,"BY[BILL[WITTS",$16,$10,$08,"\\[QUICKSILVA["
 ;       Because `LNLPT` updates `FE02` on return, the attract pipeline at #R$B346
 ;       can draw the first title piece and then the second one without reloading
 ;       #R$FE02 ($FE02).
-b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
- $C60A DEFB $DE,$F8,$DE,$F6,$DE,$C0,$DE,$BE
- $C612 DEFB $DE,$F6,$DE,$F4,$DE,$BE,$DE,$BC
- $C61A DEFB $DE,$F4,$DE,$F2,$DE,$BC,$DE,$BA
- $C622 DEFB $DE,$F2,$DE,$FA,$DE,$BA,$DE,$C2
- $C62A DEFB $DE,$F0,$DE,$EE,$DE,$B8,$DE,$B6
- $C632 DEFB $DE,$EE,$DE,$EC,$DE,$B6,$DE,$B4
- $C63A DEFB $DE,$EC,$DE,$EA,$DE,$B4,$DE,$B2
- $C642 DEFB $DE,$EA,$DE,$F0,$DE,$B2,$DE,$B8
- $C64A DEFB $DE,$EA,$DE,$E8,$DE,$B2,$DE,$B0
- $C652 DEFB $DE,$E8,$DE,$E6,$DE,$B0,$DE,$AE
- $C65A DEFB $DE,$E6,$DE,$E4,$DE,$AE,$DE,$AC
- $C662 DEFB $DE,$E4,$DE,$E2,$DE,$AC,$DE,$AA
- $C66A DEFB $DE,$EA,$DE,$E2,$DE,$B2,$DE,$AA
- $C672 DEFB $DE,$E2,$DE,$E0,$DE,$AA,$DE,$A8
- $C67A DEFB $DE,$E0,$DE,$DE,$DE,$A8,$DE,$A6
- $C682 DEFB $DE,$DE,$DE,$DC,$DE,$A6,$DE,$A4
- $C68A DEFB $DE,$DC,$DE,$DA,$DE,$A4,$DE,$A2
- $C692 DEFB $DE,$DA,$DE,$E2,$DE,$A2,$DE,$AA
- $C69A DEFB $DE,$DA,$DE,$D8,$DE,$A2,$DE,$A0
- $C6A2 DEFB $DE,$D8,$DE,$D6,$DE,$A0,$DE,$9E
- $C6AA DEFB $DE,$D6,$DE,$D4,$DE,$9E,$DE,$9C
- $C6B2 DEFB $DE,$D4,$DE,$DA,$DE,$9C,$DE,$A2
- $C6BA DEFB $DE,$D6,$DE,$D2,$DE,$9E,$DE,$9A
- $C6C2 DEFB $DE,$D2,$DE,$D0,$DE,$9A,$DE,$98
- $C6CA DEFB $DE,$D0,$DE,$CE,$DE,$98,$DE,$96
- $C6D2 DEFB $DE,$CE,$DE,$CC,$DE,$96,$DE,$94
- $C6DA DEFB $DE,$CC,$DE,$CA,$DE,$94,$DE,$92
- $C6E2 DEFB $DE,$CA,$DE,$C8,$DE,$92,$DE,$90
- $C6EA DEFB $DE,$C8,$DE,$D6,$DE,$90,$DE,$9E
- $C6F2 DEFB $DE
+@label=BATTLE_Text_LineData
+w$C602 DEFB $1E
+ $C603 DEFW $DEFA,$DEF8,$DEC2,$DEC0
+ $C60B DEFW $DEF8,$DEF6,$DEC0,$DEBE
+ $C613 DEFW $DEF6,$DEF4,$DEBE,$DEBC
+ $C61B DEFW $DEF4,$DEF2,$DEBC,$DEBA
+ $C623 DEFW $DEF2,$DEFA,$DEBA,$DEC2
+ $C62B DEFW $DEF0,$DEEE,$DEB8,$DEB6
+ $C633 DEFW $DEEE,$DEEC,$DEB6,$DEB4
+ $C63B DEFW $DEEC,$DEEA,$DEB4,$DEB2
+ $C643 DEFW $DEEA,$DEF0,$DEB2,$DEB8
+ $C64B DEFW $DEEA,$DEE8,$DEB2,$DEB0
+ $C653 DEFW $DEE8,$DEE6,$DEB0,$DEAE
+ $C65B DEFW $DEE6,$DEE4,$DEAE,$DEAC
+ $C663 DEFW $DEE4,$DEE2,$DEAC,$DEAA
+ $C66B DEFW $DEEA,$DEE2,$DEB2,$DEAA
+ $C673 DEFW $DEE2,$DEE0,$DEAA,$DEA8
+ $C67B DEFW $DEE0,$DEDE,$DEA8,$DEA6
+ $C683 DEFW $DEDE,$DEDC,$DEA6,$DEA4
+ $C68B DEFW $DEDC,$DEDA,$DEA4,$DEA2
+ $C693 DEFW $DEDA,$DEE2,$DEA2,$DEAA
+ $C69B DEFW $DEDA,$DED8,$DEA2,$DEA0
+ $C6A3 DEFW $DED8,$DED6,$DEA0,$DE9E
+ $C6AB DEFW $DED6,$DED4,$DE9E,$DE9C
+ $C6B3 DEFW $DED4,$DEDA,$DE9C,$DEA2
+ $C6BB DEFW $DED6,$DED2,$DE9E,$DE9A
+ $C6C3 DEFW $DED2,$DED0,$DE9A,$DE98
+ $C6CB DEFW $DED0,$DECE,$DE98,$DE96
+ $C6D3 DEFW $DECE,$DECC,$DE96,$DE94
+ $C6DB DEFW $DECC,$DECA,$DE94,$DE92
+ $C6E3 DEFW $DECA,$DEC8,$DE92,$DE90
+ $C6EB DEFW $DEC8,$DED6,$DE90,$DE9E
 ; `ZONE` line-data block in the paired title-word family.
-@label=ZONE_LineData
- $C6F3 DEFB $17,$F4,$DE,$F2,$DE,$BC,$DE
- $C6FA DEFB $BA,$DE,$F2,$DE,$F0,$DE,$BA,$DE
- $C702 DEFB $B8,$DE,$F0,$DE,$EE,$DE,$B8,$DE
- $C70A DEFB $B6,$DE,$EE,$DE,$EC,$DE,$B6,$DE
- $C712 DEFB $B4,$DE,$EC,$DE,$EA,$DE,$B4,$DE
- $C71A DEFB $B2,$DE,$EA,$DE,$F4,$DE,$B2,$DE
- $C722 DEFB $BC,$DE,$E8,$DE,$E6,$DE,$B0,$DE
- $C72A DEFB $AE,$DE,$E6,$DE,$E4,$DE,$AE,$DE
- $C732 DEFB $AC,$DE,$E4,$DE,$E2,$DE,$AC,$DE
- $C73A DEFB $AA,$DE,$E2,$DE,$E8,$DE,$AA,$DE
- $C742 DEFB $B0,$DE,$E0,$DE,$DE,$DE,$A8,$DE
- $C74A DEFB $A6,$DE,$DE,$DE,$DC,$DE,$A6,$DE
- $C752 DEFB $A4,$DE,$DC,$DE,$DA,$DE,$A4,$DE
- $C75A DEFB $A2,$DE,$DA,$DE,$D8,$DE,$A2,$DE
- $C762 DEFB $A0,$DE,$D8,$DE,$D6,$DE,$A0,$DE
- $C76A DEFB $9E,$DE,$D6,$DE,$E0,$DE,$9E,$DE
- $C772 DEFB $A8,$DE,$D4,$DE,$D2,$DE,$9C,$DE
- $C77A DEFB $9A,$DE,$D2,$DE,$D0,$DE,$9A,$DE
- $C782 DEFB $98,$DE,$D0,$DE,$CE,$DE,$98,$DE
- $C78A DEFB $96,$DE,$CE,$DE,$CC,$DE,$96,$DE
- $C792 DEFB $94,$DE,$CC,$DE,$CA,$DE,$94,$DE
- $C79A DEFB $92,$DE,$CA,$DE,$C8,$DE,$92,$DE
- $C7A2 DEFB $90,$DE,$C8,$DE,$D4,$DE,$90,$DE
- $C7AA DEFB $9C,$DE,$DE,$00,$00,$00
+@label=ZONE_Text_LineData
+ $C6F3 DEFB $17
+ $C6F4 DEFW $DEF4,$DEF2,$DEBC,$DEBA
+ $C6FC DEFW $DEF2,$DEF0,$DEBA,$DEB8
+ $C704 DEFW $DEF0,$DEEE,$DEB8,$DEB6
+ $C70C DEFW $DEEE,$DEEC,$DEB6,$DEB4
+ $C714 DEFW $DEEC,$DEEA,$DEB4,$DEB2
+ $C71C DEFW $DEEA,$DEF4,$DEB2,$DEBC
+ $C724 DEFW $DEE8,$DEE6,$DEB0,$DEAE
+ $C72C DEFW $DEE6,$DEE4,$DEAE,$DEAC
+ $C734 DEFW $DEE4,$DEE2,$DEAC,$DEAA
+ $C73C DEFW $DEE2,$DEE8,$DEAA,$DEB0
+ $C744 DEFW $DEE0,$DEDE,$DEA8,$DEA6
+ $C74C DEFW $DEDE,$DEDC,$DEA6,$DEA4
+ $C754 DEFW $DEDC,$DEDA,$DEA4,$DEA2
+ $C75C DEFW $DEDA,$DED8,$DEA2,$DEA0
+ $C764 DEFW $DED8,$DED6,$DEA0,$DE9E
+ $C76C DEFW $DED6,$DEE0,$DE9E,$DEA8
+ $C774 DEFW $DED4,$DED2,$DE9C,$DE9A
+ $C77C DEFW $DED2,$DED0,$DE9A,$DE98
+ $C784 DEFW $DED0,$DECE,$DE98,$DE96
+ $C78C DEFW $DECE,$DECC,$DE96,$DE94
+ $C794 DEFW $DECC,$DECA,$DE94,$DE92
+ $C79C DEFW $DECA,$DEC8,$DE92,$DE90
+ $C7A4 DEFW $DEC8,$DED4,$DE90,$DE9C
+ $C7AC DEFW $00DE,$0000
 ; `BATTLE` rotating Y/Z seed table begins at $C7B0.
 @label=BATTLE_RotatingYZTable
  $C7B0 DEFB $28,$00
@@ -10377,7 +10401,8 @@ b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
  $C848 DEFB $88,$FF,$C4,$FF,$9C,$FF
  $C84E DEFB $C4,$FF,$88,$FF
  $C852 DEFB $B0,$FF,$C4,$FF
- $C856 DEFB $E2,$FF,$00,$00
+ $C856 DEFW $FFE2
+ $C858 DEFW $0000
  $C85A DEFB $E2,$FF,$0A,$00,$1E,$00,$46,$00
  $C862 DEFB $46,$00,$32,$00,$0A,$00,$50,$00
  $C86A DEFB $8C,$00,$5A,$00,$82,$00,$5A,$00
@@ -10407,26 +10432,27 @@ b$C602 DEFB $1E,$FA,$DE,$F8,$DE,$C2,$DE,$C0
 ; two large point clusters, fitting the two-letter QS mark better than the
 ; later title words.
 @label=QS_LineData
- $C91A DEFB $1A,$C8,$DE,$CA,$DE,$90,$DE,$92
- $C922 DEFB $DE,$CA,$DE,$CC,$DE,$92,$DE,$94
- $C92A DEFB $DE,$CC,$DE,$CE,$DE,$94,$DE,$96
- $C932 DEFB $DE,$CE,$DE,$D0,$DE,$96,$DE,$98
- $C93A DEFB $DE,$D0,$DE,$D2,$DE,$98,$DE,$9A
- $C942 DEFB $DE,$D2,$DE,$D4,$DE,$9A,$DE,$9C
- $C94A DEFB $DE,$D4,$DE,$C8,$DE,$9C,$DE,$90
- $C952 DEFB $DE,$D6,$DE,$D8,$DE,$9E,$DE,$A0
- $C95A DEFB $DE,$D8,$DE,$DA,$DE,$A0,$DE,$A2
- $C962 DEFB $DE,$DA,$DE,$DC,$DE,$A2,$DE,$A4
- $C96A DEFB $DE,$DC,$DE,$DE,$DE,$A4,$DE,$A6
- $C972 DEFB $DE,$DE,$DE,$E0,$DE,$A6,$DE,$A8
- $C97A DEFB $DE,$E0,$DE,$E2,$DE,$A8,$DE,$AA
- $C982 DEFB $DE,$E2,$DE,$D6,$DE,$AA,$DE,$9E
- $C98A DEFB $DE,$E4,$DE,$E6,$DE,$AC,$DE,$AE
- $C992 DEFB $DE,$E6,$DE,$E8,$DE,$AE,$DE,$B0
- $C99A DEFB $DE,$E8,$DE,$EA,$DE,$B0,$DE,$B2
- $C9A2 DEFB $DE,$EA,$DE,$EC,$DE,$B2,$DE,$B4
- $C9AA DEFB $DE,$EC,$DE,$EE,$DE,$B4,$DE,$B6
- $C9B2 DEFB $DE,$EE
+ $C91A DEFB $1A
+ $C91B DEFW $DEC8,$DECA,$DE90,$DE92
+ $C923 DEFW $DECA,$DECC,$DE92,$DE94
+ $C92B DEFW $DECC,$DECE,$DE94,$DE96
+ $C933 DEFW $DECE,$DED0,$DE96,$DE98
+ $C93B DEFW $DED0,$DED2,$DE98,$DE9A
+ $C943 DEFW $DED2,$DED4,$DE9A,$DE9C
+ $C94B DEFW $DED4,$DEC8,$DE9C,$DE90
+ $C953 DEFW $DED6,$DED8,$DE9E,$DEA0
+ $C95B DEFW $DED8,$DEDA,$DEA0,$DEA2
+ $C963 DEFW $DEDA,$DEDC,$DEA2,$DEA4
+ $C96B DEFW $DEDC,$DEDE,$DEA4,$DEA6
+ $C973 DEFW $DEDE,$DEE0,$DEA6,$DEA8
+ $C97B DEFW $DEE0,$DEE2,$DEA8,$DEAA
+ $C983 DEFW $DEE2,$DED6,$DEAA,$DE9E
+ $C98B DEFW $DEE4,$DEE6,$DEAC,$DEAE
+ $C993 DEFW $DEE6,$DEE8,$DEAE,$DEB0
+ $C99B DEFW $DEE8,$DEEA,$DEB0,$DEB2
+ $C9A3 DEFW $DEEA,$DEEC,$DEB2,$DEB4
+ $C9AB DEFW $DEEC,$DEEE,$DEB4,$DEB6
+ $C9B3 DEFB $EE
 
 ; Custom Font
 @label=CustomFont
@@ -13867,7 +13893,7 @@ b$FE54 DEFB $00      ; Current best decoded movement-state byte.
 ; KMOV - Decoded keyboard movement state
 @label=KMOV
 b$FE56 DEFW $0000    ; Written by `KeyboardMovementDecode`, `KEMPST`, and the merged input path at
-                     ; `KEYIN`; consumed immediately by `KMOVTurnDecode` and later movement masking.
+                     ; `KEYIN`; consumed immediately by `#R$A714` and later movement masking.
 
 ; SIGHT
 @label=SIGHT
@@ -13885,9 +13911,9 @@ b$FE5A DEFW $0000    ; Secondary stack-pointer save slot.
 ; TURN
 @label=TURN
 b$FE5C DEFW $0000    ; Current turn-handler dispatch pointer.
-                     ; `KMOVTurnDecode` is the sole writer: it stores one of the four view-turn
-                     ; handlers (`0x91EB`, `0x924A`, `0x92AE`, `0x9312`) here, and
-                     ; `TurnTransformDispatcher` then jumps through it via `JP (HL)`.
+                     ; `#R$A714` is the sole writer: it stores one of the four view-turn
+                     ; handlers (`#R$91EB` ($91EB), `#R$924A` ($924A), `#R$92AE` ($92AE), `#R$9312` ($)) here, and
+                     ; `#R$91E6` then jumps through it via `JP (HL)`.
 
 ; Current entity/effect position/orientation workspace.
 ; #LIST
@@ -14158,7 +14184,7 @@ b$FEA8 DEFB $00,$00,$00,$00 ; Live bullet workspace.
 
 ; SHIPS - Lives remaining
 ; Number of remaining ships == Lives
-@label=Ships
+@label=SHIPS
 b$FEE4 DEFB $00
 
 ; Data block at FEE5
