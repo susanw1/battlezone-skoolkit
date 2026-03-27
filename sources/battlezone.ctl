@@ -691,22 +691,36 @@ C $88D6,h2
 u $88D9 Padding after `#R$8660`
 D $88D9 Padding / reserved growth space after `#R$8660` and before `#R$88EA`.
 c $88EA RotateXZLists
-D $88EA Used throughout gameplay and attract/title rendering. Current best read: reusable table-driven X/Z rotation stage. It consumes the current model-space X/Z vertex lists plus angle-dependent coefficient tables, applies the active X/Z world displacement, and rewrites the current X/Z working lists in place for later perspective projection.
-D $88EA Current best structural read: four repeated multiply/accumulate passes using the shared element count in `MUCNT`, the active coefficient-table pointers in `XTAB`/`ZTAB`, the displacement words in `XDIS`/`ZDIS`, and the saved source-word continuation in `MMAT`.
+D $88EA Callable, reusable rotation routine for rotating a pair of coord lists around an axis. Nominally intended for rotating tanks/missiles etc in the X-Z plane, it is also coopted for rotating in the Y-Z plane for the tumbling wireframe title text during the intro.
+D $88EA It consumes the current model-space X/Z vertex lists plus angle-dependent coefficient tables, applies the active X/Z world displacement, and rewrites the current X/Z working lists in place for later perspective projection.
+D $88EA Code consists of 4 unrolled 15-bit multiply/accumulate passes to calculate x'=x*cos(t)+z*sin(t), z'= z*cos(t)-x*sin(t).
+. Usage locations are:
+. #LIST
+. { #R$9BA7 ($9BA7)  }
+. { #R$9FEF ($9FEF)  }
+. { #R$A1A1 ($A1A1)  }
+. { #R$A2A7 ($A2A7)  }
+. { #R$A4A8 ($A4A8)  }
+. { #R$AAFC ($AAFC)  }
+. { #R$AC8F ($AC8F)  }
+. { #R$B286 ($B286)  }
+. { #R$B370 ($B370)  }
+. { #R$B3C6 ($B3C6)  }
+. LIST#
 D $88EA Practical interface:
 . #LIST
-. { callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end pointers such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC` }
+. { callers seed `XLOC`/`ZLOC` with fixed model-space X/Z vertex-list end pointers (yes, *end*-pointers, pointing at the *last* items in the respective lists) such as `HBLXLC`/`HBLZLC`, `OBXLC`/`OBZLC`, or `EXXLC`/`EXZLC` }
 . { `RotateXZLists` processes those lists via `SP` and writes the descending rotated working-list pointers back into `XLOC`/`ZLOC` }
 . { callers then pass those rotated X/Z lists plus a separate fixed `YLOC` list into `PERSP` }
 . { the attract-mode title tumble reuses the same block by feeding it a non-standard Y/Z pair and then reusing the first rotated output list as the effective `YLOC` }
 . LIST#
+R $88EA A Number of points to be rotated (length of XLOC/ZLOC lists)
 R $88EA XLOC Fixed model-space X vertex-list end-pointer for the current entity (#R$FE32($FE32))
 R $88EA ZLOC Fixed model-space Z vertex-list end-pointer for the current entity (#R$FE36($FE36))
 R $88EA XTAB Active X-side coefficient-table stream for the current angle (#R$FE42($FE42))
 R $88EA ZTAB Active Z-side coefficient-table stream for the current angle (#R$FE46($FE46))
 R $88EA XDIS Current world/entity X positional offset (#R$FE4A($FE4A))
 R $88EA ZDIS Current world/entity Z positional offset (#R$FE4C($FE4C))
-R $88EA MUCNT Element count / pass-control slot for the active transform pass (#R$FE4E($FE4E))
 R $88EA O:XLOC Final descending rotated X working-list pointer (#R$FE32($FE32))
 R $88EA O:ZLOC Final descending rotated Z working-list pointer (#R$FE36($FE36))
 R $88EA O:MMAT Saved source-word continuation / sign state reused across the transform passes (#R$FE48($FE48))
@@ -1656,7 +1670,7 @@ u $94A4 Padding after `#R$948C`
 D $94A4 Padding / reserved growth space after `#R$948C` and before `#R$94AC`.
 c $94AC SCOPR
 D $94AC
-. B Score increment in packed BCD
+. Score increment in packed BCD
 . Current best shipped read: shared packed-BCD score updater with inlined
 . extra-life handling.
 . Adds the increment in `B` to `ScoreBCD`, compares the result against the next
@@ -1666,7 +1680,7 @@ D $94AC
 R $94AC B Packed-BCD score increment
 @ $94AC label=SCOPR
 C $94AC,h3
-. Load the current score.
+. Load the current score from #R$FE76.
 C $94B0,1
 . Add the score increment to the low BCD byte.
 C $94B3,h2
@@ -1674,7 +1688,7 @@ C $94B5,1
 . Carry into the high BCD byte.
 C $94B6,h2
 C $94BA,h4
-. Compare with the next extra-life threshold.
+. Compare with the next extra-life threshold in #R$FEE6.
 C $94C1,h3
 C $94C4,h3
 . Award an extra life and double the next threshold.
@@ -1695,7 +1709,6 @@ C $94E8,h3
 c $94EC NUMBA
 D $94EC
 . Used by score/life update plus start-transition, attract, and showcase code.
-. HL Packed BCD value to display
 . Current best shipped read: generic packed-BCD print helper reused for the
 . gameplay score strip and several attract/start numeric displays.
 . The destination is redirected by patching the `LD BC,$....` immediate at
@@ -1705,6 +1718,7 @@ R $94EC HL Packed BCD value to display
 C $94EC,h3
 . Persist the current packed BCD value.
 C $94EF,h3
+. SELF-MODIFYING CODE ALERT! 
 . Destination `BC` immediate patched by `0xB0DA/0xB0E9/0xB1C0/0xB1D4/0xB563` to
 . redirect the same print loop between the normal gameplay score strip at
 . `$4059` in the top status strip, the temporary start-transition heading slot
@@ -2507,6 +2521,7 @@ C $9B9B,h3
 C $9B9E,h3
 C $9BA2,h2
 C $9BA7,h3
+@ $9BA7 label=Tank_RotateXZ
 C $9BAA,h2
 C $9BAC,h2
 C $9BAE,h3
@@ -2930,6 +2945,7 @@ C $9FE1,h3
 C $9FE4,h3
 C $9FED,h2
 C $9FEF,h3
+@ $9FEF label=Missile_RotateXZ
 C $9FF2,h2
 C $9FF4,h2
 C $9FF6,h3
@@ -3121,6 +3137,7 @@ C $A19D,h2
 C $A19F,h2
 C $A1A1,h3
 . #R$88EA
+@ $A1A1 label=MyBullet_RotateXZ
 C $A1A4,h2
 C $A1A6,h2
 C $A1A8,h3
@@ -3275,6 +3292,7 @@ C $A2A3,h2
 C $A2A5,h2
 C $A2A7,h3
 . #R$88EA
+@ $A2A7 label=HostileBullet_RotateXZ
 C $A2AA,h2
 C $A2AC,h2
 C $A2AE,h3
@@ -3545,6 +3563,7 @@ C $A49F,h3
 C $A4A6,h2
 C $A4A8,h3
 . #R$88EA
+@ $A4A8 label=Obst_RotateXZ
 C $A4AB,h3
 . Install the shared obstacle/object Y list in `YLOC`.
 C $A4AE,h3
@@ -4449,6 +4468,7 @@ C $AAF3,h3
 C $AAFA,h2
 C $AAFC,h3
 . #R$88EA.
+@ $AAFC label=Explo_RotateXZ
 C $AAFF,h3
 . #REGa = #R$FE6A.
 C $AB02,h2
@@ -4674,6 +4694,7 @@ C $AC88,h3
 . #REGhl = $FEF2.
 C $AC8F,h3
 . Call #R$88EA.
+@ $AC8F label=BulletExplo_RotateXZ
 C $AC93,h2
 C $AC95,h3
 . #REGhl = $DEA4.
@@ -5164,39 +5185,37 @@ C $B0E9,h3
 C $B0EC,h3
 . #R$956A
 D $B0EF
-. Current best read: start-game `1812` theme player.
-. Evidence:
+. Start-game `1812` theme player. Evidence:
 . #LIST
-. { no non-`RST $10` ROM calls are used here }
 . { the routine drives `OUT ($FE),A` directly }
-. { `SP` is pointed at the 10-entry record table at `StartThemeData` }
-. { each record is consumed as two words (`HL`, `DE`) and used to control one beeper-tone phrase }
+. { `SP` is pointed at the 10-entry record table at `#R$CA94` }
+. { each record is consumed as two words (`#REGhl`, `#REGde`) and used to control one beeper-tone phrase }
 . LIST#
-. Current best record format/timing read:
+. Record format/timing read:
 . #LIST
-. { first word (`HL`) = period parameter }
-. { second word (`DE`) = repeat count }
+. { first word (`#REGhl`) = period parameter }
+. { second word (`#REGde`) = repeat count }
 . { the OUT-to-OUT delay alternates between `4*HL+82` and `4*HL+87` T-states, so one full square-wave cycle is approximately `8*HL+169` T-states }
 . { at 3.5 MHz that gives `f ~= 3500000 / (8*HL+169)` Hz }
-. { the repeat counter is decremented on every other toggle, so a phrase lasts roughly `(DE+1)` full cycles }
+. { the repeat counter is decremented on every other toggle, so a phrase lasts roughly `(#REGde+1)` full cycles }
 . LIST#
 @ $B0EF label=PlayStartTheme
-c $B0EF PlayStartTheme
+c $B0EF Play 1812 Start Theme
 C $B0EF,h4
 . #R$FE00 = #REGsp
 C $B0F3,h3
 . #REGsp = #R$CA94
-. Current best read: `StartThemeData`.
 C $B0F6,h2
 C $B0F8,h3
 . #R$FE4E = #REGa
+M $B0FD,$11 `IX` is set to #R$B110 (`0xB110`) + (period-derived low 2 bits), so the later `JP (IX)` at #R$B12F
+. lands at one of `0xB110..0xB113` inside this same timing pad. This is a
+. cycle-alignment trick, not a hidden secondary routine entry.
 C $B103,h2
 C $B106,h2
 C $B108,h4
-. `IX` is set to `0xB110 + (period-derived low 2 bits)`, so the later `JP (IX)`
-. lands at one of `0xB110..0xB113` inside this same timing pad. This is a
-. cycle-alignment trick, not a hidden secondary routine entry.
 C $B10E,h2
+@ $B110 label=PlayStartTheme_nops
 C $B116,h2
 C $B118,h2
 C $B11B,h3
@@ -5204,6 +5223,7 @@ C $B11E,h2
 C $B120,h2
 C $B126,h2
 C $B12A,h2
+@ $B12F label=PlayStartTheme_jpix
 . #R$B135
 C $B135,h3
 . #REGa = #R$FE4E
@@ -5324,7 +5344,7 @@ C $B219,13,h11,2
 C $B226,13,h11,2
 . Clear the 256-byte workspace block from #R$FE00 through `$FEFF`.
 C $B233,h6
-. #HTML(Install the custom Battlezone character set by writing #R$C9B4(`$C8B4`)
+. #HTML(Install the custom Battlezone character set by writing #R$C9B4 (`$C8B4`)
 . to *<a rel="noopener nofollow"
 . href="https://skoolkit.ca/disassemblies/rom/hex/asm/5C36.html">CHARS</a>.)
 C $B239,h6
@@ -5332,7 +5352,7 @@ C $B239,h6
 C $B23F,h9
 . Write `$0000` to both #R$FE5E and #R$FE62.
 C $B248,h5
-. Write `$30` to *#R$FE68.
+. Write `$30` to #R$FE68.
 N $B24D
 . Current best read: attract-mode stage A, tumbling `QS` logo loop.
 .
@@ -5379,6 +5399,7 @@ C $B284,h2
 . result back into the normal perspectiviser.
 C $B286,h3
 . Call #R$88EA.
+@ $B286 label=QSlogo_RotateXZ
 C $B289,h3
 . #REGhl = #R$FE32
 C $B28C,h3
@@ -5542,6 +5563,7 @@ C $B36E,h2
 . X/Z rotator at #R$88EA to obtain a rotated Y/Z pair.
 C $B370,h3
 . #R$88EA
+@ $B370 label=BATTLE_RotateYZ
 C $B373,h3
 . #REGhl = #R$FE32
 . Take the freshly rotated first output table
@@ -5604,6 +5626,7 @@ C $B3C4,h2
 . second title/logo piece.
 C $B3C6,h3
 . #R$88EA
+@ $B3C6 label=ZONE_RotateYZ
 C $B3C9,h3
 . #REGhl = #R$FE32
 C $B3CC,h3
@@ -6443,29 +6466,11 @@ W $C91B,,8
 b $C9B4
 . Custom Font
 @ $C9B4 label=CustomFont
-B $C9B4,8,h8
-. #UDG(#PC)
-B $C9BC,8,h8
-. #UDG(#PC)
-B $C9C4,8,h8
-. #UDG(#PC)
-B $C9CC,8,h8
-. #UDG(#PC)
-B $C9D4,8,h8
-. #UDG(#PC)
-B $C9DC,8,h8
-. #UDG(#PC)
-B $C9E4,8,h8
-. #UDG(#PC)
-B $C9EC,6,h6
-. #UDG(#PC)
 N $C9F2
 . QS fixed X table.
 @ $C9F2 label=QS_FixedXTable
 B $C9F2,2,h2
-. #UDG(#PC)
 B $C9F4,8,h8
-. #UDG(#PC)
 B $C9FC,8,h8
 . #UDG(#PC)
 B $CA04,8,h8
@@ -6516,7 +6521,7 @@ B $CA8C,8,h8
 . #UDG(#PC)
 N $CA94
 . Current best read: opening phrase of the `1812` startup theme.
-. `PlayStartTheme` consumes 10 records from here via `POP HL` / `POP DE`,
+. `#R$B0EF` consumes 10 records from here via `POP HL` / `POP DE`,
 . i.e. one 4-byte record per phrase.
 . Current best format: `[period_lo, period_hi, repeat_lo, repeat_hi]`.
 . `1812` identification is confirmed by Susan Witts.
@@ -6543,6 +6548,7 @@ B $CAB4,4,h4
 . approx F/F#-ish, ~87.13 Hz, ~493.5 ms
 B $CAB8,4,h4
 . approx F/F#-ish, ~87.13 Hz, ~975.5 ms
+@ $CABC label=CustomFont_A
 B $CABC,8,h8
 . #UDG(#PC)
 B $CAC4,8,h8
