@@ -236,6 +236,21 @@ RotateXZLists note:
   list starting at `$DD84`
 - the later title-word pass uses `FE32=$DD00` and `FE36=$DDB0`, which implies
   23-point lists starting at `$DCD2` and `$DD82`
+- the live missile and bullet-explosion `RotateXZLists` callers also point at
+  anonymous buffers around `$DD18/$DDC8` and `$DD82/$DE32`; those are real
+  targets, and now have provisional labels `prob_MissileModelXList`,
+  `prob_MissileModelZList`, `prob_BulletExploModelXList`, and
+  `prob_BulletExploModelZList`
+- the actual bullet-explosion geometry bodies are the `EXBXL` / `EXBZL`
+  blocks at `$DD6E..$DD81` and `$DE1E..$DE31`; the caller documents the end
+  addresses at the `FE32`/`FE36` install sites as `EXBXL ($DD6E) + 10 words =
+  $DD82` and `EXBZL ($DE1E) + 10 words = $DE32`
+- the title-path working buffers at `$DD06/$DDB6/$DD00/$DDB0` still need a
+  separate pass; they are understood as descending working-list end-pointers,
+  but the exact backing-table story is still provisional
+- tank-step movement now uses the same provisional-label rule for the paired
+  endpoint values at `$DCD4/$DCE0` and `$DD84/$DD90`:
+  `prob_TankStepXEndpointA/B` and `prob_TankStepZEndpointA/B`
 
 Address-decoding rule:
 

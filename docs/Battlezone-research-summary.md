@@ -403,6 +403,18 @@ Working summary of verified facts, local source material, and open questions for
     - `HBLXLC/OBXLC/EXXLC` and `HBLZLC/OBZLC/EXZLC` = fixed model-space X/Z vertex-list families
     - `EXBXL/EXBZL` = temporary expanded X/Z lists for the deferred-effect path
     - `XPERS/YPERS` = final projected 2D X/Y output buffers consumed by `LNLPT`
+    - the live missile and bullet-explosion `RotateXZLists` call sites still use
+      anonymous buffers around `DD18/DDC8` and `DD82/DE32`; those targets are
+      now labelled provisionally as `prob_MissileModelXList`,
+      `prob_MissileModelZList`, `prob_BulletExploModelXList`, and
+      `prob_BulletExploModelZList`
+    - the actual bullet-explosion geometry bodies are the `EXBXL` / `EXBZL`
+      blocks at `DD6E..DD81` and `DE1E..DE31`; the caller documents the
+      end addresses at the `FE32`/`FE36` install sites as
+      `EXBXL ($DD6E) + 10 words = $DD82` and `EXBZL ($DE1E) + 10 words = $DE32`
+    - the attract/title working buffers at `DD06/DDB6/DD00/DDB0` are still
+      provisional; we know they are descending RotateXZ end-pointers, but the
+      exact backing-table story still needs a separate pass
   - the low workspace/header words are now documented more concretely:
     - `FE00` = primary stack-pointer save slot for stack-driven helpers
     - `FE02/FE04` = current `LINCDS` stream pointer plus remaining line count
@@ -531,6 +543,11 @@ Working summary of verified facts, local source material, and open questions for
       - `TankStrategyRangeCue` at `0x9A3B`
       - `TankStrategyUpdateDesiredHeading` at `0x9A76`
       - `TankStrategyObstacleEvasionCheck` at `0x9A92`
+      - `TankStrategyStepMovement` now has provisional endpoint labels at
+        `DCD4/DCE0` and `DD84/DD90`:
+        `prob_TankStepXEndpointA/B` and `prob_TankStepZEndpointA/B`
+        are the paired tank-step values used to derive forward/reverse X/Z
+        movement deltas
     - `0x9644` = current best shipped `TEXST` match: tank-family existence/spawn logic broadened into the main score/random dispatcher, with an inlined `MSET` branch
       - current best threshold reading:
         - below 5 points: tank-only
