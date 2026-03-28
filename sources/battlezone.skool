@@ -1550,13 +1550,13 @@ c$8000 LD HL,$F97F   ; Start at the end of #R$F800 so the 192-entry row-address 
 @label=LNLPT
 c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $805F LD A,(HL)     ;
- $8060 LD ($FE04),A  ;
+ $8060 LD ($FE04),A  ; Write the remaining line count back to `#R$FE04`.
  $8063 INC HL        ;
- $8064 LD ($FE02),HL ;
+ $8064 LD ($FE02),HL ; Install the current line-data stream pointer in `#R$FE02`.
  $8067 LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as the line-record stream pointer.
 @label=LNLPTLoadLineRecord
 *$806B LD SP,($FE02) ; Switch `SP` to the current line-data stream held in #R$FE02.
- $806F LD A,($FE74)  ;
+ $806F LD A,($FE74)  ; Load the border / sound latch from `#R$FE74`.
  $8072 OUT ($FE),A   ;
  $8074 POP HL        ;
  $8075 LD E,(HL)     ;
@@ -1567,7 +1567,7 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $807A INC HL        ;
  $807B LD B,(HL)     ;
  $807C EX DE,HL      ;
- $807D LD ($FE10),HL ;
+ $807D LD ($FE10),HL ; Store the first sorted endpoint helper state in `#R$FE10`.
  $8080 AND A         ;
  $8081 SBC HL,BC     ;
  $8083 JP P,$80B3    ;
@@ -1575,9 +1575,9 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $8087 LD HL,$0000   ;
  $808A AND A         ;
  $808B SBC HL,DE     ;
- $808D LD ($FE12),HL ;
- $8090 LD HL,($FE10) ;
- $8093 LD ($FE0E),HL ;
+ $808D LD ($FE12),HL ; Store the matching second endpoint helper state in `#R$FE12`.
+ $8090 LD HL,($FE10) ; Load the first sorted endpoint helper state from `#R$FE10`.
+ $8093 LD ($FE0E),HL ; Store the first sorted endpoint pair in `#R$FE0E`.
  $8096 LD ($FE10),BC ; Store the sorted Y endpoint into #R$FE10.
  $809A POP HL        ;
  $809B LD C,(HL)     ;
@@ -1592,36 +1592,36 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $80AA EX DE,HL      ;
  $80AB AND A         ;
  $80AC SBC HL,BC     ;
- $80AE LD ($FE0C),HL ;
+ $80AE LD ($FE0C),HL ; Store the current working delta into `#R$FE0C`.
  $80B1 JR $80D1      ;
-*$80B3 LD ($FE0E),BC ;
- $80B7 LD ($FE12),HL ;
+*$80B3 LD ($FE0E),BC ; Store the second sorted endpoint pair in `#R$FE0E`.
+ $80B7 LD ($FE12),HL ; Store the working endpoint pair in `#R$FE12`.
  $80BA POP HL        ;
  $80BB LD E,(HL)     ;
  $80BC INC HL        ;
  $80BD LD D,(HL)     ;
- $80BE LD ($FE0A),DE ;
+ $80BE LD ($FE0A),DE ; Store the complementary endpoint pair in `#R$FE0A`.
  $80C2 POP HL        ;
  $80C3 LD C,(HL)     ;
  $80C4 INC HL        ;
  $80C5 LD B,(HL)     ;
- $80C6 LD ($FE08),BC ;
+ $80C6 LD ($FE08),BC ; Store the X-major endpoint pair in `#R$FE08`.
  $80CA EX DE,HL      ;
  $80CB AND A         ;
  $80CC SBC HL,BC     ;
- $80CE LD ($FE0C),HL ;
+ $80CE LD ($FE0C),HL ; Store the current working delta back in `#R$FE0C`.
 *$80D1 LD ($FE02),SP ; Write the advanced stacked line-data pointer back to #R$FE02.
- $80D5 LD SP,($FE00) ;
+ $80D5 LD SP,($FE00) ; Restore `SP` from `#R$FE00`.
  $80D9 LD DE,$0056   ;
- $80DC LD HL,($FE10) ;
+ $80DC LD HL,($FE10) ; Load the first sorted endpoint pair from `#R$FE10`.
  $80DF ADD HL,DE     ;
  $80E0 SUB A         ;
  $80E1 OUT ($FE),A   ;
  $80E3 LD A,H        ;
  $80E4 AND A         ;
  $80E5 JP M,$8631    ;
- $80E8 LD ($FE10),HL ;
- $80EB LD HL,($FE0E) ;
+ $80E8 LD ($FE10),HL ; Store the updated first sorted endpoint pair back to `#R$FE10`.
+ $80EB LD HL,($FE0E) ; Load the second sorted endpoint pair from `#R$FE0E`.
  $80EE ADD HL,DE     ;
  $80EF LD DE,$FF68   ;
  $80F2 EX DE,HL      ;
@@ -1629,8 +1629,8 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $80F4 LD A,H        ;
  $80F5 AND A         ;
  $80F6 JP P,$8631    ;
- $80F9 LD ($FE0E),DE ;
- $80FD LD HL,($FE0C) ;
+ $80F9 LD ($FE0E),DE ; Store the updated second sorted endpoint pair back to `#R$FE0E`.
+ $80FD LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $8100 LD A,H        ;
  $8101 AND A         ;
  $8102 JR NZ,$810B   ;
@@ -1640,54 +1640,54 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $8109 JR $810E      ;
 *$810B JP M,$813D    ;
 @label=LNLPTPreparePositiveDelta
-*$810E LD DE,$0080   ;
- $8111 LD HL,($FE08) ;
+*$810E LD DE,$0080   ; Set the positive X-step size to `$0080`.
+ $8111 LD HL,($FE08) ; Load the X-major left endpoint pair from `#R$FE08`.
  $8114 ADD HL,DE     ;
  $8115 INC HL        ;
  $8116 LD A,H        ;
  $8117 DEC A         ;
  $8118 JP P,$8631    ;
  $811B DEC HL        ;
- $811C LD ($FE08),HL ;
- $811F LD HL,($FE0A) ;
+ $811C LD ($FE08),HL ; Store the updated X-major left endpoint pair back to `#R$FE08`.
+ $811F LD HL,($FE0A) ; Load the X-major companion endpoint pair from `#R$FE0A`.
  $8122 ADD HL,DE     ;
  $8123 DEC HL        ;
  $8124 LD A,H        ;
  $8125 AND A         ;
  $8126 JP M,$8631    ;
  $8129 INC HL        ;
- $812A LD ($FE0A),HL ;
- $812D LD HL,($FE0C) ;
- $8130 LD DE,($FE12) ;
+ $812A LD ($FE0A),HL ; Store the updated X-major companion endpoint pair back to `#R$FE0A`.
+ $812D LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
+ $8130 LD DE,($FE12) ; Load the secondary line-record pointer from `#R$FE12`.
  $8134 AND A         ;
  $8135 SBC HL,DE     ;
  $8137 JP P,$839D    ;
  $813A JP $8179      ;
 @label=LNLPTPrepareNegativeDelta
-*$813D LD DE,($FE0C) ;
+*$813D LD DE,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $8141 LD HL,$0000   ;
  $8144 AND A         ;
  $8145 SBC HL,DE     ;
- $8147 LD ($FE0C),HL ;
+ $8147 LD ($FE0C),HL ; Store the updated working delta back to `#R$FE0C`.
  $814A LD DE,$0080   ;
- $814D LD HL,($FE0A) ;
+ $814D LD HL,($FE0A) ; Load the X-major companion endpoint pair from `#R$FE0A`.
  $8150 ADD HL,DE     ;
  $8151 INC HL        ;
  $8152 LD A,H        ;
  $8153 DEC A         ;
  $8154 JP P,$8631    ;
  $8157 DEC HL        ;
- $8158 LD ($FE0A),HL ;
- $815B LD HL,($FE08) ;
+ $8158 LD ($FE0A),HL ; Store the updated X-major companion endpoint pair back to `#R$FE0A`.
+ $815B LD HL,($FE08) ; Load the X-major endpoint pair from `#R$FE08`.
  $815E ADD HL,DE     ;
  $815F DEC HL        ;
  $8160 LD A,H        ;
  $8161 AND A         ;
  $8162 JP M,$8631    ;
  $8165 INC HL        ;
- $8166 LD ($FE08),HL ;
- $8169 LD HL,($FE0C) ;
- $816C LD DE,($FE12) ;
+ $8166 LD ($FE08),HL ; Store the updated X-major endpoint pair back to `#R$FE08`.
+ $8169 LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
+ $816C LD DE,($FE12) ; Load the secondary line-record pointer from `#R$FE12`.
  $8170 AND A         ;
  $8171 SBC HL,DE     ;
  $8173 JP P,$84B3    ;
@@ -1698,7 +1698,7 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 ; This branch also contains the 8-step unrolled shift/compare/subtract block
 ; that now looks like the positive-slope gradient divide.
 @label=LNLPTDrawPositiveYMajor
-*$8179 LD HL,($FE0C) ;
+*$8179 LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $817C LD A,H        ;
  $817D OR D          ;
  $817E JR NZ,$8184   ;
@@ -1774,17 +1774,17 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 *$81E5 SUB D         ;
  $81E6 INC H         ;
 *$81E7 LD A,H        ;
- $81E8 LD HL,($FE10) ;
+ $81E8 LD HL,($FE10) ; Load the first sorted endpoint pair from `#R$FE10`.
  $81EB LD DE,$0097   ;
  $81EE AND A         ;
  $81EF SBC HL,DE     ;
  $81F1 EX DE,HL      ;
- $81F2 LD HL,($FE12) ;
+ $81F2 LD HL,($FE12) ; Load the secondary line-record helper from `#R$FE12`.
  $81F5 JR C,$81F9    ;
  $81F7 SBC HL,DE     ;
 *$81F9 EXX           ;
- $81FA LD BC,($FE0E) ;
- $81FE LD HL,($FE08) ;
+ $81FA LD BC,($FE0E) ; Load the current line-delta pair from `#R$FE0E`.
+ $81FE LD HL,($FE08) ; Load the X-major helper endpoint pair from `#R$FE08`.
  $8201 LD D,A        ;
  $8202 SUB A         ;
  $8203 EXX           ;
@@ -1894,7 +1894,7 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 ; Companion branch with the same 8-step unrolled gradient-divide pattern for
 ; the negative-slope Y-major case.
 @label=LNLPTDrawNegativeYMajor
-*$828A LD HL,($FE0C) ;
+*$828A LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $828D LD A,H        ;
  $828E OR D          ;
  $828F JR NZ,$8295   ;
@@ -1970,17 +1970,17 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 *$82F6 SUB D         ;
  $82F7 INC H         ;
 *$82F8 LD A,H        ;
- $82F9 LD HL,($FE10) ;
+ $82F9 LD HL,($FE10) ; Load the first sorted endpoint pair from `#R$FE10`.
  $82FC LD DE,$0097   ;
  $82FF AND A         ;
  $8300 SBC HL,DE     ;
  $8302 EX DE,HL      ;
- $8303 LD HL,($FE12) ;
+ $8303 LD HL,($FE12) ; Load the secondary line-record helper from `#R$FE12`.
  $8306 JR C,$830A    ;
  $8308 SBC HL,DE     ;
 *$830A EXX           ;
- $830B LD BC,($FE0E) ;
- $830F LD HL,($FE08) ;
+ $830B LD BC,($FE0E) ; Load the current line-delta pair from `#R$FE0E`.
+ $830F LD HL,($FE08) ; Load the X-major helper endpoint pair from `#R$FE08`.
  $8312 LD D,A        ;
  $8313 SUB A         ;
  $8314 EXX           ;
@@ -2092,7 +2092,7 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 ; Companion branch with the same 8-step unrolled gradient-divide pattern for
 ; the positive-slope X-major case.
 @label=LNLPTDrawPositiveXMajor
-*$839D LD HL,($FE0C) ;
+*$839D LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $83A0 EX DE,HL      ;
  $83A1 LD A,H        ;
  $83A2 OR D          ;
@@ -2169,18 +2169,18 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 *$840A SUB D         ;
  $840B INC H         ;
 *$840C LD A,H        ;
- $840D LD HL,($FE0A) ;
+ $840D LD HL,($FE0A) ; Load the X-major companion endpoint pair from `#R$FE0A`.
  $8410 LD DE,$00FF   ;
  $8413 AND A         ;
  $8414 SBC HL,DE     ;
  $8416 EX DE,HL      ;
- $8417 LD HL,($FE0C) ;
+ $8417 LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $841A JR C,$841E    ;
  $841C SBC HL,DE     ;
-*$841E LD DE,($FE08) ;
+*$841E LD DE,($FE08) ; Load the X-major helper endpoint pair from `#R$FE08`.
  $8422 EXX           ;
  $8423 LD D,A        ;
- $8424 LD BC,($FE0E) ;
+ $8424 LD BC,($FE0E) ; Load the current line-delta pair from `#R$FE0E`.
  $8428 LD HL,$FF68   ;
  $842B ADD HL,BC     ;
  $842C SUB A         ;
@@ -2298,7 +2298,7 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 ; Companion branch with the same 8-step unrolled gradient-divide pattern for
 ; the negative-slope X-major case.
 @label=LNLPTDrawNegativeXMajor
-*$84B3 LD HL,($FE0C) ;
+*$84B3 LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $84B6 EX DE,HL      ;
  $84B7 LD A,H        ;
  $84B8 OR D          ;
@@ -2375,17 +2375,17 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 *$8520 SUB D         ;
  $8521 INC H         ;
 *$8522 LD A,H        ;
- $8523 LD HL,($FE0C) ;
- $8526 LD DE,($FE08) ;
+ $8523 LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
+ $8526 LD DE,($FE08) ; Load the X-major helper endpoint pair from `#R$FE08`.
  $852A AND A         ;
  $852B SBC HL,DE     ;
- $852D LD HL,($FE0C) ;
+ $852D LD HL,($FE0C) ; Load the current working delta from `#R$FE0C`.
  $8530 JR C,$8534    ;
  $8532 LD H,D        ;
  $8533 LD L,E        ;
 *$8534 EXX           ;
  $8535 LD D,A        ;
- $8536 LD BC,($FE0E) ;
+ $8536 LD BC,($FE0E) ; Load the current line-delta pair from `#R$FE0E`.
  $853A LD HL,$FF68   ;
  $853D ADD HL,BC     ;
  $853E SUB A         ;
@@ -2504,34 +2504,34 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 ; Uses the shared plotting lookup family at #R$7C00, but the exact per-page
 ; decomposition of that family is still unresolved.
 @label=LNLPTDrawVertical
-*$85C7 LD DE,$0080   ;
- $85CA LD HL,($FE08) ;
+*$85C7 LD DE,$0080   ; Set the vertical X-step size to `$0080`.
+ $85CA LD HL,($FE08) ; Load the X-major helper endpoint pair from `#R$FE08`.
  $85CD ADD HL,DE     ;
  $85CE LD A,H        ;
  $85CF AND A         ;
  $85D0 JP NZ,$8631   ;
- $85D3 LD ($FE08),HL ;
- $85D6 LD HL,($FE0E) ;
+ $85D3 LD ($FE08),HL ; Store the updated X-major helper endpoint pair back to `#R$FE08`.
+ $85D6 LD HL,($FE0E) ; Load the current line-delta pair from `#R$FE0E`.
  $85D9 LD A,H        ;
  $85DA AND A         ;
  $85DB JR Z,$85E3    ;
  $85DD LD HL,$0000   ;
- $85E0 LD ($FE0E),HL ;
-*$85E3 LD DE,($FE10) ;
+ $85E0 LD ($FE0E),HL ; Store the updated current line-delta pair back to `#R$FE0E`.
+*$85E3 LD DE,($FE10) ; Load the current endpoint helper from `#R$FE10`.
  $85E7 LD HL,$FF68   ;
  $85EA ADD HL,DE     ;
  $85EB JR NC,$85F3   ;
  $85ED LD HL,$0097   ;
- $85F0 LD ($FE10),HL ;
-*$85F3 LD HL,($FE10) ;
- $85F6 LD DE,($FE0E) ;
+ $85F0 LD ($FE10),HL ; Store the updated endpoint helper back to `#R$FE10`.
+*$85F3 LD HL,($FE10) ; Load the current endpoint helper from `#R$FE10`.
+ $85F6 LD DE,($FE0E) ; Load the current line-delta pair from `#R$FE0E`.
  $85FA AND A         ;
  $85FB SBC HL,DE     ;
  $85FD LD B,L        ;
  $85FE LD A,B        ;
  $85FF AND A         ;
  $8600 JP Z,$8631    ;
- $8603 LD A,($FE08)  ;
+ $8603 LD A,($FE08)  ; Load the visible X helper byte from `#R$FE08`.
  $8606 LD E,A        ;
  $8607 LD D,$7D      ;
  $8609 SLA E         ;
@@ -2541,7 +2541,7 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
  $860F INC DE        ;
  $8610 LD A,(DE)     ;
  $8611 LD C,A        ;
- $8612 LD A,($FE0E)  ;
+ $8612 LD A,($FE0E)  ; Load the visible Y helper byte from `#R$FE0E`.
  $8615 LD D,$7C      ;
  $8617 LD E,A        ;
  $8618 SLA E         ;
@@ -2564,9 +2564,9 @@ c$805C LD HL,($FE02) ; Load the current line-data block pointer from #R$FE02.
 *$862F EXX           ;
 *$8630 EX AF,AF'     ;
 @label=LNLPTNextLine
-*$8631 LD A,($FE04)  ;
+*$8631 LD A,($FE04)  ; Load the remaining line count from `#R$FE04`.
  $8634 DEC A         ;
- $8635 LD ($FE04),A  ;
+ $8635 LD ($FE04),A  ; Store the decremented remaining line count back to `#R$FE04`.
  $8638 JP NZ,$806B   ;
  $863B LD SP,($FE00) ;
  $863F RET           ;
@@ -3090,7 +3090,7 @@ u$88D9 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; coefficient tables, applies the active X/Z world displacement, and rewrites
 ; the current X/Z working lists in place for later perspective projection.
 ; .
-; Code consists of 4 unrolled 15-bit multiply/accumulate passes to calculate x'=x*cos(t)+z*sin(t), z'= z*cos(t)-x*sin(t).
+; Code consists of 4 unrolled 15-bit multiply/accumulate passes to calculate x'=x*cos(t)+z*sin(t), z'=z*cos(t)-x*sin(t). The active `XTAB` / `ZTAB` streams carry the coefficient bits, while the saved source-word/sign state in `MMAT` determines whether the accumulated product is added or subtracted on the later passes.
 ; Usage locations are:
 ; #LIST
 ; { #R$9BA7 ($9BA7)  }
@@ -3129,7 +3129,8 @@ u$88D9 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; O:MMAT Saved source-word continuation / sign state reused across the
 ; .      transform passes (#R$FE48($FE48))
 @label=RotateXZLists
-c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-list pointer.
+c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a descending coordinate-list
+                     ; stack pointer.
  $88EE LD ($FE4E),A  ; Latch the element count into #R$FE4E for the shared transform passes.
  $88F1 LD H,$00      ;
  $88F3 ADD HL,HL     ;
@@ -3139,19 +3140,19 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
  $88F7 LD DE,($FE42) ; Load the active X-side coefficient-table pointer from #R$FE42.
  $88FB LD C,$00      ;
  $88FD EXX           ;
- $88FE LD A,($FE74)  ;
+ $88FE LD A,($FE74)  ; #REGa = #R$FE74.
  $8901 OUT ($FE),A   ;
  $8903 LD A,$03      ;
  $8905 AND H         ;
  $8906 OR $7C        ;
  $8908 LD H,A        ;
  $8909 LD DE,($FE4A) ; Load the current X displacement from #R$FE4A.
- $890D LD SP,($FE32) ; Reuse `SP` as the current fixed model-space X list pointer from #R$FE32.
+ $890D LD SP,($FE32) ; Reuse `SP` as the current fixed model-space X list stack-top from #R$FE32.
  $8911 LD C,(HL)     ;
  $8912 INC HL        ;
  $8913 LD B,(HL)     ;
  $8914 INC HL        ;
- $8915 LD ($FE48),HL ;
+ $8915 LD ($FE48),HL ; #R$FE48 = #REGhl.
  $8918 BIT 7,B       ;
  $891A JR NZ,$8920   ;
  $891C EXX           ;
@@ -3159,7 +3160,7 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
 *$8920 RES 7,B       ;
  $8922 EXX           ;
  $8923 LD C,$80      ;
-@label=RotateXZPrimaryPass
+@label=RotateXZApplyXCoefficients
 *$8925 LD A,(DE)     ;
  $8926 INC DE        ;
  $8927 EX AF,AF'     ;
@@ -3263,12 +3264,12 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
  $89BF EXX           ;
  $89C0 DEC B         ;
  $89C1 JP NZ,$8925   ;
-@label=RotateXZSecondaryPass
-*$89C4 LD A,($FE4E)  ;
+@label=RotateXZApplyZCoefficients
+*$89C4 LD A,($FE4E)  ; #REGa = #R$FE4E.
  $89C7 LD B,A        ;
- $89C8 LD DE,($FE46) ; Reload the saved source-word/sign continuation from #R$FE48.
+ $89C8 LD DE,($FE46) ; Load the active Z-side coefficient-table pointer from #R$FE46.
  $89CC EXX           ;
- $89CD LD SP,($FE36) ; Reuse `SP` as the current fixed model-space Z list pointer from #R$FE36.
+ $89CD LD SP,($FE36) ; Reuse `SP` as the current fixed model-space Z list stack-top from #R$FE36.
  $89D1 LD DE,($FE4C) ; Load the current Z displacement from #R$FE4C.
  $89D5 EXX           ;
 *$89D6 LD A,(DE)     ;
@@ -3379,25 +3380,27 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
 ; Current best read: third transform pass. Reuses the saved source-word/sign
 ; continuation in `MMAT` with the Z-side table family to build one of the
 ; later rotated output lists.
-@label=RotateXZFinalPass
-*$8A78 LD DE,($FE46) ;
- $8A7C LD A,($FE4E)  ;
+; Build the rotated X output using the Z-side coefficient stream from
+; `#R$FE46` and the saved sign state in `MMAT`.
+@label=RotateXZBuildXOutput
+*$8A78 LD DE,($FE46) ; #REGde = #R$FE46.
+ $8A7C LD A,($FE4E)  ; #REGa = #R$FE4E.
  $8A7F LD B,A        ;
  $8A80 EXX           ;
- $8A81 LD HL,($FE48) ;
+ $8A81 LD HL,($FE48) ; #REGhl = #R$FE48.
  $8A84 LD C,(HL)     ;
  $8A85 INC HL        ;
  $8A86 LD B,(HL)     ;
  $8A87 LD A,B        ;
  $8A88 AND $80       ;
  $8A8A LD D,A        ;
- $8A8B LD SP,($FE32) ;
+ $8A8B LD SP,($FE32) ; #REGsp = #R$FE32.
  $8A8F RES 7,B       ;
  $8A91 EXX           ;
 *$8A92 LD A,(DE)     ;
  $8A93 INC DE        ;
  $8A94 EX AF,AF'     ;
- $8A95 LD A,($FE74)  ;
+ $8A95 LD A,($FE74)  ; #REGa = #R$FE74.
  $8A98 OUT ($FE),A   ;
  $8A9A LD A,(DE)     ;
  $8A9B INC DE        ;
@@ -3506,12 +3509,12 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
 ; Current best read: fourth/final transform pass. Reuses the complemented sign
 ; state plus the X-side table family to build the companion rotated output
 ; list, then stores the final descending stack pointer back into `ZLOC`.
-@label=RotateXZCompanionPass
-*$8B3A LD ($FE32),SP ;
- $8B3E LD A,($FE4E)  ;
+@label=RotateXZBuildZOutput
+*$8B3A LD ($FE32),SP ; #R$FE32 = #REGsp.
+ $8B3E LD A,($FE4E)  ; #REGa = #R$FE4E.
  $8B41 LD B,A        ;
- $8B42 LD SP,($FE36) ;
- $8B46 LD DE,($FE42) ;
+ $8B42 LD SP,($FE36) ; #REGsp = #R$FE36.
+ $8B46 LD DE,($FE42) ; #REGde = #R$FE42.
  $8B4A EXX           ;
  $8B4B LD A,D        ;
  $8B4C CPL           ;
@@ -3618,7 +3621,7 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
  $8BE4 DEC B         ;
  $8BE5 JP NZ,$8B4F   ;
  $8BE8 LD ($FE36),SP ; Store the descending rotated Z working-list pointer back into #R$FE36.
- $8BEC LD SP,($FE00) ;
+ $8BEC LD SP,($FE00) ; #REGsp = #R$FE00.
  $8BF0 EXX           ;
  $8BF1 RET           ;
 *$8BF2 LD A,D        ;
@@ -3630,7 +3633,7 @@ c$88EA LD ($FE00),SP ; Save `SP` to #R$FE00 before reusing it as a coordinate-li
  $8BF8 DEC B         ;
  $8BF9 JP NZ,$8B4F   ;
  $8BFC LD ($FE36),SP ; Store the final companion rotated Z pointer back into #R$FE36.
- $8C00 LD SP,($FE00) ;
+ $8C00 LD SP,($FE00) ; #REGsp = #R$FE00.
  $8C04 EXX           ;
  $8C05 RET           ;
 
@@ -5703,53 +5706,54 @@ c$956A LD HL,$0000   ;
  $9781 LD A,$18      ;
  $9783 OUT ($FE),A   ;
  $9785 INC HL        ;
- $9786 LD ($FE70),HL ;
+ $9786 LD ($FE70),HL ; #R$FE70 = #REGhl
  $9789 LD DE,$0200   ;
  $978C SBC HL,DE     ;
- $978E JP C,$97A4    ;
- $9791 LD A,($FE6E)  ;
+ $978E JP C,$97A4    ; #REGa = #R$FE6E
+ $9791 LD A,($FE6E)  ; #REGa = #R$FE6E
  $9794 AND $F0       ; Any visible major entity still active this frame?
  $9796 JP NZ,$97A4   ;
- $9799 LD A,($FE6A)  ;
+ $9799 LD A,($FE6A)  ; #REGa = #R$FE6A
  $979C AND $10       ; Suppress fresh saucer work while the missile bit is active.
  $979E JP NZ,$97A4   ;
  $97A1 JP $972E      ;
-*$97A4 LD A,($FE6E)  ;
+*$97A4 LD A,($FE6E)  ; #REGa = #R$FE6E
  $97A7 AND $F0       ; High nibble of `PRSTA` mirrors visible major entities.
  $97A9 JP NZ,$97D6   ;
- $97AC LD A,($FE6A)  ;
+ $97AC LD A,($FE6A)  ; #REGa = #R$FE6A
  $97AF AND $30       ; Saucer or missile already active in `EXST1`?
  $97B1 JP NZ,$97D6   ; If no visible major entity is active and neither saucer nor missile is
                      ; already active, seed a fresh saucer here.
 ; Base the new saucer Z position on the current tank-family Z slot, then store it in `SaucerZ`.
- $97B4 LD HL,($FE60) ;
- $97B7 LD D,$80      ;
+ $97B4 LD HL,($FE60) ; #REGhl = #R$FE60
+ $97B7 LD D,$80      ; #REGhl = #R$FE60
  $97B9 ADD HL,DE     ;
- $97BA LD ($FE90),HL ;
+ $97BA LD ($FE90),HL ; #R$FE90 = #REGhl
  $97BD LD A,R        ; Stash `R` for later use in the saucer drift-step derivation at `0x9D58`.
  $97BF LD ($FE8F),A  ;
- $97C2 LD A,($FE6A)  ;
+ $97C2 LD A,($FE6A)  ; #REGa = #R$FE6A
  $97C5 OR $20        ; Set the probable saucer-exists bit.
- $97C7 LD ($FE6A),A  ;
- $97CA LD A,($FE6C)  ;
- $97CD AND $DF       ; Clear the matching deferred-effect bit.
- $97CF LD ($FE6C),A  ;
+ $97C7 LD ($FE6A),A  ; #R$FE6A = #REGa
+ $97CA LD A,($FE6C)  ; #REGa = #R$FE6C
+ $97CD AND $DF       ; #R$FE6A = #REGa
+ $97CF LD ($FE6C),A  ; #R$FE6C = #REGa
  $97D2 SUB A         ;
 ; Reset the live saucer phase in `SaucerPhase`.
- $97D3 LD ($FE92),A  ;
-*$97D6 LD A,($FE54)  ; Current best read: player-fire request path.
+ $97D3 LD ($FE92),A  ; #R$FE92 = #REGa
+*$97D6 LD A,($FE54)  ; #REGa = #R$FE54
+                     ; Current best read: player-fire request path.
                      ; If #R$FE54 requests a shot and no player bullet is already active, seed the
                      ; player-bullet state and set bit `0x08` in `EXST1`.
  $97D9 AND A         ;
  $97DA JP Z,$986F    ;
  $97DD SUB A         ;
- $97DE LD ($FE54),A  ;
- $97E1 LD A,($FE6A)  ;
+ $97DE LD ($FE54),A  ; #R$FE54 = #REGa
+ $97E1 LD A,($FE6A)  ; #REGa = #R$FE6A
  $97E4 BIT 3,A       ;
  $97E6 JP NZ,$986F   ;
- $97E9 OR $08        ;
- $97EB LD ($FE6A),A  ;
- $97EE LD A,($FE6E)  ;
+ $97E9 OR $08        ; #R$FE6A = #REGa
+ $97EB LD ($FE6A),A  ; #REGa = #R$FE6E
+ $97EE LD A,($FE6E)  ; #REGa = #R$FE6E
  $97F1 AND $03       ;
  $97F3 LD H,$20      ;
  $97F5 JP Z,$984D    ;
@@ -5759,7 +5763,7 @@ c$956A LD HL,$0000   ;
  $97FF LD A,($FE23)  ;
  $9802 AND A         ;
  $9803 JP P,$984B    ;
- $9806 LD A,($FE6E)  ;
+ $9806 LD A,($FE6E)  ; #REGa = #R$FE6E
  $9809 AND $03       ;
  $980B JP Z,$984B    ;
  $980E CP $03        ;
@@ -5772,8 +5776,8 @@ c$956A LD HL,$0000   ;
  $981E RRA           ;
  $981F LD H,A        ;
  $9820 JP $984D      ;
-*$9823 LD HL,($FE20) ;
- $9826 LD DE,($FE22) ;
+*$9823 LD HL,($FE20) ; #REGhl = #R$FE20
+ $9826 LD DE,($FE22) ; #REGde = #R$FE22
  $982A SBC HL,DE     ;
  $982C SRL H         ;
  $982E RR L          ;
@@ -5793,28 +5797,29 @@ c$956A LD HL,$0000   ;
  $9848 JP $984D      ;
 *$984B LD H,$20      ;
 *$984D LD A,H        ;
- $984E LD ($FEB2),A  ;
+ $984E LD ($FEB2),A  ; #R$FEB2 = #REGa
  $9851 LD HL,$0000   ;
- $9854 LD ($FEAC),HL ;
+ $9854 LD ($FEAC),HL ; #R$FEAC = #REGhl
  $9857 LD ($DD1A),HL ;
  $985A LD HL,$0200   ;
- $985D LD ($FEAE),HL ;
+ $985D LD ($FEAE),HL ; #R$FEAE = #REGhl
  $9860 LD HL,$0100   ;
  $9863 LD ($DDCA),HL ;
  $9866 LD HL,$0180   ;
- $9869 LD ($FEB0),HL ;
+ $9869 LD ($FEB0),HL ; #R$FEB0 = #REGhl
  $986C CALL $A0B0    ;
-*$986F LD A,($FE6A)  ; Hostile bullet setup then reuses the current tank heading/desired-heading pair; no
+*$986F LD A,($FE6A)  ; #REGa = #R$FE6A
+                     ; Hostile bullet setup then reuses the current tank heading/desired-heading pair; no
                      ; direct `R` read happens here.
  $9872 BIT 2,A       ; Hostile-bullet active?
  $9874 JP NZ,$98C6   ;
  $9877 AND $C0       ; Need an active tank or supertank before firing.
  $9879 JP Z,$98C6    ;
- $987C LD A,($FE66)  ;
+ $987C LD A,($FE66)  ; #REGa = #R$FE66
  $987F AND A         ;
  $9880 JP P,$98C6    ;
- $9883 LD HL,($FE62) ;
- $9886 LD DE,($FE64) ;
+ $9883 LD HL,($FE62) ; #REGhl = #R$FE62
+ $9886 LD DE,($FE64) ; #REGde = #R$FE64
  $988A AND A         ;
  $988B SBC HL,DE     ;
  $988D LD A,L        ;
@@ -5824,30 +5829,30 @@ c$956A LD HL,$0000   ;
  $9895 LD HL,$0080   ;
  $9898 ADD HL,DE     ;
  $9899 RES 1,H       ;
- $989B LD ($FEB8),HL ;
+ $989B LD ($FEB8),HL ; #R$FEB8 = #REGhl
  $989E LD A,$1C      ;
- $98A0 LD ($FEBA),A  ;
+ $98A0 LD ($FEBA),A  ; #R$FEBA = #REGa
  $98A3 LD HL,($DCDA) ;
- $98A6 LD ($FEB4),HL ;
+ $98A6 LD ($FEB4),HL ; #R$FEB4 = #REGhl
  $98A9 LD HL,($DD8A) ;
- $98AC LD ($FEB6),HL ;
+ $98AC LD ($FEB6),HL ; #R$FEB6 = #REGhl
  $98AF CALL $A0B0    ;
- $98B2 LD A,($FE6A)  ;
+ $98B2 LD A,($FE6A)  ; #REGa = #R$FE6A
  $98B5 OR $04        ; Set the hostile-bullet active bit in `EXST1`.
- $98B7 LD ($FE6A),A  ;
+ $98B7 LD ($FE6A),A  ; #R$FE6A = #REGa
  $98BA LD HL,($DCDC) ;
  $98BD LD ($DD22),HL ;
  $98C0 LD HL,($DD8C) ;
  $98C3 LD ($DDD2),HL ;
-*$98C6 LD A,($FE6A)  ;
+*$98C6 LD A,($FE6A)  ; #REGa = #R$FE6A
  $98C9 AND $C0       ; Tank / supertank bits.
  $98CB JP Z,$9D0D    ;
- $98CE LD HL,($FE5E) ;
+ $98CE LD HL,($FE5E) ; #REGhl = #R$FE5E
  $98D1 LD A,H        ;
  $98D2 ADD A,$64     ;
  $98D4 SUB $D2       ;
  $98D6 JP NC,$98EB   ;
- $98D9 LD DE,($FE60) ;
+ $98D9 LD DE,($FE60) ; #REGde = #R$FE60
  $98DD LD A,D        ;
  $98DE ADD A,$64     ;
  $98E0 SUB $C8       ;
@@ -5890,21 +5895,22 @@ c$956A LD HL,$0000   ;
  $98F7 AND A         ;
  $98F8 JP Z,$99A5    ;
  $98FB DEC A         ;
- $98FC LD ($FE68),A  ;
- $98FF LD A,($FE66)  ;
+ $98FC LD ($FE68),A  ; Store the updated manoeuvre timer in `#R$FE68`.
+ $98FF LD A,($FE66)  ; Load the current tank strategy from `#R$FE66`.
  $9902 LD C,A        ;
  $9903 AND $18       ;
  $9905 JP Z,$9948    ;
  $9908 AND $10       ;
  $990A JP Z,$992C    ;
- $990D LD A,($FE6A)  ;
+ $990D LD A,($FE6A)  ; Load the active-entity state byte from `#R$FE6A`.
  $9910 AND $80       ;
  $9912 LD D,$02      ;
  $9914 JP NZ,$9919   ;
  $9917 INC D         ;
  $9918 INC D         ;
 @label=TankStrategyTurnLeft
-*$9919 LD HL,($FE62) ; Decrease heading by a small or large step depending on whether the current
+*$9919 LD HL,($FE62) ; Load the current tank heading from `#R$FE62`.
+                     ; Decrease heading by a small or large step depending on whether the current
                      ; tank-family entity is the tank or the supertank.
  $991C LD A,L        ;
  $991D SUB D         ;
@@ -5913,10 +5919,11 @@ c$956A LD HL,$0000   ;
  $9922 LD A,$01      ;
  $9924 SUB H         ;
  $9925 LD H,A        ;
-*$9926 LD ($FE62),HL ;
+*$9926 LD ($FE62),HL ; Store the updated tank heading back to `#R$FE62`.
  $9929 JP $9948      ;
 @label=TankStrategyTurnRight
-*$992C LD HL,($FE62) ; Mirror of `TankStrategyTurnLeft`.
+*$992C LD HL,($FE62) ; Load the current tank heading from `#R$FE62`.
+                     ; Mirror of `TankStrategyTurnLeft`.
  $992F LD A,($FE6A)  ;
  $9932 LD D,$02      ;
  $9934 AND $80       ;
@@ -5930,7 +5937,7 @@ c$956A LD HL,$0000   ;
  $9941 LD A,$01      ;
  $9943 SUB H         ;
  $9944 LD H,A        ;
-*$9945 LD ($FE62),HL ;
+*$9945 LD ($FE62),HL ; Store the updated tank heading back to `#R$FE62`.
 @label=TankStrategyStepMovement
 *$9948 LD A,C        ;
  $9949 AND $20       ; Move the tank-family `(X,Z)` position using the current forward/reverse bit.
@@ -5939,16 +5946,16 @@ c$956A LD HL,$0000   ;
  $9951 LD DE,($DCE0) ;
  $9955 AND A         ;
  $9956 SBC HL,DE     ;
- $9958 LD DE,($FE5E) ;
+ $9958 LD DE,($FE5E) ; Load the current tank X position from `#R$FE5E`.
  $995C ADD HL,DE     ;
- $995D LD ($FE5E),HL ;
+ $995D LD ($FE5E),HL ; Store the updated tank X position back to `#R$FE5E`.
  $9960 LD HL,($DD84) ;
  $9963 LD DE,($DD90) ;
  $9967 AND A         ;
  $9968 SBC HL,DE     ;
- $996A LD DE,($FE60) ;
+ $996A LD DE,($FE60) ; Load the current tank Z position from `#R$FE60`.
  $996E ADD HL,DE     ;
- $996F LD ($FE60),HL ;
+ $996F LD ($FE60),HL ; Store the updated tank Z position back to `#R$FE60`.
  $9972 BIT 7,C       ;
  $9974 JP NZ,$9A04   ;
  $9977 JP $9A3B      ;
@@ -5956,28 +5963,29 @@ c$956A LD HL,$0000   ;
  $997D LD DE,($DCD4) ;
  $9981 AND A         ;
  $9982 SBC HL,DE     ;
- $9984 LD DE,($FE5E) ;
+ $9984 LD DE,($FE5E) ; Load the current tank X position from `#R$FE5E`.
  $9988 ADD HL,DE     ;
- $9989 LD ($FE5E),HL ;
+ $9989 LD ($FE5E),HL ; Store the updated tank X position back to `#R$FE5E`.
  $998C LD HL,($DD90) ;
  $998F LD DE,($DD84) ;
  $9993 AND A         ;
  $9994 SBC HL,DE     ;
- $9996 LD DE,($FE60) ;
+ $9996 LD DE,($FE60) ; Load the current tank Z position from `#R$FE60`.
  $999A ADD HL,DE     ;
  $999B LD A,$18      ;
  $999D OUT ($FE),A   ;
- $999F LD ($FE60),HL ;
+ $999F LD ($FE60),HL ; Store the updated tank Z position back to `#R$FE60`.
  $99A2 JP $9A3B      ;
 @label=TankStrategySelectNextState
 *$99A5 BIT 7,C       ;
  $99A7 JP NZ,$9A04   ; Manoeuvre timer expired. Choose trundle/passive/aggressive state and reseed
                      ; `TKMCT` from the slower variation counter in #R$FE72.
- $99AA LD A,R        ; Read `R` as the main pseudo-random variation source for the next
+ $99AA LD A,R        ; Load the slower variation counter from `#R$FE72`.
+                     ; Read `R` as the main pseudo-random variation source for the next
                      ; tank/supertank strategy choice.
  $99AC AND $3F       ;
  $99AE LD C,A        ;
- $99AF LD HL,($FE70) ;
+ $99AF LD HL,($FE70) ; Load the shared frame/age counter from `#R$FE70`.
  $99B2 RLC H         ;
  $99B4 JP NZ,$99D9   ;
  $99B7 LD A,L        ;
@@ -5991,57 +5999,58 @@ c$956A LD HL,$0000   ;
  $99C1 AND $08       ;
  $99C3 ADD A,$08     ;
  $99C5 OR $40        ;
- $99C7 LD ($FE66),A  ;
- $99CA LD A,($FE72)  ;
+ $99C7 LD ($FE66),A  ; Store the chosen tank strategy back to `#R$FE66`.
+ $99CA LD A,($FE72)  ; Load the slower variation counter from `#R$FE72`.
  $99CD RLA           ;
  $99CE RLA           ;
  $99CF NEG           ;
  $99D1 ADD A,$64     ;
- $99D3 LD ($FE68),A  ;
+ $99D3 LD ($FE68),A  ; Store the updated manoeuvre timer back to `#R$FE68`.
  $99D6 JP $9A3B      ;
-*$99D9 LD A,($FE6A)  ;
+*$99D9 LD A,($FE6A)  ; Load the active-entity state byte from `#R$FE6A`.
  $99DC AND A         ;
  $99DD JP M,$99FA    ;
  $99E0 LD A,C        ;
  $99E1 AND $18       ;
  $99E3 JP NZ,$99FA   ;
  $99E6 LD A,$40      ;
- $99E8 LD ($FE66),A  ;
- $99EB LD A,($FE72)  ;
+ $99E8 LD ($FE66),A  ; Store the chosen tank strategy back to `#R$FE66`.
+ $99EB LD A,($FE72)  ; Load the slower variation counter from `#R$FE72`.
  $99EE RLA           ;
  $99EF RLA           ;
  $99F0 NEG           ;
  $99F2 ADD A,$64     ;
- $99F4 LD ($FE68),A  ;
+ $99F4 LD ($FE68),A  ; Store the updated manoeuvre timer back to `#R$FE68`.
  $99F7 JP $9A3B      ;
 *$99FA LD A,$80      ;
- $99FC LD ($FE66),A  ;
+ $99FC LD ($FE66),A  ; Store the chosen tank strategy back to `#R$FE66`.
  $99FF LD A,$FF      ;
- $9A01 LD ($FE68),A  ;
+ $9A01 LD ($FE68),A  ; Store the updated manoeuvre timer back to `#R$FE68`.
 @label=TankStrategyAimOrAttack
-*$9A04 LD HL,($FE62) ; Compare `TKOR` against `TKDIR` and choose aggressive left/right/forward state
+*$9A04 LD HL,($FE62) ; Load the current tank heading from `#R$FE62`.
+                     ; Compare `TKOR` against `TKDIR` and choose aggressive left/right/forward state
                      ; while preserving bit 7.
- $9A07 LD DE,($FE64) ;
+ $9A07 LD DE,($FE64) ; Load the desired tank heading from `#R$FE64`.
  $9A0B AND A         ;
  $9A0C SBC HL,DE     ;
  $9A0E LD A,L        ;
  $9A0F ADD A,$80     ;
  $9A11 JP M,$9A24    ;
  $9A14 JP Z,$9A31    ;
- $9A17 LD A,($FE66)  ;
+ $9A17 LD A,($FE66)  ; Load the current tank strategy from `#R$FE66`.
  $9A1A AND $80       ;
  $9A1C OR $10        ;
- $9A1E LD ($FE66),A  ;
+ $9A1E LD ($FE66),A  ; Store the updated tank strategy back to `#R$FE66`.
  $9A21 JP $9A3B      ;
-*$9A24 LD A,($FE66)  ;
+*$9A24 LD A,($FE66)  ; Load the current tank strategy from `#R$FE66`.
  $9A27 AND $80       ;
  $9A29 OR $08        ;
- $9A2B LD ($FE66),A  ;
+ $9A2B LD ($FE66),A  ; Store the updated tank strategy back to `#R$FE66`.
  $9A2E JP $9A3B      ;
-*$9A31 LD A,($FE66)  ;
+*$9A31 LD A,($FE66)  ; Load the current tank strategy from `#R$FE66`.
  $9A34 AND $80       ;
  $9A36 OR $40        ;
- $9A38 LD ($FE66),A  ;
+ $9A38 LD ($FE66),A  ; Store the updated tank strategy back to `#R$FE66`.
 @label=TankStrategyRangeCue
 *$9A3B LD A,($FE5F)  ; Close-range cue / message logic keyed from the tank high-byte position and
                      ; then from the desired-heading angle.
@@ -6065,18 +6074,18 @@ c$956A LD HL,$0000   ;
  $9A69 SUB $08       ;
  $9A6B JP NC,$9A76   ;
  $9A6E LD A,$28      ;
- $9A70 LD ($FE68),A  ;
- $9A73 LD ($FE66),A  ;
+ $9A70 LD ($FE68),A  ; Store the chosen tank strategy back to `#R$FE66`.
+ $9A73 LD ($FE66),A  ; Store the updated manoeuvre timer back to `#R$FE68`.
 @label=TankStrategyUpdateDesiredHeading
 *$9A76 LD HL,($FE5E) ; Refresh `TKDIR` from the current tank `(X,Z)` position via `HeadingFromXZ`.
- $9A79 LD DE,($FE60) ;
+ $9A79 LD DE,($FE60) ; Load the current tank X position from `#R$FE5E`.
  $9A7D CALL $938A    ;
  $9A80 LD H,$00      ;
  $9A82 LD L,A        ;
  $9A83 SUB A         ;
  $9A84 OUT ($FE),A   ;
  $9A86 ADD HL,HL     ;
- $9A87 LD ($FE64),HL ;
+ $9A87 LD ($FE64),HL ; Store the refreshed desired heading back to `#R$FE64`.
  $9A8A LD A,($FE5F)  ;
  $9A8D LD B,A        ;
  $9A8E LD A,($FE61)  ;
@@ -6149,9 +6158,9 @@ c$956A LD HL,$0000   ;
  $9B1F JP $9B28      ;
 *$9B22 LD HL,$CF2A   ;
  $9B25 CALL $9452    ;
-*$9B28 LD HL,($FE52) ;
+*$9B28 LD HL,($FE52) ; Load the temporary radar/proximity helper base from `#R$FE52`.
  $9B2B LD C,(HL)     ;
- $9B2C LD HL,($FE64) ;
+ $9B2C LD HL,($FE64) ; Load the current desired-heading angle from `#R$FE64`.
  $9B2F SRL H         ;
  $9B31 LD A,L        ;
  $9B32 RRA           ;
@@ -6161,37 +6170,37 @@ c$956A LD HL,$0000   ;
  $9B39 LD A,($FE74)  ; Probable proximity-driven border/sound latch update in
                      ; the tank/supertank path.
  $9B3C XOR $18       ;
- $9B3E LD ($FE74),A  ;
+ $9B3E LD ($FE74),A  ; Store the updated border/sound latch back to `#R$FE74`.
  $9B41 JP $9B48      ;
 *$9B44 SUB A         ;
- $9B45 LD ($FE74),A  ;
-*$9B48 LD A,($FE6A)  ;
+ $9B45 LD ($FE74),A  ; Store the updated border/sound latch back to `#R$FE74`.
+*$9B48 LD A,($FE6A)  ; Load the active-entity state byte from `#R$FE6A`.
  $9B4B AND A         ;
  $9B4C JP P,$9B6C    ;
  $9B4F LD A,$10      ;
  $9B51 LD HL,$D98A   ;
- $9B54 LD ($FE42),HL ;
+ $9B54 LD ($FE42),HL ; Store the rotated X/Z helper pair to `#R$FE42`.
  $9B57 LD HL,$DA7E   ;
- $9B5A LD ($FE46),HL ;
+ $9B5A LD ($FE46),HL ; Store the rotated X/Z helper pair to `#R$FE46`.
  $9B5D LD HL,$DCF2   ;
- $9B60 LD ($FE32),HL ;
+ $9B60 LD ($FE32),HL ; Store the rotated X/Z helper pair to `#R$FE32`.
  $9B63 LD HL,$DDA2   ;
- $9B66 LD ($FE36),HL ;
+ $9B66 LD ($FE36),HL ; Store the rotated X/Z helper pair to `#R$FE36`.
  $9B69 JP $9B86      ;
-*$9B6C LD HL,$D9AA   ;
+*$9B6C LD HL,$D9AA   ; Store the rotated X/Z helper pair to `#R$FE42`.
  $9B6F LD ($FE42),HL ;
- $9B72 LD HL,$DA9E   ;
+ $9B72 LD HL,$DA9E   ; Store the rotated X/Z helper pair to `#R$FE46`.
  $9B75 LD ($FE46),HL ;
- $9B78 LD HL,$DCEA   ;
+ $9B78 LD HL,$DCEA   ; Store the rotated X/Z helper pair to `#R$FE32`.
  $9B7B LD ($FE32),HL ;
- $9B7E LD HL,$DD9A   ;
+ $9B7E LD HL,$DD9A   ; Store the rotated X/Z helper pair to `#R$FE36`.
  $9B81 LD ($FE36),HL ;
  $9B84 LD A,$0C      ;
-*$9B86 LD HL,($FE5E) ;
- $9B89 LD ($FE4A),HL ;
- $9B8C LD HL,($FE60) ;
- $9B8F LD ($FE4C),HL ;
- $9B92 LD HL,($FE62) ;
+*$9B86 LD HL,($FE5E) ; Load the current tank X position from `#R$FE5E`.
+ $9B89 LD ($FE4A),HL ; Store the current tank X position into `#R$FE4A`.
+ $9B8C LD HL,($FE60) ; Load the current tank Z position from `#R$FE60`.
+ $9B8F LD ($FE4C),HL ; Store the current tank Z position into `#R$FE4C`.
+ $9B92 LD HL,($FE62) ; Load the current tank heading from `#R$FE62`.
  $9B95 SRL H         ;
  $9B97 RR L          ;
  $9B99 BIT 7,L       ;
@@ -6205,16 +6214,16 @@ c$956A LD HL,$0000   ;
 *$9BA7 CALL $88EA    ;
  $9BAA LD A,$18      ;
  $9BAC OUT ($FE),A   ;
- $9BAE LD A,($FE6A)  ;
+ $9BAE LD A,($FE6A)  ; Load the active-entity state byte from `EXST1` (`#R$FE6A`).
  $9BB1 AND A         ;
  $9BB2 JP P,$9C64    ;
  $9BB5 LD HL,$DB72   ;
- $9BB8 LD ($FE34),HL ;
+ $9BB8 LD ($FE34),HL ; Install the temporary Y list pointer in `YLOC` (`#R$FE34`).
  $9BBB LD A,$0C      ;
  $9BBD LD HL,$DEB0   ;
- $9BC0 LD ($FE38),HL ;
+ $9BC0 LD ($FE38),HL ; Install the temporary projected X output buffer in `XPERS` (`#R$FE38`).
  $9BC3 LD HL,$DEE8   ;
- $9BC6 LD ($FE3A),HL ;
+ $9BC6 LD ($FE3A),HL ; Install the temporary projected Y output buffer in `YPERS` (`#R$FE3A`).
  $9BC9 CALL $8660    ;
  $9BCC SUB A         ;
  $9BCD OUT ($FE),A   ;
@@ -6224,24 +6233,24 @@ c$956A LD HL,$0000   ;
  $9BD5 RL C          ;
  $9BD7 LD A,C        ;
  $9BD8 AND A         ;
- $9BD9 LD A,($FE6E)  ;
+ $9BD9 LD A,($FE6E)  ; Load the current render/visibility byte from `PRSTA` (`#R$FE6E`).
  $9BDC JP Z,$9BF6    ;
  $9BDF AND $7F       ; Clear the tank-visible bit.
- $9BE1 LD ($FE6E),A  ;
+ $9BE1 LD ($FE6E),A  ; Store the cleared render/visibility byte back to `PRSTA` (`#R$FE6E`).
  $9BE4 LD A,$0C      ;
  $9BE6 CALL $9538    ;
- $9BE9 LD HL,$84D0   ;
- $9BEC LD ($FE1C),HL ;
+ $9BE9 LD HL,$84D0   ; Seed the hidden-case outer X limit from `#R$84D0`.
+ $9BEC LD ($FE1C),HL ; Store the raw outer X limit word in `MAX1` (`#R$FE1C`).
  $9BEF DEC L         ;
- $9BF0 LD ($FE1E),HL ;
+ $9BF0 LD ($FE1E),HL ; Store the matching raw outer X limit word in `MIN1` (`#R$FE1E`).
  $9BF3 JP $9D0D      ;
-*$9BF6 LD HL,($FE3C) ;
- $9BF9 LD ($FE1C),HL ;
+*$9BF6 LD HL,($FE3C) ; Load the current visible X maximum from `XMAX` (`#R$FE3C`).
+ $9BF9 LD ($FE1C),HL ; Store the visible X maximum back to `MAX1` (`#R$FE1C`).
  $9BFC EX DE,HL      ;
- $9BFD LD HL,($FE3E) ;
- $9C00 LD ($FE1E),HL ;
+ $9BFD LD HL,($FE3E) ; Load the current visible X minimum from `XMIN` (`#R$FE3E`).
+ $9C00 LD ($FE1E),HL ; Store the visible X minimum back to `MIN1` (`#R$FE1E`).
  $9C03 OR $80        ; Set the tank-visible bit.
- $9C05 LD ($FE6E),A  ;
+ $9C05 LD ($FE6E),A  ; Store the updated render/visibility byte back to `PRSTA` (`#R$FE6E`).
  $9C08 LD A,H        ;
  $9C09 AND A         ;
  $9C0A JP P,$9C17    ;
@@ -6249,7 +6258,7 @@ c$956A LD HL,$0000   ;
  $9C0E AND A         ;
  $9C0F JP M,$9C17    ;
  $9C12 LD A,$80      ;
- $9C14 LD ($FE58),A  ;
+ $9C14 LD ($FE58),A  ; Raise the sight cue latch in `SIGHT` (`#R$FE58`).
 *$9C17 LD DE,($DEAC) ;
  $9C1B LD HL,($DEAE) ;
  $9C1E SBC HL,DE     ;
@@ -6273,18 +6282,18 @@ c$956A LD HL,$0000   ;
  $9C4E LD HL,$D0DC   ;
  $9C51 JP $9C57      ;
 *$9C54 LD HL,$D136   ;
-*$9C57 LD ($FE02),HL ;
+*$9C57 LD ($FE02),HL ; Write the advanced line-data pointer back to `LINCD` (`#R$FE02`).
  $9C5A LD A,$18      ;
  $9C5C OUT ($FE),A   ;
  $9C5E CALL $805C    ;
  $9C61 JP $9D0D      ;
 *$9C64 LD HL,$DB92   ;
- $9C67 LD ($FE34),HL ;
+ $9C67 LD ($FE34),HL ; Install the temporary Y list pointer in `YLOC` (`#R$FE34`).
  $9C6A LD A,$08      ;
  $9C6C LD HL,$DEA8   ;
- $9C6F LD ($FE38),HL ;
+ $9C6F LD ($FE38),HL ; Install the temporary projected X output buffer in `XPERS` (`#R$FE38`).
  $9C72 LD HL,$DEE0   ;
- $9C75 LD ($FE3A),HL ;
+ $9C75 LD ($FE3A),HL ; Install the temporary projected Y output buffer in `YPERS` (`#R$FE3A`).
  $9C78 CALL $8660    ;
  $9C7B LD A,($FE61)  ;
  $9C7E CP $7C        ;
@@ -6292,24 +6301,24 @@ c$956A LD HL,$0000   ;
  $9C81 RL C          ;
  $9C83 LD A,C        ;
  $9C84 AND A         ;
- $9C85 LD A,($FE6E)  ;
+ $9C85 LD A,($FE6E)  ; Load the current render/visibility byte from `PRSTA` (`#R$FE6E`).
  $9C88 JP Z,$9CA2    ;
  $9C8B AND $3F       ; Clear the supertank-visible bit.
- $9C8D LD ($FE6E),A  ;
+ $9C8D LD ($FE6E),A  ; Store the cleared render/visibility byte back to `PRSTA` (`#R$FE6E`).
  $9C90 LD A,$08      ;
  $9C92 CALL $9538    ;
- $9C95 LD HL,$84D0   ;
- $9C98 LD ($FE1C),HL ;
+ $9C95 LD HL,$84D0   ; Seed the hidden-case outer X limit from `#R$84D0`.
+ $9C98 LD ($FE1C),HL ; Store the raw outer X limit word in `MAX1` (`#R$FE1C`).
  $9C9B DEC L         ;
- $9C9C LD ($FE1E),HL ;
+ $9C9C LD ($FE1E),HL ; Store the matching raw outer X limit word in `MIN1` (`#R$FE1E`).
  $9C9F JP $9D0D      ;
-*$9CA2 LD HL,($FE3C) ;
- $9CA5 LD ($FE1C),HL ;
+*$9CA2 LD HL,($FE3C) ; Load the current visible X maximum from `XMAX` (`#R$FE3C`).
+ $9CA5 LD ($FE1C),HL ; Store the visible X maximum back to `MAX1` (`#R$FE1C`).
  $9CA8 EX DE,HL      ;
- $9CA9 LD HL,($FE3E) ;
- $9CAC LD ($FE1E),HL ;
+ $9CA9 LD HL,($FE3E) ; Load the current visible X minimum from `XMIN` (`#R$FE3E`).
+ $9CAC LD ($FE1E),HL ; Store the visible X minimum back to `MIN1` (`#R$FE1E`).
  $9CAF OR $40        ; Set the supertank-visible bit.
- $9CB1 LD ($FE6E),A  ;
+ $9CB1 LD ($FE6E),A  ; Store the updated render/visibility byte back to `PRSTA` (`#R$FE6E`).
  $9CB4 LD A,H        ;
  $9CB5 AND A         ;
  $9CB6 JP P,$9CC3    ;
@@ -6317,7 +6326,7 @@ c$956A LD HL,$0000   ;
  $9CBA AND A         ;
  $9CBB JP M,$9CC3    ;
  $9CBE LD A,$80      ;
- $9CC0 LD ($FE58),A  ;
+ $9CC0 LD ($FE58),A  ; Raise the sight cue latch in `SIGHT` (`#R$FE58`).
 *$9CC3 LD DE,($DEA4) ;
  $9CC7 LD HL,($DEA6) ;
  $9CCA SBC HL,DE     ;
@@ -6341,7 +6350,7 @@ c$956A LD HL,$0000   ;
  $9CFA LD HL,$D274   ;
  $9CFD JP $9D03      ;
 *$9D00 LD HL,$D2D6   ;
-*$9D03 LD ($FE02),HL ;
+*$9D03 LD ($FE02),HL ; Write the advanced line-data pointer back to `LINCD` (`#R$FE02`).
  $9D06 LD A,$18      ;
  $9D08 OUT ($FE),A   ;
  $9D0A CALL $805C    ;

@@ -394,6 +394,7 @@ Working summary of verified facts, local source material, and open questions for
     - `FE3C/FE3E` = visible projected X upper/lower limits maintained by `PERSP`
     - `FE40` = `PERSP` point-count / pass-control slot
     - `FE42/FE46` = active X/Z coefficient-table pointers used by `RotateXZLists`
+      - the packed coefficient bits are consumed by the unrolled `RRA` / `ADD HL,BC` ladder; the saved source-word sign bit lives separately in `MMAT` and flips the add/subtract branch on the later passes
     - `FE48` = rotate-pass scratch pointer carried between transform phases
     - `FE4A/FE4C` = current X/Z positional offset pair added by the shared transform after rotation
     - `FE44` (`YTAB`) still has no confident direct shipped-code role isolated
@@ -671,10 +672,10 @@ Working summary of verified facts, local source material, and open questions for
     - `PERSPProjectPrimary` at `0x8676`
     - `PERSPTrackVisibleRange` at `0x877B`
     - `PERSPProjectSecondary` at `0x87E1`
-    - `RotateXZPrimaryPass` at `0x8925`
-    - `RotateXZSecondaryPass` at `0x89C4`
-    - `RotateXZFinalPass` at `0x8A78`
-    - `RotateXZCompanionPass` at `0x8B3A`
+    - `RotateXZApplyXCoefficients` at `0x8925`
+    - `RotateXZApplyZCoefficients` at `0x89C4`
+    - `RotateXZBuildXOutput` at `0x8A78`
+    - `RotateXZBuildZOutput` at `0x8B3A`
     - `RADARClearWorkspace` at `0x90BC`
     - `RADARMapX` at `0x90EB`
     - `RADARMapZ` at `0x9104`

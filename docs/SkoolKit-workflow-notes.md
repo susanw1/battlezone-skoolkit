@@ -224,6 +224,19 @@ Mechanical checklist for lower-context workers:
 - specifically check that summary-list items render as one link plus prose, not
   a duplicated link label plus plain-text label
 
+RotateXZLists note:
+
+- `RotateXZLists` consumes descending 16-bit point lists via `SP`, so the
+  values loaded into `FE32` / `FE36` are stack-top pointers, not forward-array
+  bases
+- when checking a call site, work backwards from the point count to find the
+  logical start: `start = end_pointer - (2 * point_count)`
+- for the title-path example, `FE32=$DD06` with `A=$1A` implies a 26-point
+  list starting at `$DCD4`, and `FE36=$DDB6` implies the companion 26-point
+  list starting at `$DD84`
+- the later title-word pass uses `FE32=$DD00` and `FE36=$DDB0`, which implies
+  23-point lists starting at `$DCD2` and `$DD82`
+
 Address-decoding rule:
 
 - when a page is hard to read line-by-line, add a short decode on the
